@@ -31,7 +31,7 @@ export const SCAM_TYPE_LABELS: Record<ScamType, string> = {
   governmentImposter: 'government imposter scam',
   bankImpersonation: 'bank impersonation scam',
   romance: 'romance scam',
-  emergency: 'emergency scam',
+  emergency: 'family emergency scam',
   lottery: 'lottery or sweepstakes scam',
   techSupport: 'tech support scam',
 }
