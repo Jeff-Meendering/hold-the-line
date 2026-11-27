@@ -1,8 +1,8 @@
 # Hold the Line: architecture
 
-Version 4, Fri Nov 27, 2026. Built on [requirements.md](requirements.md) version 6. Version 2 recorded the approval of D16 and D17 and added what the UI design needs: a shared `Slip` component and a single `buildDebrief` call. Version 3 follows the approval of D19 and D20: the decision guard in `CustomerScreen` and the source links in `DebriefScreen`. This document covers the system architecture, the folder layout, what each module is responsible for, and the technical decisions. Version 4 applies four decisions from the security and test-plan step: tests on pull requests (D23), the Content-Security-Policy added at build time (D25), the rules test (D28), and messages for rules about the whole pool (D32). The game flow and the data schema are in [design.md](design.md). Security is in [security.md](security.md), and the test strategy is in [test-plan.md](test-plan.md).
+Version 5, Fri Nov 27, 2026. Built on [requirements.md](requirements.md) version 6. Version 2 recorded the approval of D16 and D17 and added what the UI design needs: a shared `Slip` component and a single `buildDebrief` call. Version 3 follows the approval of D19 and D20: the decision guard in `CustomerScreen` and the source links in `DebriefScreen`. This document covers the system architecture, the folder layout, what each module is responsible for, and the technical decisions. Version 4 applies four decisions from the security and test-plan step: tests on pull requests (D23), the Content-Security-Policy added at build time (D25), the rules test (D28), and messages for rules about the whole pool (D32). Version 5 records what the game-logic step built (PR #7), as Jeff approved it: the test helper `testPool.ts` in the folder layout, the name `GameContent`, the start of each message from `validateData`, and the cases in which `drawDay`, `scoreDay`, and `buildDebrief` throw. The game flow and the data schema are in [design.md](design.md). Security is in [security.md](security.md), and the test strategy is in [test-plan.md](test-plan.md).
 
-Nothing is implemented yet. This is what the code will be checked against, and it is brought in line with what was built on Dec 5.
+`src/game/`, `src/data/questions.ts`, and `src/data/labels.ts` are implemented (PR #7). Nothing else beyond the scaffold is. This is what the code will be checked against, and it is brought in line with what was built on Dec 5.
 
 ## 1. System overview
 
@@ -110,7 +110,8 @@ hold-the-line/
     │   ├── reducer.ts        + reducer.test.ts
     │   ├── scoring.ts        + scoring.test.ts
     │   ├── debrief.ts        + debrief.test.ts
-    │   └── validate.ts       + validate.test.ts
+    │   ├── validate.ts       + validate.test.ts
+    │   └── testPool.ts       made-up customers for the unit tests
     ├── data/                 content only
     │   ├── questions.ts
     │   ├── labels.ts
@@ -136,11 +137,11 @@ The types named here are defined in [design.md](design.md).
 |---|---|---|---|
 | `types.ts` | The schema: customers, slips, red flags, game state, actions, and the lists of valid ids and source hosts | Types and `as const` id lists | FR-11, FR-12 |
 | `rng.ts` | A seeded random source for tests, about 10 lines | `mulberry32(seed): () => number` | AC-5.3 |
-| `draw.ts` | The day draw, rules 1 to 7 in requirements section 6. Takes its random source as a parameter | `drawDay(pool, rng): Customer[]` | AC-5.1 to 5.3, NFR-8 |
+| `draw.ts` | The day draw, rules 1 to 7 in requirements section 6. Takes its random source as a parameter. Throws on a pool smaller than 3 scam and 5 legit customers, instead of giving a short day | `drawDay(pool, rng): Customer[]` | AC-5.1 to 5.3, NFR-8 |
 | `reducer.ts` | Every state change: start a day, ask a question, decide. Enforces the limit of 3 questions and no repeats. Ignores an action that is not allowed | `gameReducer(state, action): GameState` | FR-2, FR-4 to FR-6, FR-10 |
-| `scoring.ts` | The scoring table and the floor at 0 | `pointsFor(truth, decision): number`, `scoreDay(day, results): number` | Requirements section 5, AC-6.1 |
-| `debrief.ts` | Builds everything the debrief shows: the score, whether it was raised to 0, the counts, and for each customer the call, the truth, right or wrong, the points, and each flag's status of *shown*, *you asked*, or *you didn't ask* | `buildDebrief(day, results): Debrief` | FR-8, FR-9, AC-6.2, AC-6.3 |
-| `validate.ts` | Checks content against the rules in design.md section 2.6 and returns one message per broken rule, each starting with the customer id or question id, or with `pool` for a rule about the whole pool | `validateData(data): string[]` | FR-15, AC-8.1, AC-8.3 |
+| `scoring.ts` | The scoring table and the floor at 0. `sumPoints` is the total before the floor, which `buildDebrief` uses for `floored`. `scoreDay` and `sumPoints` throw if the day and the results differ in length | `pointsFor(truth, decision): number`, `scoreDay(day, results): number`, `sumPoints(day, results): number` | Requirements section 5, AC-6.1 |
+| `debrief.ts` | Builds everything the debrief shows: the score, whether it was raised to 0, the counts, and for each customer the call, the truth, right or wrong, the points, and each flag's status of *shown*, *you asked*, or *you didn't ask* | `buildDebrief(day, results): Debrief`. Throws, through `sumPoints`, if the day and the results differ in length | FR-8, FR-9, AC-6.2, AC-6.3 |
+| `validate.ts` | Checks content against the rules in design.md section 2.6 and returns one message per problem found, each starting with the customer id or question id, with the transaction type for a rule about a question set, or with `pool` for a rule about the whole pool. It never throws on bad content | `validateData(content: GameContent): string[]`, where `GameContent` is `{ questionText, questionSets, customers }` | FR-15, AC-8.1, AC-8.3 |
 
 **`src/data/`: content**
 
@@ -150,6 +151,8 @@ The types named here are defined in [design.md](design.md).
 | `labels.ts` | Display text for each red flag id, scam type, and transaction type | FR-9 |
 | `customers.ts` | The pool of 10 customers, in one file so it can be pasted whole into a review | FR-11 to FR-14 |
 | `data.test.ts` | Runs `validateData` on the real content and expects no messages | FR-15 |
+
+**`src/game/testPool.ts`: test helper.** Builds made-up customers with placeholder text for the unit tests (test-plan.md section 1, rule 2). It is not a test file, so the rules test reads it like the rest of `src/game/`, and nothing in the app imports it, so it is not in the bundle. It holds no source URLs, because web addresses may appear only in `src/data/customers.ts`, and it writes out its own copy of the three question sets so the unit tests do not read real content.
 
 **`src/` and `src/ui/`: React**
 
