@@ -1,6 +1,6 @@
 # Hold the Line: design
 
-Version 2, Fri Nov 27, 2026. Built on [requirements.md](requirements.md) version 4. Version 1 covered the game flow and the data schema. Version 2 applies Jeff's review of it (`told` in every question set, the cover-story rule, a harder example customer) and adds the UI and UX plan, the wireframes, and the UI decisions. The system architecture and the technical decisions are in [architecture.md](architecture.md).
+Version 3, Fri Nov 27, 2026. Built on [requirements.md](requirements.md) version 5. Version 1 covered the game flow and the data schema. Version 2 applied Jeff's review of it (`told` in every question set, the cover-story rule, a harder example customer) and added the UI and UX plan, the wireframes, and the UI decisions. Version 3 records the approval of D19 and D20 and lets a legit look-alike show its trait in an answer (D21). The system architecture and the technical decisions are in [architecture.md](architecture.md).
 
 ## 1. Game flow
 
@@ -84,12 +84,22 @@ export interface DebriefFlag {
   status: FlagStatus;
 }
 
+/** A legit look-alike's trait, with what the player saw of it. */
+export interface DebriefLookAlike {
+  flag: RedFlagId;
+  shownIn: RedFlag['shownIn'];
+  status: FlagStatus; // as for a red flag
+  explainedBy: QuestionId;
+  explanationAsked: boolean;
+}
+
 export interface DebriefRow {
   customer: Customer;
   decision: Decision;
   correct: boolean;
   points: number; // +10, -10, or -30
   flags: DebriefFlag[]; // slip, then behaviour, then answers in bank order. Empty for a legit customer
+  lookAlike?: DebriefLookAlike; // only for a legit customer that has one
 }
 
 export interface Debrief {
@@ -216,11 +226,19 @@ export interface ScamCustomer extends CustomerBase {
   sourceUrls: string[];
 }
 
+/** A legit customer's trait that looks like a red flag (FR-14). */
+export interface LookAlike {
+  /** The red flag it resembles. */
+  flag: RedFlagId;
+  /** Where the player can notice it, as for a red flag. */
+  shownIn: RedFlag['shownIn'];
+  /** The question whose answer explains it. Never the question in shownIn. */
+  explainedBy: QuestionId;
+}
+
 export interface LegitCustomer extends CustomerBase {
   truth: 'legit';
-  /** For a legit customer who looks like a scam (FR-14): the red flag they
-   *  resemble, and the question whose answer explains it. */
-  lookAlike?: { flag: RedFlagId; explainedBy: QuestionId };
+  lookAlike?: LookAlike;
 }
 
 export type Customer = ScamCustomer | LegitCustomer;
@@ -267,13 +285,15 @@ export const QUESTION_SETS: Record<TransactionType, readonly QuestionId[]> = {
 | `verified` | | ✓ | | RF-6, RF-7 |
 | `told` | ✓ | ✓ | ✓ | RF-6, RF-17, rarely (C4) |
 
-`told` is in every set because it is the question closest to the game's premise. RF-3 (the story changes) and RF-4 (will not discuss it) can sit behind any question. Every flag that requirements section 7 lists as showing in answers can be reached in at least one type. Each set was chosen so that every question in it makes sense for any customer of that type: `next` is left out of the wire set because a wire is gone once it is sent, and `met` is left out of the cash set because a withdrawal may be for the customer alone.
+`told` is in every set because it is the question closest to the game's premise. Scam customers have been told to lie, so it will usually get the same "no" from scam and legit customers alike (C4). That is accepted: finding out that asking directly does not work is the lesson, and the debrief's explanation says the customer was coached (C7). Whether players take that from it, or just stop asking `told`, is a check for the Dec 4 playtest (section 7).
+
+RF-3 (the story changes) and RF-4 (will not discuss it) can sit behind any question. Every flag that requirements section 7 lists as showing in answers can be reached in at least one type. Each set was chosen so that every question in it makes sense for any customer of that type: `next` is left out of the wire set because a wire is gone once it is sent, and `met` is left out of the cash set because a withdrawal may be for the customer alone.
 
 `labels.ts` holds three more `Record`s: `RED_FLAG_LABELS` (one short phrase per red flag id, from the "what the player can notice" column of requirements section 7), `SCAM_TYPE_LABELS`, and `TRANSACTION_LABELS`. A `Record` over an id type will not compile with an id missing.
 
 ### 2.4 Content rules
 
-These are the rules for writing the 10 customers. The victims in this game have been coached, so a scam customer arrives with a cover story, and most of what they say is that story (FR-19, D18). "Test" means `validateData` checks it. "Review" means it goes on the checklist for the Gemini content review, because code cannot judge it.
+These are the rules for writing the 10 customers. The victims in this game have been coached, so a scam customer arrives with a cover story, and most of what they say is that story (FR-19, D18). In the other direction, some legit customers say something that sounds like a scam until another question explains it (FR-14, D21). A player cannot hold on one odd answer or process on three calm ones. "Test" means `validateData` checks it. "Review" means it goes on the checklist for the Gemini content review, because code cannot judge it.
 
 | # | Rule | Checked by |
 |---|---|---|
@@ -285,6 +305,8 @@ These are the rules for writing the 10 customers. The victims in this game have 
 | C6 | A scam customer's slip and behaviour are things a legit customer could also show. The flags there are real but do not settle it. Where possible, a legit look-alike in the pool shows the same thing | Review |
 | C7 | The explanation says what the scammer did and what the customer was told to say. It is the only place the coaching is spelled out for most scam customers | Review |
 | C8 | Legit customers are not all at ease. Some are in a hurry, private, or annoyed at being asked, so mood is not a tell | Review |
+| C9 | At least 2 legit look-alikes say something alarming in an answer: an answer that reads like a red flag from requirements section 7 and is as worrying on its own as a scam customer's flagged answer. A different question clears it up. One odd answer then does not always mean a scam | Test (V9, V16) for the count, review for how it reads |
+| C10 | A look-alike's alarming answer points toward the question that explains it, as "it has all been by email" points toward `verified`. A player who has heard it and has 2 questions left finds the explanation half the time by picking blind, and should do better by thinking | Review |
 
 ### 2.5 Example customer
 
@@ -357,9 +379,25 @@ What it shows about the schema:
 | The explanation names the tactic and the cover story, and does not blame (AC-6.4, NFR-11, C7) | It describes what the caller did and what he told Walter to say |
 | The debrief can label each flag (FR-9) | A player who asked `purpose`, `urgency`, and `told` gets RF-11 and RF-1 *shown*, RF-4 *you asked*, RF-12 *you didn't ask*. This is the card in the debrief wireframe |
 
-A legit customer has the same base fields, `truth: 'legit'`, and no scam fields. One who looks like a scam adds, for example, `lookAlike: { flag: 'RF-11', explainedBy: 'recipient' }`.
+A legit customer has the same base fields, `truth: 'legit'`, and no scam fields. One who looks like a scam adds a `lookAlike`. The fragment below is the kind C9 asks for, from a customer wiring a house deposit. Like Walter, it is an example and not part of the pool.
 
-The code blocks in sections 1.1, 1.4, and 2.1 to 2.5 were taken out of this file and compiled together with `tsc --strict` on Nov 27, with no errors. Three broken copies of the example were compiled the same way and each was rejected: a scam customer with no `sourceUrls`, a flag id of `RF-99`, and a cash slip with a `cardCount`.
+```ts
+// Fragment of a legit wire customer. Example only.
+export const exampleLookAlike: LookAlike = {
+  flag: 'RF-13', // the money is for someone they have only met online
+  shownIn: 'met',
+  explainedBy: 'verified',
+};
+```
+
+| Question | Answer | Role |
+|---|---|---|
+| `met` | "No, never. It has all been by email." | Alarming on its own. It reads like RF-13 |
+| `verified` | "Yes. I called the title company on the number from my closing papers, and they read the account number back to me." | Explains it |
+
+A player who asks only `met` hears what a romance-scam victim might say. A player who follows it up with `verified` hears a customer who checked. This is the second card in the debrief wireframe.
+
+The code blocks in sections 1.1, 1.4, and 2.1 to 2.5 were taken out of this file and compiled together with `tsc --strict` on Nov 27, with no errors. Four broken copies were compiled the same way and each was rejected: a scam customer with no `sourceUrls`, a flag id of `RF-99`, a cash slip with a `cardCount`, and a `lookAlike` with no `shownIn`.
 
 ### 2.6 Validation rules
 
@@ -378,13 +416,14 @@ This is the specification for `validateData` in `src/game/validate.ts`. The type
 | V7 | A scam customer has a known scam type, at least 1 source URL starting with `https://`, and at least 3 red flags with known ids, none repeated | FR-12, AC-8.1 |
 | V8 | Each of a scam customer's flags shows on the slip, in the behaviour, or behind a question in the customer's set. At least 1 is on the slip or in the behaviour, and at least 1 is behind a question | FR-12, FR-14 |
 | V14 | A scam customer's flags are behind at most 2 different questions | FR-19, AC-8.4 |
-| V9 | A legit customer's `lookAlike`, if present, names a known flag and a question in the customer's set | FR-14 |
+| V9 | A legit customer's `lookAlike`, if present, names a known flag. Its `shownIn` is the slip, the behaviour, or a question in the customer's set. Its `explainedBy` is a question in the customer's set and is not the question in `shownIn` | FR-14 |
 | **Pool** | | |
 | V10 | At least 3 scam and 5 legit customers | FR-11, section 6 rule 7 |
 | V11 | Each transaction type is used by at least 1 scam and 1 legit customer | FR-13 |
 | V12 | No two scam customers have the same scam type | FR-14 |
 | V13 | At least 3 legit customers have a `lookAlike` | FR-14 |
 | V15 | At most 1 scam customer has RF-6 or RF-17 behind `told` | FR-19, AC-8.4 |
+| V16 | At least 2 legit customers have a `lookAlike` whose `shownIn` is a question | FR-14, AC-8.5 |
 
 V10 uses the minimum, not 4 and 6, so the test still passes if the pool is cut to 8 (plan section 10).
 
@@ -395,7 +434,7 @@ V10 uses the minimum, not 4 and 6, so the test still passes if the pool is cut t
 | S1 | The question ids and their order are one array in `types.ts`. The UI lists a customer's questions by filtering that array | Giving each customer an ordered list of questions; a separate order field | "Listed in bank order" (AC-3.1) is then true by construction, however the content is typed. `QUESTION_SETS` is needed only by the validator: at runtime the questions a customer offers are the ones it has answers for. |
 | S2 | `answers` is typed loosely as an optional answer per question, and V5 checks it against the set | A generic type that derives the required answer keys from the slip type, so a missing answer is a compile error | `npm test` does not type-check, so V5 is needed either way to meet AC-8.1. The generic version would add a mapped type over three customer variants to catch the same mistake a few seconds sooner. One rule in one place is easier to read and to explain. |
 | S3 | A red flag in the data is an id and a place, with no text of its own. The debrief shows the flag's shared label and, for a flag behind a question, that question and the customer's answer (D15) | A sentence written for each flag on each customer; an optional note per flag | Nothing has to be written twice, and the player sees the same name for the same flag on different customers, which is what makes it something to learn. For a flag marked *you didn't ask*, the debrief can show the answer they would have got. |
-| S4 | Scam and legit customers are two variants told apart by `truth`. Legit customers have an optional `lookAlike` | One type with optional scam fields; counting look-alikes by hand in the content review | With variants, a legit customer cannot be given red flags and a scam customer cannot compile without them. FR-14's "at least 3 legit customers show a trait and have a question whose answer explains it" cannot be tested unless the content says which customers those are, and `lookAlike` is the smallest field that says it. |
+| S4 | Scam and legit customers are two variants told apart by `truth`. Legit customers have an optional `lookAlike` | One type with optional scam fields; counting look-alikes by hand in the content review | With variants, a legit customer cannot be given red flags and a scam customer cannot compile without them. FR-14's "at least 3 legit customers show a trait and have a question whose answer explains it" cannot be tested unless the content says which customers those are, and `lookAlike` is the smallest field that says it. It has the same `shownIn` as a red flag, so the validator can count the look-alikes that show in an answer (V16) and the debrief can show where the trait appeared. |
 | S5 | The slip is a variant per transaction type. `amount` is on every slip, and V6 checks the gift-card arithmetic | Optional extra fields on one slip type; working the gift-card amount out from the cards | A wire cannot be written without a recipient, and a cash slip cannot have a card count. Keeping `amount` everywhere lets the slip and the debrief print it the same way for all three types, at the cost of one validation rule. |
 | S6 | `scamType` is one of six names FinCEN uses | Free text | The advisory names government imposter, romance, emergency or person-in-need, lottery and sweepstakes, and tech and customer support scams (A, pp. 6–7). The trend analysis adds bank impersonation, which RF-7 is about (T, p. 11). Both were read on Nov 27. A fixed list lets V12 compare scam types, and FR-14 asks for types "named in the FinCEN sources". |
 | S7 | Ids are checked twice: by the union type when the content is written, and by `validateData` against the `as const` array at test time | The union type only | A flag id typed as `RF-71` is a compile error, but `npm test` does not compile types. The array costs nothing extra, because the type is derived from it. |
@@ -488,6 +527,9 @@ The debrief has a score block and then one card per customer, in the order playe
 1. **What happened**: the explanation, which names the scammer's tactic and the cover story (AC-6.4, C7).
 2. **What was in front of you**: the slip in one or two lines, with the account note, and the behaviour text. The player cannot go back to a customer, so the evidence is repeated here.
 3. **Red flags**: every flag (AC-6.3), each with a status, in this order: slip, behaviour, then answers in bank order.
+4. **Read more**: a link to each of the customer's source URLs (D20). The link text is the site name taken from the URL and a number, such as "consumer.ftc.gov (1)". Links open in a new tab.
+
+The three statuses of a red flag:
 
 | Status | When | Shown as |
 |---|---|---|
@@ -499,7 +541,12 @@ The label is the flag's shared text from `labels.ts`, the same on every customer
 
 **A legit card adds** one line, "Why it was fine", with the explanation (FR-9).
 
-Two additions are proposed in D20 and drawn in the wireframe: source links on a scam card, and on a legit look-alike's card the flag it resembled with the question and answer that explain it.
+**A legit look-alike's card also adds** two short parts (D20, D21):
+
+1. **What could look like a red flag**: the flag's shared label, with the same status and the same layout as a red flag on a scam card. If the trait is on the slip or in the behaviour, it is *shown*, with "(on the slip)" or "(at the window)". If it is in an answer, it is *you asked* or *you didn't ask*, with the question and the answer.
+2. **What explains it**: the explaining question and the customer's answer, marked *you asked* or *you didn't ask*.
+
+So a player who held a legit customer after one alarming answer sees that answer, and next to it the question they did not ask and what it would have told them.
 
 ### 3.5 Layout
 
@@ -543,7 +590,7 @@ One light theme, defined once as CSS custom properties. Contrast ratios were cal
 
 ### 3.7 Keyboard and focus
 
-- Every control is a native `<button>`, and the source links are `<a>`. Tab order follows reading order: questions, then Hold, then Process. Enter and Space activate.
+- Every control is a native `<button>`, and the source links are `<a>` with `target="_blank"` and `rel="noopener noreferrer"`. Tab order follows reading order: questions, then Hold, then Process. Enter and Space activate.
 - When a screen appears, and when the next customer appears, focus moves to that screen's heading. A keyboard player always starts at the top, a screen reader announces the new customer, and on a phone the page scrolls back to the top.
 - Asked and locked questions use `aria-disabled="true"` and ignore presses. They are not given the `disabled` attribute, which would drop keyboard focus when the button that was just pressed becomes disabled.
 - A revealed answer is in an `aria-live="polite"` region, so it is read out when it appears.
@@ -553,7 +600,7 @@ One light theme, defined once as CSS custom properties. Contrast ratios were cal
 
 ## 4. Wireframes
 
-Each screen is drawn at 1280 px and at 375 px. The frames show layout and wording, not exact size, and emoji are left out so the lines stay aligned. The customer is the example from section 2.5. The second debrief card uses placeholders because the real customers are not written yet.
+Each screen is drawn at 1280 px and at 375 px. The frames show layout and wording, not exact size, and emoji are left out so the lines stay aligned. The customer is the example from section 2.5. The second debrief card is a legit look-alike. Its name, transaction, and explanation are placeholders because the real customers are not written yet, and its look-alike part is the fragment from section 2.5.
 
 ### 4.1 Start screen
 
@@ -717,7 +764,7 @@ The player has asked `purpose` and `urgency` and has 1 question left. 1280 px:
 
 ### 4.3 Debrief screen
 
-A day with 2 scams. The player asked Walter `purpose`, `urgency`, and `told`, then processed the transaction. The other five calls were right, so the score is 5 × 10 − 30 = 20. 1280 px:
+A day with 2 scams. The player asked Walter `purpose`, `urgency`, and `told`, then processed the transaction. The other five calls were right, so the score is 5 × 10 − 30 = 20. With customer 2 the player asked `met`, did not ask `verified`, and processed anyway. 1280 px:
 
 ```text
 +------------------------------------------------------------------------------------------------------+
@@ -754,7 +801,7 @@ A day with 2 scams. The player asked Walter `purpose`, `urgency`, and `told`, th
 |                         Question  What happens to it once you leave here?                            |
 |                         Answer    "I'll scratch off the backs in the car and read the numbers out    |
 |                                   over the phone."                                                   |
-|      Read more: consumer.ftc.gov (3 links)                                                           |
+|      Read more: consumer.ftc.gov (1)   consumer.ftc.gov (2)   consumer.ftc.gov (3)                   |
 +------------------------------------------------------------------------------------------------------+
 |  2   <name>                                                                         RIGHT CALL   +10 |
 |      <transaction summary>                                                                           |
@@ -764,9 +811,14 @@ A day with 2 scams. The player asked Walter `purpose`, `urgency`, and `told`, th
 |      <explanation>                                                                                   |
 |                                                                                                      |
 |      What could look like a red flag                                                                 |
-|      <flag label>                                                                                    |
-|      Question  <the question that explains it>                                                       |
-|      Answer    <this customer's answer>                                                              |
+|      [ you asked ]      The money is for someone they have only met online                           |
+|                         Question  Have you met them in person?                                       |
+|                         Answer    "No, never. It has all been by email."                             |
+|      What explains it                                                                                |
+|      [ you didn't ask ] Question  Have you double-checked this yourself, by calling a number you     |
+|                                   already had?                                                       |
+|                         Answer    "Yes. I called the title company on the number from my closing     |
+|                                   papers, and they read the account number back to me."              |
 +------------------------------------------------------------------------------------------------------+
 |  3 to 6   the remaining customers, in the order played                                               |
 +------------------------------------------------------------------------------------------------------+
@@ -841,7 +893,10 @@ A day with 2 scams. The player asked Walter `purpose`, `urgency`, and `told`, th
 |   in the car and read the numbers out  |
 |   over the phone."                     |
 |                                        |
-| Read more: consumer.ftc.gov            |
+| Read more:                             |
+| consumer.ftc.gov (1)                   |
+| consumer.ftc.gov (2)                   |
+| consumer.ftc.gov (3)                   |
 +----------------------------------------+
 | 2  <name>                              |
 | <transaction summary>                  |
@@ -854,9 +909,23 @@ A day with 2 scams. The player asked Walter `purpose`, `urgency`, and `told`, th
 | <explanation>                          |
 |                                        |
 | What could look like a red flag        |
-| <flag label>                           |
-|   Question: <the one that explains it> |
-|   Answer: <this customer's answer>     |
+| [ you asked ]                          |
+| The money is for someone they have     |
+| only met online                        |
+|   Question: Have you met them in       |
+|   person?                              |
+|   Answer: "No, never. It has all been  |
+|   by email."                           |
+|                                        |
+| What explains it                       |
+| [ you didn't ask ]                     |
+|   Question: Have you double-checked    |
+|   this yourself, by calling a number   |
+|   you already had?                     |
+|   Answer: "Yes. I called the title     |
+|   company on the number from my        |
+|   closing papers, and they read the    |
+|   account number back to me."          |
 +----------------------------------------+
 | 3 to 6, in the order played            |
 +----------------------------------------+
@@ -880,15 +949,30 @@ A day with 2 scams. The player asked Walter `purpose`, `urgency`, and `told`, th
 | U10 | One breakpoint at 720 px, system fonts, and one light theme with measured contrast | More breakpoints; a web font; a dark theme | NFR-3 and NFR-4 name two widths, and one breakpoint serves both. A web font is either a request to another origin, which NFR-1 rules out, or weight in the bundle. A dark theme doubles the contrast checks for what the plan calls polish. |
 | U11 | Emoji are decoration beside a word and hidden from screen readers | Emoji as the only label on a button or status; an SVG icon set | Emoji look different on every system and can be missing. The plan allows emoji and rules out custom art, so they are used where losing one costs nothing. |
 | U12 | On a phone the decision buttons are at the end of the page, in the normal flow | A bar fixed to the bottom of the screen | A fixed bar covers text at 375 px, which NFR-4 does not allow, and it keeps a final decision under the player's thumb while they scroll. |
+| U13 | A legit look-alike's card shows its trait with the same status and layout as a red flag, then the question and answer that explain it | The one-line explanation only; a different layout for look-alikes | The trait and a scam's flag look the same to the player during the day, so they are shown the same way afterwards, and the only difference on the card is that this one has an explanation. Putting the unasked explaining question next to the alarming answer shows the player the move they missed. |
 
 ## 6. Decisions
 
-The numbering continues from [requirements.md section 8](requirements.md#8-decisions). D16 and D17 are about tooling and are in [architecture.md section 7](architecture.md#7-decisions-for-jeff). D19 and D20 are waiting for Jeff.
+The numbering continues from [requirements.md section 8](requirements.md#8-decisions). D16 and D17 are about tooling and are in [architecture.md section 7](architecture.md#7-decisions-for-jeff). Nothing is waiting for Jeff.
 
 | # | Decision | Outcome or recommendation | Why | Status |
 |---|---|---|---|---|
 | D14 | The question bank: 8 ids, their wording, and the set of 5 for each transaction type | As in section 2.3. `told` is in every set; on gift cards it replaced `verified` | The ids and sets are part of the schema and decide which flags a customer of each type can hide behind a question. Jeff's change: `told` is the question closest to the game's premise, so every customer offers it. The ids and sets are locked; the wording can still change. | Approved by Jeff with one change, Nov 27 |
 | D15 | What the debrief says about a flag | The flag's shared label, plus the question and the customer's own answer when the flag is behind a question. No sentence written per customer per flag | It removes 12 or more sentences from the content work on Nov 30, which is the plan's top risk. A flag on the slip or in the behaviour gets its general label next to the slip and behaviour text themselves (U6). | Approved by Jeff, Nov 27 |
 | D18 | Cover stories | A scam customer has flags behind at most 2 of 5 answers. The others are the cover story and read like a legit customer's. The slip and behaviour are things a legit customer could also show. An admission on `told` is rare, which this document sets at 1 scam customer at most (FR-19, C1 to C7, V14, V15) | Jeff's review of version 1: the example gave itself away before any question and all five answers sounded like a scam, so no question was worth asking, and whatever is in this document is what gets copied for the real 10. The victims are coached, so they should arrive with a story. "At most 1" is the AI's reading of "rare", chosen so a test can check it. | Decided by Jeff, Nov 27 |
-| D19 | A guard against deciding twice | Hold and Process ignore presses for the first half second after a customer appears (U4) | A double-click on Process would otherwise process the next customer unseen, at a cost of up to 40 points with no way back. It is one timer in `CustomerScreen`, and the reducer stays pure. Without it, the manual test plan should include a double-click case. | Recommended |
-| D20 | Two things on the debrief that FR-9 does not ask for | (a) On a scam card, a "Read more" line linking to the customer's source URLs. (b) On a legit look-alike's card, the flag it resembled and the question and answer that explain it | Both are built from data the schema already holds (`sourceUrls`, `lookAlike`), so they add no content work. (a) lets Ray check that the scams are real and read further. The links open the FTC in a new tab, which `security.md` has to cover. (b) is the lesson a look-alike exists to teach: a red flag is a reason to ask, not proof. Either can be left out without changing anything else. | Recommended |
+| D19 | A guard against deciding twice | Hold and Process ignore presses for the first half second after a customer appears (U4) | A double-click on Process would otherwise process the next customer unseen, at a cost of up to 40 points with no way back. It is one timer in `CustomerScreen`, and the reducer stays pure. It is drawn into the UI plan as U4, and AC-4.4 tests it. | Approved by Jeff, Nov 27 |
+| D20 | Two things on the debrief that FR-9 does not ask for | (a) On a scam card, a "Read more" line linking to the customer's source URLs. (b) On a legit look-alike's card, the flag it resembled and the question and answer that explain it | Both are built from data the schema already holds (`sourceUrls`, `lookAlike`), so they add no content work. (a) lets Ray check that the scams are real and read further. The links open the FTC in a new tab, which `security.md` has to cover. (b) is the lesson a look-alike exists to teach: a red flag is a reason to ask, not proof. Both were drawn in the version 2 wireframes before Jeff had approved them. | Approved by Jeff, Nov 27 |
+| D21 | Legit customers who say something alarming | `lookAlike` gets a `shownIn`, like a red flag. At least 2 legit look-alikes show their trait in an answer, explained by a different question (FR-14, C9, C10, V9, V16). The debrief card shows where the trait appeared (U13) | The AI pointed out in its reply to version 2 that the cover-story rule was one-sided: scam customers' answers had to read as legit, but no legit customer ever said anything alarming, so one odd answer always meant scam. It had left that as a note for the content review. Jeff made it a rule. | Decided by Jeff, Nov 27 |
+
+## 7. Notes for the test plan
+
+Things this design leaves for `test-plan.md` to pick up.
+
+| # | Check | Why |
+|---|---|---|
+| N1 | Playtest, Dec 4: after the debrief, ask the playtester what they made of the `told` question, and note whether they kept asking it | `told` usually gets a denial from everyone (section 2.3). That is meant to teach that scam victims are coached to lie. If the playtester only concludes the question is useless, the explanation lines (C7) need to say more |
+| N2 | Manual: double-click Process on one customer and confirm only that customer is decided | AC-4.4, D19 |
+| N3 | Manual: measure the start screen and the customer screen at 1280×720, and both at 375 px | Section 3.5 gives estimates, not measurements (AC-1.1, NFR-3, NFR-4) |
+| N4 | Manual: check contrast in the browser's accessibility tool | The ratios in section 3.6 were calculated, not measured on the rendered page (NFR-6) |
+| N5 | Content review checklist for Gemini: C2, C3, and C5 to C10 | These are the content rules a test cannot check |
+| N6 | Playtest: note whether the playtester held a legit look-alike after its alarming answer, and whether the debrief card made clear why it was fine | D21 makes these customers harder on purpose (plan risk 7) |

@@ -1,6 +1,6 @@
 # Hold the Line: project plan
 
-Version 6, Fri Nov 27, 2026. Version 1 was a chat draft written before the assignment text was available, version 2 added the AI workflow, version 3 applied the review fixes, version 4 records the gift-card decision, version 5 brings the scope line on questions in line with the shared question bank in the requirements, and version 6 takes component tests out of the cut order and adds the branch and pull request rule to section 6; see [ai-log.md](ai-log.md) for what changed and why. The assignment is in [assignment.md](assignment.md).
+Version 7, Fri Nov 27, 2026. Version 1 was a chat draft written before the assignment text was available, version 2 added the AI workflow, version 3 applied the review fixes, version 4 records the gift-card decision, version 5 brings the scope line on questions in line with the shared question bank in the requirements, version 6 takes component tests out of the cut order and adds the branch and pull request rule to section 6, and version 7 gives the planning-partner chat the job of capturing the prompt screenshots; see [ai-log.md](ai-log.md) for what changed and why. The assignment is in [assignment.md](assignment.md).
 
 ## 1. Purpose
 
@@ -77,7 +77,7 @@ It is also the final project for a course on AI-assisted software engineering. M
 | Tool | Role | Does not do |
 |---|---|---|
 | Claude Fable, in the repo | Writes the planning, requirements, and design documents, including `architecture.md`, `security.md`, the test strategy, and the first draft of `CLAUDE.md` | Implementation |
-| Claude Fable, separate chat | Planning partner: drafts the prompts with Jeff and reviews what all the other tools produce. It reads the repo | Writing to the repo |
+| Claude Fable, separate chat | Planning partner: drafts the prompts with Jeff and reviews what all the other tools produce. It reads the repo. It also captures the prompt screenshots through T3 Code's built-in browser and saves them into `screenshots/` | Writing anything else to the repo |
 | Claude Opus, in the repo | Implementation: code, tests, customer data files, and the CI workflow, guided by `CLAUDE.md` | Reviewing its own work as the final check |
 | Gemini 4 Neon | Independent reviewer of the customer content and of the code, so Claude is not the only thing checking Claude's work | Writing code or content |
 | ChatGPT, in the browser | Fact-checks against real sources: first whether gift cards make sense at a teller window (done Nov 27, see [reviews/01-gift-card-check.md](reviews/01-gift-card-check.md)), then the scam scenarios against FTC and AARP sources (Nov 30) | Writing content |
@@ -91,6 +91,7 @@ Exact model versions are recorded in the AI log the first time each tool is used
 - For the fact-check, every cited source is opened and read before it is trusted. The source URL is stored with the customer it supports.
 - Reviewers get the artefact and the requirements, not the author's reasoning, so the review is not steered toward agreeing.
 - The README's AI analysis and reflection sections are written by Jeff from the AI log, not generated.
+- The README says how the prompt screenshots were captured: by the planning-partner chat, through T3 Code's built-in browser.
 
 ## 6. How each step runs
 
@@ -118,7 +119,7 @@ Screenshots are named `NN-tool-short-description.png`, numbered in order within 
 | `docs/reviews/` | Testing | Saved output of the gift-card check, the scenario fact-check, the Gemini content review, and the Gemini code review, with the triage of each finding |
 | `docs/ai-log.md` | All | Running log of every AI step |
 | `screenshots/` | All | Every prompt, plus the finished app |
-| `README.md` | Documentation | Project overview, architecture summary, AI models and tools used, AI engineering analysis, engineering reflection, supporting documentation and context files |
+| `README.md` | Documentation | Project overview, architecture summary, AI models and tools used, AI engineering analysis, engineering reflection, supporting documentation and context files, and a note on how the screenshots were captured |
 
 ## 8. Risks
 

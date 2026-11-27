@@ -1,6 +1,6 @@
 # Hold the Line: architecture
 
-Version 2, Fri Nov 27, 2026. Built on [requirements.md](requirements.md) version 4. Version 2 records the approval of D16 and D17 and adds what the UI design needs: a shared `Slip` component and a single `buildDebrief` call. This document covers the system architecture, the folder layout, what each module is responsible for, and the technical decisions. The game flow and the data schema are in [design.md](design.md). Security is in `security.md`, written in the next step.
+Version 3, Fri Nov 27, 2026. Built on [requirements.md](requirements.md) version 5. Version 2 recorded the approval of D16 and D17 and added what the UI design needs: a shared `Slip` component and a single `buildDebrief` call. Version 3 follows the approval of D19 and D20: the decision guard in `CustomerScreen` and the source links in `DebriefScreen`. This document covers the system architecture, the folder layout, what each module is responsible for, and the technical decisions. The game flow and the data schema are in [design.md](design.md). Security is in `security.md`, written in the next step.
 
 Nothing is implemented yet. This is what the code will be checked against, and it is brought in line with what was built on Dec 5.
 
@@ -155,8 +155,8 @@ The types named here are defined in [design.md](design.md).
 | `main.tsx` | Mounts `App` and loads `styles.css` | |
 | `App.tsx` | Holds the game state with `useReducer(gameReducer)`. On Start and Play again it calls `drawDay(customers, Math.random)` and dispatches the result. Renders the screen that matches `state.phase` | FR-2, FR-10 |
 | `StartScreen.tsx` | Title, how-to-play text, Start button, best score | FR-1, FR-17 |
-| `CustomerScreen.tsx` | Slip, behaviour text, question list, answers, Process and Hold. Receives a `CustomerView`, which has no truth, flags, or explanation | FR-3 to FR-7 |
-| `DebriefScreen.tsx` | Calls `buildDebrief` and renders the result. Play again button | FR-8 to FR-10 |
+| `CustomerScreen.tsx` | Slip, behaviour text, question list, answers, Process and Hold. Receives a `CustomerView`, which has no truth, flags, or explanation. Holds the one timer in the app: the two decision buttons ignore presses for half a second after a customer appears (D19) | FR-3 to FR-7 |
+| `DebriefScreen.tsx` | Calls `buildDebrief` and renders the result, including the source links on scam cards and the look-alike part of legit cards (D20). Play again button | FR-8 to FR-10 |
 | `Slip.tsx` | Renders a slip for any of the three transaction types, in full on the customer screen and in short form on a debrief card | FR-3, FR-8 |
 | `bestScore.ts` | Reads and writes one number in `localStorage`, inside `try`/`catch`, so the game works without storage | FR-17, NFR-2 |
 
@@ -189,9 +189,9 @@ These eight packages are what React, Vite, TypeScript, and Vitest need to work t
 
 ## 7. Decisions for Jeff
 
-The numbering continues from [requirements.md section 8](requirements.md#8-decisions). D14, D15, and D18 to D20 are about the schema and the UI and are in [design.md section 6](design.md#6-decisions).
+The numbering continues from [requirements.md section 8](requirements.md#8-decisions). D14, D15, and D18 to D21 are about the schema and the UI and are in [design.md section 6](design.md#6-decisions).
 
 | # | Decision | Recommendation | Why | Status |
 |---|---|---|---|---|
 | D16 | Component tests | None. Do not add `jsdom` or React Testing Library | The plan's cut order treats component tests as planned but cuttable (item 5). They need two or three more dev dependencies and a test environment to set up, out of 6.5 hours of coding. The logic they would exercise is already unit-tested in `src/game/`, and what is left is whether the right text is on screen, which the manual test plan checks against each acceptance criterion. The plan's cut order was updated to match. | Approved by Jeff, Nov 27 |
-| D17 | Linter and formatter | Leave both out | Vite's React template comes with ESLint and about six dev dependencies. Strict `tsc` already stops a build on type errors, and each extra package is something `security.md` has to account for. The cost is that nothing checks React's hook rules, which matters little with one `useReducer` and a few small effects (moving focus, the best score, and the decision guard if D19 is approved). | Approved by Jeff, Nov 27 |
+| D17 | Linter and formatter | Leave both out | Vite's React template comes with ESLint and about six dev dependencies. Strict `tsc` already stops a build on type errors, and each extra package is something `security.md` has to account for. The cost is that nothing checks React's hook rules, which matters little with one `useReducer` and a few small effects (moving focus, the best score, and the decision guard from D19). | Approved by Jeff, Nov 27 |
