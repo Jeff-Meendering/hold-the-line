@@ -727,7 +727,11 @@ This part is the record of what the AI did. TODO: add my own view.
 - **Date:** Fri Nov 27, 2026
 - **Phase:** Implementation
 - **Tool:** Claude Opus 5.5, in the repo, through T3 Code
-- **Screenshots:** TODO: add filenames
+- **Screenshots**, in [`/screenshots`](../screenshots):
+  - [`04-implementation/07-opus-game-logic-p1.png`](../screenshots/04-implementation/07-opus-game-logic-p1.png)
+  - [`04-implementation/07-opus-game-logic-p2.png`](../screenshots/04-implementation/07-opus-game-logic-p2.png)
+  - [`04-implementation/08-planning-chat-game-logic-review-p1.png`](../screenshots/04-implementation/08-planning-chat-game-logic-review-p1.png), which shows the end of the step 9 prompt and not the review
+  - TODO: the planning chat's review of PR #7
 
 **Prompt**
 
