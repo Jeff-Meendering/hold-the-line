@@ -791,6 +791,138 @@ This part is the record of what the AI did. TODO: add my own view.
 
 ---
 
+## 10. Game logic
+
+- **Date:** Fri Nov 27, 2026
+- **Phase:** Implementation
+- **Tool:** Claude Opus 5.5, in the repo, through T3 Code
+- **Screenshots**, in [`/screenshots`](../screenshots):
+  - [`04-implementation/07-opus-game-logic-p1.png`](../screenshots/04-implementation/07-opus-game-logic-p1.png)
+  - [`04-implementation/07-opus-game-logic-p2.png`](../screenshots/04-implementation/07-opus-game-logic-p2.png)
+  - [`04-implementation/08-planning-chat-game-logic-review-p1.png`](../screenshots/04-implementation/08-planning-chat-game-logic-review-p1.png), which shows the end of the step 9 prompt and not the review
+  - TODO: the planning chat's review of PR #7
+
+**Prompt**
+
+> Next step: the game logic. Read CLAUDE.md, then build everything in src/game/ from architecture.md section 4 and design.md sections 1 and 2: types, rng, draw, reducer, scoring, debrief, and validate, with the unit tests listed in test-plan section 2.
+>
+> Also add src/data/questions.ts and labels.ts from design.md. Don't write the ten customers, and leave data.test.ts for the step that adds them. Use made-up pools in the tests like the test plan says. No UI changes in this step.
+>
+> For each test file, break the code once on purpose, show me the test that fails, and undo it (D34).
+>
+> Open a PR and stop. Paste the npm test and npm run build output, and list anything in the docs that was unclear or that you had to guess.
+
+**Result**
+
+Eight code commits on the branch `game/logic`, plus the commit that adds this entry, and a pull request into `main` that is open and not merged. No file in `src/ui/`, `App.tsx`, or `main.tsx` changed, so the built bundle is byte for byte the same as before (`index-WYhNHesa.js`, 68.65 kB gzipped).
+
+- `ff246ca`: `src/game/types.ts`, copied from design.md sections 1.1, 2.1, and 2.2. One comment was reworded (see below).
+- `ca09f3f`: `src/data/questions.ts`, with the wording and sets checked by `diff` against design.md section 2.3, and `src/data/labels.ts`. The 17 red flag labels were extracted by a script from the "What the player can notice" column of requirements.md section 7, not retyped.
+- `1c723b8`: `src/game/rng.ts`, `mulberry32(seed)`.
+- `80d9eaa`: `src/game/draw.ts`, `drawDay(pool, rng)`, and `draw.test.ts`. Also `src/game/testPool.ts`, the helper that builds made-up customers with placeholder text for all the tests.
+- `528ec1d`: `src/game/scoring.ts`, `pointsFor`, `scoreDay`, and `sumPoints` (the total before the floor, which the debrief needs for `floored`), and `scoring.test.ts`.
+- `7905509`: `src/game/reducer.ts`, `gameReducer`, and `reducer.test.ts`.
+- `7f45ef3`: `src/game/debrief.ts`, the types from design.md section 1.4 and `buildDebrief`, and `debrief.test.ts`.
+- `3ba88ab`: `src/game/validate.ts`, `validateData` for V1 to V17, and `validate.test.ts`.
+
+`npm test`: 6 files, 112 tests, all passed. `npm run build`: passed. The four grep checks in security.md section 6 that cover `src/` printed nothing.
+
+**Seeing each test file fail (D34)**
+
+Each break was one edit to the module, then a run of that module's test file, then `git checkout` on the file and a check that the tree was clean.
+
+| Test file | The break | What failed |
+|---|---|---|
+| `draw.test.ts` | The scam count picked from 2 values instead of 3 | 2 of 10. "gives 1, 2, or 3 scams…": expected `[1, 2]` to equal `[1, 2, 3]`. "works on the smallest valid pool…": no 3-scam day |
+| `scoring.test.ts` | A processed scam scores −10 instead of −20 | 4 of 5, starting with "scores the four rows of the table": expected −10 to be −20 |
+| `reducer.test.ts` | `asked.length <= 3` instead of `< 3` | 2. "ignores a fourth question (AC-3.2)", and the scripted day, which tries a fourth question on customer 1 |
+| `debrief.test.ts` | `asked` and `notAsked` swapped | 6, including the example customer's four statuses from design.md section 2.5 |
+| `validate.test.ts` | V17 checks that the hostname starts with an approved host, instead of equalling one | 1. "V17: a source URL that only starts with an allowed host (AC-8.6, SEC-13)", which uses `consumer.ftc.gov.example.com` |
+
+**What worked**
+
+This part is the record of what the AI did. TODO: add my own view.
+
+- It read the six documents before writing anything, and kept the layer rules: `src/game/` has no React, DOM, randomness, or storage, and the data files have only `import type`. The rules test passes on every new file, the test helper included.
+- It copied the wording and labels from the documents by script and `diff`, instead of retyping them.
+- `validateData` reads its input as unknown values and never throws. One test deletes each field of seven customers in turn, and each run returns a message instead of throwing.
+- Before committing the validator it printed the messages for a badly broken pool and read them, which is how it found "1 red flags" and fixed the wording.
+- It checked how close the draw test runs to its limits: over seeds 1 to 1,000 the scam counts were 341, 331, and 328, against the allowed 250 to 420.
+- Every D34 break was caught by at least one test.
+
+**What the AI got wrong**
+
+- `draw.test.ts` had a type error: a frozen, read-only pool was passed to a helper that expected a normal array. Vitest passed it, because it does not check types. `tsc -b` caught it before the next commit, and the AI fixed it in the same commit before anything was pushed.
+- In the first draft of the last validator test, it expected a message about the cash set from a set that was still valid. It saw this when re-reading the expectation, before running it.
+- `mulberry32` was written from memory. It is an algorithm, not a URL or a version, but the tests check only that it is repeatable and spreads the draws evenly, not that it matches published reference values.
+
+**Where it departed from the documents**
+
+- design.md section 1.1 has the comment "which customer is at the window". The rules test fails any file in `src/game/` that contains the word `window`, so `types.ts` says "at the counter". The rules test was not changed.
+- Things the documents do not ask for: `drawDay` throws on a pool smaller than 3 scam and 5 legit; `scoreDay` and `buildDebrief` throw if the results and the day differ in length; the reducer also ignores a question id that is not in the bank (including names such as `toString` that every object has) and a decision that is neither process nor hold. Each has a test.
+
+**Unclear in the documents, and what the AI guessed**
+
+These are in the pull request too, for my decision.
+
+1. **Red flag labels.** design.md section 2.3 says the labels come from the "What the player can notice" column, and `labels.ts` uses that column word for word. The debrief wireframe in section 4.3 uses shorter text for two of them: RF-1 "On the phone during the transaction" (the column adds "taking directions, will not hang up") and RF-12 "The card numbers will be read out to someone" (the column says "The gift cards are to pay someone, or the numbers will be read to someone").
+2. **Scam type labels.** Only "tech support scam" appears in the documents (the wireframe). The other five are guesses from design.md S6: "government imposter scam", "bank impersonation scam", "romance scam", "emergency scam" (S6 says "emergency or person-in-need"), and "lottery or sweepstakes scam".
+3. **Transaction labels.** The documents do not say whether `TRANSACTION_LABELS` holds the slip titles (CASH WITHDRAWAL, WIRE TRANSFER, GIFT CARD PURCHASE) or the start of the debrief's transaction line ("Cash withdrawal", "Wire", "Gift cards"). It holds the second. The slip titles will need a home in the UI step.
+4. **Messages about a question set.** The documents say a message starts with a customer id, a question id, or `pool`. A set with 4 questions in it is about no single question, so V2 messages start with the transaction type, as in `cash: V2 set has 4 questions, not 5`.
+5. **A customer with no id** is named by its place in the list, as in `customers[0]: V4 has no id`.
+6. **Checks the rules table does not list.** A truth that is not scam or legit, and a missing slip, are reported under V4. An unknown slip type is reported under V6. Gift cards also need a count above 0 and a value per card above 0. Text that is only spaces counts as empty.
+7. **V1's "8 different question ids".** The ids are the `QUESTION_IDS` constant, so they are 8 and different by construction. `validateData` checks the wording against that list and reports wording for an id that is not in it.
+8. **What `validateData` takes.** architecture.md says only `validateData(data)`. It takes `{ questionText, questionSets, customers }`, a type named `GameContent` in `validate.ts`.
+9. **Where the test helper lives.** The test plan asks for "a small helper" but not where. It is `src/game/testPool.ts`, which is not in the folder layout in architecture.md section 3. It is not a test file, so the rules test reads it, and because web addresses may appear only in `customers.ts`, it has no source URLs: `validate.test.ts` adds its own, copied from requirements.md section 7. It copies the three locked question sets rather than importing `questions.ts`, so the unit tests do not read real content.
+
+**Open items**
+
+- PR #6 is still open and also adds to the end of this file, so whichever of the two is merged second will need its `ai-log.md` conflict resolved.
+- Nothing here has been seen in a browser, because nothing in the UI uses it yet.
+- `data.test.ts` and the customers are left for their own step, as the prompt says.
+**What the planning chat found**
+
+- It reviewed PR #7 by reading the logic files, not just the AI's report, and found nothing wrong or overbuilt in the code.
+- It checked `mulberry32` against the published algorithm and found it matches line for line. That closes the gap noted under "What the AI got wrong" above.
+- It got one screenshot wrong. Its first capture of `04-implementation/08-planning-chat-game-logic-review-p1.png` caught a reply that was still being written. It captured it again, and the screenshot pull request after this one replaces the file.
+
+**What I changed**
+
+> Reviewed PR #7, the logic is good. Answers:
+>
+> 1. Flag labels: short ones like the wireframe, about 8 words max. Leave the current ones for now, the content step will rewrite all 17 so they get reviewed with the customers.
+> 2. Scam type labels are fine, but make `emergency` "family emergency scam".
+> 3. Keep TRANSACTION_LABELS as is. The slip titles go in labels.ts in the UI step.
+> 4. Items 4 to 8 and the two throws are all fine. Update design.md, architecture.md and test-plan.md so they match what you built: the GameContent name, the message prefixes, and testPool.ts in the folder layout.
+>
+> Then the merges, fixing the ai-log conflicts so the entries stay in number order (9, 10, 11):
+> - merge PR #6
+> - bring main into PR #7 and merge it once its check is green
+>
+> Then one small PR for screenshot fixes, which you may also merge when green:
+> - Copy two files from ~/Desktop/hold-the-line-screenshots/04-implementation/: 08-planning-chat-game-logic-review-p1.png (replaces the wrong one, link it in entry 10) and 09-planning-chat-screenshot-capture-p1.png (new, link it in entry 11).
+> - Delete 04-implementation/09-planning-chat-pairing-question-p1.png. The planning chat couldn't get a clean capture of that exchange.
+> - Delete the two duplicates, 03-design/04-fable-design-part-2-p2.png and 03-design/07-fable-security-test-plan-claude-md-p2.png, and fix their links in the log.
+> - Leave the two screenshots that show my unfilled [model name] placeholder. That's the real mistake and entry 5 already describes it.
+>
+> Those three merges are the only ones. In the ai-log entry, note that the planning chat reviewed the logic files, confirmed mulberry32 against the published algorithm, and got one screenshot wrong by capturing a reply that was still being written.
+
+The prompt in the new screenshot 08 is the planning chat's draft. The prompt above is the one I sent, after editing it.
+
+**What the AI did with the follow-up**
+
+- `138bd57`: `emergency` is labelled "family emergency scam". The 17 red flag labels were left as they are, for the content step.
+- `99d2a79`: design.md and architecture.md are now version 5, and test-plan.md version 3. They name `GameContent`, give the message format and its prefixes (the transaction type for V2, `customers[n]` for a customer with no id), and put `testPool.ts` in the folder layout, with a paragraph on what it is. Because items 4 to 8 and the throws were approved, it also wrote the extra V4 and V6 checks into the rules table, the cases in which `drawDay`, `scoreDay`, and `buildDebrief` throw into the module table, and `sumPoints` into the exports. The comment in design.md section 1.1 now says "at the counter", as `types.ts` does. requirements.md was not in the list and was not changed: FR-15 still says a message starts with a customer id, a question id, or `pool`.
+- PR #6 conflicted with `main` in this file: PR #6 added lines to the end of entry 9, and PR #8 had added entry 11 after it. It merged `main` into PR #6's branch (`1c81a80`), kept both, PR #6's lines first, and merged PR #6 after its check passed (run [46073640920](https://github.com/Jeff-Meendering/hold-the-line/actions/runs/46073640920), deploy skipped). The merge is `486a62e`.
+- It merged `main` into this branch (`edc5983`). The conflict was the same file, resolved by taking `main`'s log and putting this entry between 9 and 11. Against `main`, the only change to the log in that commit is this entry.
+- It looked at both new screenshots itself before copying them (SEC-20). Neither shows a token, password, or notification.
+
+**What the AI got wrong in the follow-up**
+
+- It first added a line about the new version to each document's history without changing the version number at the top, and fixed it before committing.
+
+---
+
 ## 11. Prompt screenshots into the repo
 
 - **Date:** Fri Nov 27, 2026

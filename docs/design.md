@@ -1,6 +1,6 @@
 # Hold the Line: design
 
-Version 4, Fri Nov 27, 2026. Built on [requirements.md](requirements.md) version 6. Version 1 covered the game flow and the data schema. Version 2 applied Jeff's review of it (`told` in every question set, the cover-story rule, a harder example customer) and added the UI and UX plan, the wireframes, and the UI decisions. Version 3 records the approval of D19 and D20 and lets a legit look-alike show its trait in an answer (D21). Version 4 changes the scoring numbers on the debrief and in the wireframes (D1), adds the list of source hosts and rule V17 (D24), adds `floored` to the debrief (D31), and says how a rule about the whole pool reports (D32). The system architecture and the technical decisions are in [architecture.md](architecture.md).
+Version 5, Fri Nov 27, 2026. Built on [requirements.md](requirements.md) version 6. Version 1 covered the game flow and the data schema. Version 2 applied Jeff's review of it (`told` in every question set, the cover-story rule, a harder example customer) and added the UI and UX plan, the wireframes, and the UI decisions. Version 3 records the approval of D19 and D20 and lets a legit look-alike show its trait in an answer (D21). Version 4 changes the scoring numbers on the debrief and in the wireframes (D1), adds the list of source hosts and rule V17 (D24), adds `floored` to the debrief (D31), and says how a rule about the whole pool reports (D32). Version 5 records what the game-logic step built (PR #7), as Jeff approved it: the name `GameContent` for what `validateData` takes, the start of each message, and the checks V4 and V6 make that version 4 did not spell out. The system architecture and the technical decisions are in [architecture.md](architecture.md).
 
 ## 1. Game flow
 
@@ -35,7 +35,7 @@ export type GameState =
   | {
       phase: 'customer';
       day: Customer[]; // the 6 customers, in drawn order
-      index: number; // which customer is at the window, from 0
+      index: number; // which customer is at the counter, from 0
       asked: QuestionId[]; // questions asked of this customer so far
       results: CustomerResult[]; // one per customer already decided
     }
@@ -414,7 +414,7 @@ The code blocks in sections 1.1, 1.4, and 2.1 to 2.5 were taken out of this file
 
 ### 2.6 Validation rules
 
-This is the specification for `validateData` in `src/game/validate.ts`. The types catch a wrong shape while the content is being written. These rules catch what the types cannot, and they run in `npm test`, where types are not checked ([architecture.md](architecture.md) T5). They are numbered in the order they were added.
+This is the specification for `validateData` in `src/game/validate.ts`. It takes a `GameContent`, `{ questionText, questionSets, customers }`: the wording from `QUESTION_TEXT`, the sets from `QUESTION_SETS`, and the pool. The types catch a wrong shape while the content is being written. These rules catch what the types cannot, and they run in `npm test`, where types are not checked ([architecture.md](architecture.md) T5). They are numbered in the order they were added.
 
 | # | Rule | Covers |
 |---|---|---|
@@ -423,9 +423,9 @@ This is the specification for `validateData` in `src/game/validate.ts`. The type
 | V2 | Each transaction type's set is 5 different bank ids | FR-18, AC-8.3 |
 | V3 | Every bank id is in at least 1 set | FR-18, AC-8.3 |
 | **Each customer** | | |
-| V4 | The id is present and not used twice. The name, behaviour, account note, and explanation are not empty. The amount is a whole number above 0 | FR-12 |
+| V4 | The id is present and not used twice. The name, behaviour, account note, and explanation are not empty, and text that is only spaces counts as empty. The truth is `scam` or `legit`. There is a slip, and its amount is a whole number above 0 | FR-12 |
 | V5 | The answered questions are exactly the set for the slip's type, and no answer is empty | FR-12, FR-18, AC-8.1, AC-8.3 |
-| V6 | A wire has a recipient and a destination. Gift cards have a whole number of cards, a value per card of at most 500, and an amount equal to the two multiplied | FR-3, FR-13 |
+| V6 | The slip's type is `cash`, `wire`, or `giftCards`. A wire has a recipient and a destination. Gift cards have a whole number of cards above 0, a value per card above 0 and at most 500, and an amount equal to the two multiplied | FR-3, FR-13 |
 | V7 | A scam customer has a known scam type, at least 1 source URL starting with `https://`, and at least 3 red flags with known ids, none repeated | FR-12, AC-8.1 |
 | V8 | Each of a scam customer's flags shows on the slip, in the behaviour, or behind a question in the customer's set. At least 1 is on the slip or in the behaviour, and at least 1 is behind a question | FR-12, FR-14 |
 | V14 | A scam customer's flags are behind at most 2 different questions | FR-19, AC-8.4 |
@@ -441,7 +441,9 @@ This is the specification for `validateData` in `src/game/validate.ts`. The type
 
 V10 uses the minimum, not 4 and 6, so the test still passes if the pool is cut to 8 (plan section 10).
 
-Every message starts with the id of the customer or question it is about. A rule about the whole pool (V10 to V13, V15, V16) has no single customer, so its message starts with `pool` and names the customers involved where there are any (D32).
+Every message is `<subject>: <rule> <what is wrong>`, as in `c03-wire-romance: V5 has no answer to told, which is in the wire set`. The subject is the id of the customer or question the message is about. A customer with no id is named by its place in the list, as in `customers[3]`. A rule about a transaction type's set (V2) is about no single question, so its message starts with the type, as in `cash: V2 set has 4 questions, not 5`. A rule about the whole pool (V10 to V13, V15, V16) has no single customer, so its message starts with `pool` and names the customers involved where there are any (D32).
+
+V1's "8 different question ids" holds by construction, because the bank is the `QUESTION_IDS` constant. `validateData` checks the wording against that list, and reports wording given for an id that is not in it.
 
 ### 2.7 Schema decisions
 
