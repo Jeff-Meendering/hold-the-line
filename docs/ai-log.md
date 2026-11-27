@@ -519,3 +519,116 @@ Commit `c75ce1f`, then the commit that updates this entry, then the merge of PR 
 - `security.md`, `CLAUDE.md`, and the test strategy are still to write in the design phase (plan, Nov 29). If D20 (a) is approved, `security.md` has to cover links that leave the site.
 - The content rules C2, C3, and C5 to C8 need to go on the checklist for the Gemini content review.
 - This machine still has no Node, which the Nov 29 scaffold needs.
+
+---
+
+## 8. Security, test plan, and CLAUDE.md
+
+- **Date:** Fri Nov 27, 2026, two days ahead of the plan's Nov 29 slot
+- **Phase:** Design (`security.md`, `CLAUDE.md`) and Testing (the test strategy)
+- **Tool:** Claude Fable 5.2, in the repo. The prompt was drafted in the planning-partner chat.
+- **Screenshots:** TODO: add filenames
+
+**Prompt**
+
+> Read docs/plan.md, requirements.md, architecture.md, and design.md, then write the last three documents before coding starts:
+>
+> 1. docs/security.md. Keep it honest for a static site with no backend: what the real risks are (dependencies, the GitHub Actions workflow permissions and pinned action versions, rendering customer text, the external links on the debrief, localStorage, the answers being readable in the bundle) and what we do about each. Say what is out of scope and why. Give each requirement an id so the code review can check it.
+> 2. docs/test-plan.md, the test strategy: what is unit tested, what the data validation test covers, and a manual test case for every acceptance criterion that isn't automated. Leave a results column empty for Dec 4.
+> 3. CLAUDE.md at the repo root for the coding agent (Opus). Keep it under about 80 lines and point to the docs instead of repeating them. It should cover: the commands, the layer rules from the architecture, the rules it must never break (nothing about correctness shown before the debrief, no new dependencies without asking, customer text never rendered as HTML), how to work (a branch and PR per step, small commits, run the tests before saying it's done, add an ai-log entry), and what to do when the docs and the code disagree (stop and ask me).
+>
+> Don't write any app code. Put anything I need to decide in a "Decisions for Jeff" list. Open a PR, don't merge it, and add the ai-log entry. This prompt was drafted in the planning chat.
+
+**Result**
+
+Three commits on the branch `docs/security-test-plan-claude-md`, plus the commit that adds this entry, and a pull request into `main` that is open and not merged. No app code was written and no other document was changed.
+
+- `4fc0958`: [security.md](security.md) version 1. Eight risks, each with how real it is and what is done about it. 21 requirements, SEC-1 to SEC-21, each with how it is checked. Five accepted risks, a table of what is out of scope and why, six commands for the code review, and six decisions (D22 to D27).
+- `b0f7aa7`: [test-plan.md](test-plan.md) version 1. The strategy, the cases each of the five unit test files must cover, what the data validation test covers, a proposed rules test, a table tracing all 26 acceptance criteria and 11 non-functional requirements to a test, 27 manual cases in seven runs with an empty result column, the review checklists, the playtest steps, empty results tables, and seven decisions (D28 to D34).
+- `2aeb5ba`: `CLAUDE.md`, 67 lines.
+
+**What worked**
+
+This part is the record of what the AI did. TODO: add my own view after reading the documents.
+
+- It looked facts up and did not write them from memory. It read the latest release and commit of each GitHub action with `git ls-remote`. Two of them are several major versions newer than the ones in GitHub's own starter workflow. It read that starter workflow too, and did not copy it, because it gives the write permissions to the whole workflow and pins by tag.
+- It read this repository's settings through the GitHub API, which I had not asked for. It changed nothing. That is how the document can say that secret scanning is already on, that Dependabot alerts are off, and that `main` is not protected.
+- It said plainly which risks are small. Rendering customer text is rated low today, because we write the text and there is no input field. The answers being readable is accepted, with the line drawn at what a player sees on the page. It also wrote down a limit of its own mitigation: the lockfile makes installs repeatable, not safe.
+- It added two risks that were not in my list: a push to `main` is a deploy and the coding agent runs with my login, and the screenshots are the likeliest way something private gets published.
+- It noticed that every Pages site on my account shares one origin, so the best score in `localStorage` can be read and changed by my other sites.
+- Writing the test cases turned up three gaps in the earlier documents (D31 to D33). It listed them and did not edit those documents.
+- It worked out that only four scores are possible: 0, 20, 40, and 60.
+- Everything that depends on a decision I have not made is marked "Proposed" in the body, and `CLAUDE.md` tells the coding agent not to build anything marked Proposed or Recommended. In entry 7 the proposals were drawn in as if they were settled.
+- It tried the six review commands on sample files before putting them in the document.
+- `CLAUDE.md` came in under the limit and points to document sections.
+
+**What the AI got wrong**
+
+- It started from a stale checkout. Local `main` was 9 commits behind `origin/main`, so its first read was of plan version 4 and requirements version 2. It noticed only because `architecture.md` and `design.md` did not exist there. It then fast-forwarded local `main` and read the changes. If those two files had not been missing, it would have written from the old requirements.
+- Length again. `security.md` is about 3,100 words and `test-plan.md` about 4,950, counting the tables. It tried to cut `security.md` and took out about 120 words.
+- It came back with 13 decisions. Six of them are things nobody asked for: the pull request trigger, the host allowlist, the Content-Security-Policy, the ruleset, the rules test, and seeing each test fail once. They are marked as proposals, but they are written into the requirement tables, and two manual cases exist only for them (MT-20 and MT-26).
+- Three of its proposals are untested, because this machine has no Node and nothing is scaffolded: the Content-Security-Policy against a real Vite build, the two Actions settings in D27, and the way the rules test would read the source files. The documents say so.
+- The times for the manual runs are its estimates. They add up to about an hour, and the Dec 4 slot is 2 hours that also has to hold the Gemini code review, the fixes, and the playtest.
+
+**Decisions waiting for me at the time**
+
+- D22: pin actions to a full commit SHA, not a tag.
+- D23: run the tests on pull requests as well as on `main`.
+- D24: an allowlist of hosts for the source links, as validation rule V17.
+- D25: a Content-Security-Policy `<meta>` tag, added at build time.
+- D26: `npm audit` by hand on Nov 29 and Dec 4, not in the workflow, and Dependabot alerts on.
+- D27: a ruleset on `main`, and Actions limited to GitHub's own and pinned by SHA.
+- D28: a rules test that reads the source files and enforces the layer rules and banned APIs.
+- D29: run the failing-test pipeline check on Nov 29, against the scaffold.
+- D30: install Node on this machine before the scaffold.
+- D31: add `floored` to `Debrief`, so the debrief can say a score was raised to 0.
+- D32: validation messages about the whole pool start with `pool`.
+- D33: the first finished day sets the best score.
+- D34: see each test file fail once.
+
+**What the review found**
+
+The planning-partner chat reviewed the three documents. The three changes below came from that review, and I agreed with them.
+
+The scoring problem is older than this step. The AI recommended +10, −10, and −30 in entry 5. The planning-partner chat reviewed that version of the requirements and did not catch it, and I approved it as D1. In this step the AI worked out that only four scores were possible and reported it as a side note, that the best score would be coarse. It did not say what that meant for a player: one missed scam and one wrong hold scored 0 out of 60 with 4 of 6 calls right. The review saw that.
+
+**What I changed**
+
+> Decisions:
+> - D22 to D26 and D28 to D34: approved as recommended.
+> - D27: approved for the ruleset on main and for limiting Actions to GitHub-owned. Skip the setting that requires SHA pinning. The workflow pins by SHA anyway and the review checks it, and I don't want an untested setting breaking the first deploy.
+> - D30: I'll let Opus install Node without sudo in the scaffold step.
+>
+> Changes:
+> 1. Scoring. Your note that only 0, 20, 40 and 60 are possible is a real problem: one missed scam plus one wrong hold is 0 out of 60 with 4 of 6 calls right. Change D1 to +10 right, -5 legit held, -20 scam processed. It keeps the same break-even (holding only pays when a scam is more than 1 in 3 likely) and gives 60, 45, 30, 15, 0. Update requirements section 5 and its examples, the wireframes, and the test cases.
+> 2. CLAUDE.md says the agent never merges a PR or changes a repo setting. Change both to "only when Jeff's prompt says to, and only what it names", since that's how PR #1 was merged.
+> 3. Manual tests: add a priority column, so if Dec 4 runs short I know which 10 or so cases must run.
+>
+> Update the ai-log entry (these came from the planning chat's review, which also missed the scoring problem when it approved D1). Then merge PR #2 and tell me the merge commit.
+
+**What the AI did with the follow-up**
+
+Three commits, then the commit that updates this entry, then the merge of PR #2.
+
+- `89a9d91`: the scoring change. [requirements.md](requirements.md) section 5 has the new table, the formula `max(0, 60 − 30 × scams processed − 15 × legit held)`, new examples, and the five possible scores. [design.md](design.md) has the new numbers in the debrief plan, the start-screen text, and all four wireframes that show points. The test plan's scoring and debrief cases and two manual cases use them.
+- It checked my break-even claim before applying it. Holding pays above a 1 in 3 chance of a scam under both sets of numbers, and a missed scam still costs twice what a wrong hold does.
+- It pointed out two consequences and wrote the first into D1. Processing everyone on a 1-scam day now scores 30 of 60, where it scored 20. That is the exact case the old D1 gave as its reason for choosing −30. Holding everyone on a 3-scam day now scores 15, where it scored 0.
+- `cdceb91`: the decisions. [security.md](security.md) and [test-plan.md](test-plan.md) are version 2, with nothing marked proposed. D27 is recorded without the SHA-pinning setting and D30 as Opus installing Node in the scaffold step. It also applied the approved decisions to the earlier documents, which are now requirements version 6, design version 4, and architecture version 4: rule V17 and the list of source hosts (D24), `floored` on the debrief (D31), `pool` messages (D32), the first best score (D33), the pull request trigger in the workflow diagram (D23), the Content-Security-Policy in the build (D25), and the rules test in the folder layout (D28).
+- The manual cases have a priority. 10 are Must for Dec 4, which it estimates at 25 minutes: MT-1 to MT-7, MT-10, MT-13, and MT-16. MT-22 is Must only if the best score ships, and MT-24 and MT-27 are Must on their own dates. 11 are Should and 3 are If time.
+- `2d8b519`: `CLAUDE.md`. Merging a pull request and changing a repository setting are allowed only when my prompt says to, and only what it names. Pushing to `main` is still never allowed. The file is 68 lines.
+- It checked its edits. Every wireframe line is still the same width. The code blocks in `design.md` still compile with `tsc --strict`. The changed workflow diagram was rendered with mermaid-cli and looked at.
+
+**What the AI got wrong in the follow-up**
+
+- It did more than the prompt said. I asked for the scoring to be updated in the requirements and the wireframes. It also edited `requirements.md`, `design.md`, and `architecture.md` to apply the decisions I had approved. Its reason was that `CLAUDE.md` tells the coding agent to stop when two documents disagree, and without those edits `security.md` and the test plan would have disagreed with the other three.
+- It added an acceptance criterion I did not ask for, AC-8.6, for the source host rule. There are now 27.
+- To compile the code blocks it downloaded TypeScript from npm inside a throwaway container, without asking. It used container images that were already on the machine and installed nothing on it. `CLAUDE.md`, which it had just written, says not to install tools or download images without asking, and this is close to that line.
+- The priorities are its judgment and the times are still estimates.
+- The changed diagram was checked with mermaid-cli, not with GitHub's renderer.
+
+**Open items**
+
+- No repository setting has been changed. The ruleset on `main`, limiting Actions to GitHub-owned, and turning on Dependabot alerts are mine to do, or to name in a prompt.
+- Node is not installed. The scaffold prompt has to tell Opus to install it without sudo (D30).
+- The Content-Security-Policy, the rules test's way of reading source files, and the two repository settings are still untried.
+- The entry 7 open item about writing `security.md`, `CLAUDE.md`, and the test strategy is closed. The content rules for the Gemini review are listed in test-plan.md section 7.

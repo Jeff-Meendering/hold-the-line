@@ -1,6 +1,6 @@
 # Hold the Line: requirements
 
-Version 5, Fri Nov 27, 2026. Scope comes from [plan.md](plan.md) version 7. Version 2 applied Jeff's review of version 1: a shared question bank (FR-18), the coaching flag as a documented one (RF-17), clearer debrief labels (FR-9), and the source check (section 7). Version 3 fixes the questions per transaction type (FR-18, D13) and records the approval of D11 and D12. Version 4 adds the cover-story rule for scam customers (FR-19, AC-8.4, D18). Version 5 adds the three decisions from the end of the design step: the guard against deciding twice (FR-6, AC-4.4, D19), the debrief additions (FR-9, AC-6.5, D20), and legit look-alikes whose trait is in an answer (FR-14, AC-8.5, D21). Choices the plan left open are marked **[D*n*]** and listed in [section 8](#8-decisions).
+Version 6, Fri Nov 27, 2026. Scope comes from [plan.md](plan.md) version 7. Version 2 applied Jeff's review of version 1: a shared question bank (FR-18), the coaching flag as a documented one (RF-17), clearer debrief labels (FR-9), and the source check (section 7). Version 3 fixes the questions per transaction type (FR-18, D13) and records the approval of D11 and D12. Version 4 adds the cover-story rule for scam customers (FR-19, AC-8.4, D18). Version 5 adds the three decisions from the end of the design step: the guard against deciding twice (FR-6, AC-4.4, D19), the debrief additions (FR-9, AC-6.5, D20), and legit look-alikes whose trait is in an answer (FR-14, AC-8.5, D21). Version 6 changes the scoring numbers (section 5, D1) and applies four decisions from the security and test-plan step: tests on pull requests (FR-16, D23), source links only to listed hosts (FR-12, AC-8.6, D24), messages for rules about the whole pool (FR-15, D32), and the first best score (FR-17, AC-9.1, D33). Choices the plan left open are marked **[D*n*]** and listed in [section 8](#8-decisions).
 
 IDs are stable so the test plan can trace to them: `US` story, `AC` acceptance criterion, `FR` functional, `NFR` non-functional, `RF` red flag.
 
@@ -54,9 +54,10 @@ IDs are stable so the test plan can trace to them: `US` story, `AC` acceptance c
 - AC-8.3 `npm test` fails if a transaction type's set is not 5 different bank questions, if a bank question is in no set, or if a customer's answers are not to exactly the 5 questions of their transaction type's set.
 - AC-8.4 `npm test` fails if a scam customer has red flags behind 3 or more questions, or if 2 or more scam customers have RF-6 or RF-17 behind the `told` question.
 - AC-8.5 `npm test` fails if fewer than 2 legit customers show a look-alike trait in an answer, or if a look-alike's trait and its explanation are behind the same question.
+- AC-8.6 `npm test` fails if a source URL is not `https` or is on a host outside the approved list.
 
 **US-9 (should). Best score.** As a returning player, I want to see my best score. *(FR-17)*
-- AC-9.1 After a day that beats the stored best, the new best shows on the debrief, and on the start screen after a reload.
+- AC-9.1 After the first finished day, or a day that beats the stored best, the new best shows on the debrief, and on the start screen after a reload.
 
 ## 3. Functional requirements
 
@@ -73,12 +74,12 @@ IDs are stable so the test plan can trace to them: `US` story, `AC` acceptance c
 | FR-9 | For each scam customer the debrief shows the scam type, a one-line explanation, and every red flag marked *shown* (it was on the slip or in the behaviour text), *you asked* (it was in an answer the player revealed) **[D12]**, or *you didn't ask* (it was behind a question the player did not ask). For each legit customer it shows one line on why the transaction was fine **[D4]**. Each scam customer's card also links to its source URLs, which open in a new tab. A legit look-alike's card also shows the red flag it resembled, where that appeared, and the question and answer that explain it, with the same labels **[D20]**. |
 | FR-10 | Play again starts a new day with a fresh draw and cleared state. A reload returns to the start screen; no game in progress is saved **[D8]**. |
 | FR-11 | Customers live in typed data files, with no customer text in component code. The pool is 4 scam and 6 legit; the smallest valid pool is 3 and 5. |
-| FR-12 | Every customer has an id, name, truth, slip fields, behaviour text, a scripted answer to each of the 5 questions in their transaction type's set (FR-18) and to no other question, and a debrief explanation. Every scam customer also has a scam type, at least 1 source URL, and at least 3 red flags, each naming an `RF` id from section 7 and where it shows (slip, behaviour, or a question in that set). |
+| FR-12 | Every customer has an id, name, truth, slip fields, behaviour text, a scripted answer to each of the 5 questions in their transaction type's set (FR-18) and to no other question, and a debrief explanation. Every scam customer also has a scam type, at least 1 source URL, each one `https` and on a host in the approved list **[D24]**, and at least 3 red flags, each naming an `RF` id from section 7 and where it shows (slip, behaviour, or a question in that set). |
 | FR-13 | Each transaction type (cash withdrawal, wire, gift cards) is used by at least 1 scam and 1 legit customer. Gift cards are bank-issued Visa gift cards, at most $500 each. Store gift cards, gold, and crypto ATMs appear only as the reason behind a cash withdrawal. |
 | FR-14 | Each scam customer has at least 1 red flag visible without asking and at least 1 that only a question reveals. At least 3 legit customers show a trait from section 7 and have a question whose answer explains it. At least 2 of them show the trait in an answer, explained by a different question, so that one alarming answer does not always mean a scam **[D21]**. The 4 scam customers use 4 different scam types named in the FinCEN sources **[D6]**. |
-| FR-15 | A data validation test checks FR-11 to FR-14, FR-18, and the two counts in FR-19, and fails with the customer id or question id and the rule broken. |
-| FR-16 | One GitHub Actions workflow runs the tests, then builds, then deploys to GitHub Pages. Build and deploy run only if the tests pass. |
-| FR-17 (should) | The best score is saved in `localStorage` and shown on the start screen and the debrief. The game works normally without storage. |
+| FR-15 | A data validation test checks FR-11 to FR-14, FR-18, and the two counts in FR-19, and fails with the customer id or question id and the rule broken. A rule about the whole pool has no single customer, so its message starts with `pool` **[D32]**. |
+| FR-16 | One GitHub Actions workflow runs the tests, then builds, then deploys to GitHub Pages. Build and deploy run only if the tests pass. The tests and the build also run on a pull request into `main`, and the deploy runs only on a push to `main` **[D23]**. |
+| FR-17 (should) | The best score is saved in `localStorage` and shown on the start screen and the debrief. The first finished day sets it, whatever the score **[D33]**. The game works normally without storage. |
 | FR-18 | Questions come from one shared bank of 8 questions a teller could ask any customer, each with an id and fixed wording, kept in a data file **[D11]**. Each transaction type has a fixed set of 5 bank questions, and every customer of that type offers exactly those 5, with their own answers, listed in bank order **[D13]**. Every bank question is in at least 1 set. The questions on offer then depend only on the transaction type, which is already on the slip, so neither their wording nor their selection hints at the answer. With FR-13, every bank question is still offered by at least 1 scam and 1 legit customer. |
 | FR-19 | Scam customers have been coached and arrive with a cover story **[D18]**. A scam customer's red flags are behind at most 2 of their 5 answers. The other answers are the cover story: they agree with each other and read like a legit customer's answers. A scam customer's slip and behaviour are things a legit customer could also show. Across the pool, at most 1 scam customer admits on the `told` question to being coached or told to keep quiet (RF-6 or RF-17). The data validation test checks the two counts, and the Gemini content review checks the rest. The content rules are in [design.md](design.md) section 2.4. |
 
@@ -104,15 +105,17 @@ IDs are stable so the test plan can trace to them: `US` story, `AC` acceptance c
 |---|---|---|
 | Legit | Processes | +10 |
 | Scam | Holds | +10 |
-| Legit | Holds | −10 |
-| Scam | Processes | −30 |
+| Legit | Holds | −5 |
+| Scam | Processes | −20 |
 
 1. The day score is the sum over the 6 customers. A sum below 0 is shown as 0. The maximum is always 60.
-2. Equivalent form for tests: `max(0, 60 − 40 × scams processed − 20 × legit held)`.
+2. Equivalent form for tests: `max(0, 60 − 30 × scams processed − 15 × legit held)`.
 3. Questions asked and time taken do not affect the score **[D7]**.
 4. The score is calculated after the sixth decision and first shown on the debrief.
 
-Examples: perfect day, 60. One scam let through and the rest right, 20. One legit customer held and the rest right, 40. Process everyone on a 1-scam day, 20. Hold everyone on any day, 0.
+Examples: perfect day, 60. One legit customer held and the rest right, 45. One scam let through and the rest right, 30. One of each and the rest right, 15. Process everyone on a 1-scam day, 30, and on a 2-scam or 3-scam day, 0. Hold everyone on a 1-scam or 2-scam day, 0, and on a 3-scam day, 15.
+
+The only scores a day can have are 60, 45, 30, 15, and 0.
 
 ## 6. Day-draw rules **[D3]**
 
@@ -169,12 +172,12 @@ FinCEN writes its flags about customers aged 60 and over and says "no single red
 
 ## 8. Decisions
 
-Jeff approved D1 to D9 on Nov 27, 2026 and decided D10 differently from the recommendation. He approved D11 and D12 the same day, with the design-step prompt, and decided D13 in it. Decisions made during design continue the numbering from D14 in [design.md](design.md) section 6 and [architecture.md](architecture.md) section 7. D18 to D21, behind FR-19, FR-6, FR-9, and FR-14, are among them.
+Jeff approved D1 to D9 on Nov 27, 2026 and decided D10 differently from the recommendation. He approved D11 and D12 the same day, with the design-step prompt, and decided D13 in it. Decisions made during design continue the numbering from D14 in [design.md](design.md) section 6 and [architecture.md](architecture.md) section 7. D18 to D21, behind FR-19, FR-6, FR-9, and FR-14, are among them. D22 to D34 came from the security and test-plan step and are in [security.md](security.md) section 7 and [test-plan.md](test-plan.md) section 9.
 
 | # | Decision | Outcome | Why | Status |
 |---|---|---|---|---|
-| D1 | Scoring numbers | +10 for a right call, −10 for holding a legit customer, −30 for processing a scam | The maximum is 60 on every day, so scores compare across draws. Counting the lost +10, a missed scam costs 40 and a wrong hold 20. At −20 instead of −30, processing everyone on a 1-scam day scores 30 of 60 for never looking. | Approved |
-| D2 | Negative totals | Show a sum below 0 as 0 | The raw sum can reach −120, which reads as blame and tells the player nothing more than 0 does. | Approved |
+| D1 | Scoring numbers | +10 for a right call, −5 for holding a legit customer, −20 for processing a scam | The maximum is 60 on every day, so scores compare across draws. Counting the lost +10, a missed scam costs 30 and a wrong hold 15, so a missed scam still costs twice as much, and holding still only pays when a scam is more than 1 in 3 likely. Version 1 used −10 and −30. With those the only scores were 60, 40, 20, and 0, and one missed scam plus one wrong hold scored 0 with 4 of 6 calls right. The cost of the change is the one version 1 chose −30 to avoid: processing everyone on a 1-scam day now scores 30 of 60, where it scored 20. | Approved Nov 27 as −10 and −30. Changed by Jeff the same day, in version 6 |
+| D2 | Negative totals | Show a sum below 0 as 0 | The raw sum can reach −75, which reads as blame and tells the player nothing more than 0 does. | Approved |
 | D3 | How the scam count is picked | 1, 2, and 3 equally likely | The plan says the count is picked first, not how. Equal odds is the simplest rule to state and test. | Approved |
 | D4 | What "red flags missed" means | Every flag for every scam customer, with a label saying whether the player had it in front of them, plus one line for every legit customer | Flags only for wrong calls would hide what a player missed on a scam they held on a hunch, and a player who blocked a legit customer needs the innocent explanation. | Approved. Labels changed in version 2: "seen" was misleading for a flag that was always on screen |
 | D5 | Account note on the slip | One line of usual activity per customer | RF-8, RF-9, and RF-10 all mean "unusual for this account". Without the line the player cannot see them. | Approved |
