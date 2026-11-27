@@ -1,6 +1,6 @@
 # Hold the Line: requirements
 
-Version 3, Fri Nov 27, 2026. Scope comes from [plan.md](plan.md) version 5. Version 2 applied Jeff's review of version 1: a shared question bank (FR-18), the coaching flag as a documented one (RF-17), clearer debrief labels (FR-9), and the source check (section 7). Version 3 fixes the questions per transaction type (FR-18, D13) and records the approval of D11 and D12. Choices the plan left open are marked **[D*n*]** and listed in [section 8](#8-decisions).
+Version 4, Fri Nov 27, 2026. Scope comes from [plan.md](plan.md) version 6. Version 2 applied Jeff's review of version 1: a shared question bank (FR-18), the coaching flag as a documented one (RF-17), clearer debrief labels (FR-9), and the source check (section 7). Version 3 fixes the questions per transaction type (FR-18, D13) and records the approval of D11 and D12. Version 4 adds the cover-story rule for scam customers (FR-19, AC-8.4, D18). Choices the plan left open are marked **[D*n*]** and listed in [section 8](#8-decisions).
 
 IDs are stable so the test plan can trace to them: `US` story, `AC` acceptance criterion, `FR` functional, `NFR` non-functional, `RF` red flag.
 
@@ -46,10 +46,11 @@ IDs are stable so the test plan can trace to them: `US` story, `AC` acceptance c
 **US-7. Replay.** As a player, I want to play again with a different day. *(FR-10)*
 - AC-7.1 Play again starts a new day with a fresh draw and nothing carried over.
 
-**US-8. Safe content changes.** As the developer, I want bad customer data and failing tests to stop a deploy. *(FR-11 to FR-16, FR-18)*
+**US-8. Safe content changes.** As the developer, I want bad customer data and failing tests to stop a deploy. *(FR-11 to FR-16, FR-18, FR-19)*
 - AC-8.1 Removing a question, a red flag, or a source URL from a customer makes `npm test` fail and name the customer.
 - AC-8.2 With a failing test on `main`, the deploy job does not run and the live site is unchanged.
 - AC-8.3 `npm test` fails if a transaction type's set is not 5 different bank questions, if a bank question is in no set, or if a customer's answers are not to exactly the 5 questions of their transaction type's set.
+- AC-8.4 `npm test` fails if a scam customer has red flags behind 3 or more questions, or if 2 or more scam customers have RF-6 or RF-17 behind the `told` question.
 
 **US-9 (should). Best score.** As a returning player, I want to see my best score. *(FR-17)*
 - AC-9.1 After a day that beats the stored best, the new best shows on the debrief, and on the start screen after a reload.
@@ -72,10 +73,11 @@ IDs are stable so the test plan can trace to them: `US` story, `AC` acceptance c
 | FR-12 | Every customer has an id, name, truth, slip fields, behaviour text, a scripted answer to each of the 5 questions in their transaction type's set (FR-18) and to no other question, and a debrief explanation. Every scam customer also has a scam type, at least 1 source URL, and at least 3 red flags, each naming an `RF` id from section 7 and where it shows (slip, behaviour, or a question in that set). |
 | FR-13 | Each transaction type (cash withdrawal, wire, gift cards) is used by at least 1 scam and 1 legit customer. Gift cards are bank-issued Visa gift cards, at most $500 each. Store gift cards, gold, and crypto ATMs appear only as the reason behind a cash withdrawal. |
 | FR-14 | Each scam customer has at least 1 red flag visible without asking and at least 1 that only a question reveals. At least 3 legit customers show a trait from section 7 and have a question whose answer explains it. The 4 scam customers use 4 different scam types named in the FinCEN sources **[D6]**. |
-| FR-15 | A data validation test checks FR-11 to FR-14 and FR-18, and fails with the customer id or question id and the rule broken. |
+| FR-15 | A data validation test checks FR-11 to FR-14, FR-18, and the two counts in FR-19, and fails with the customer id or question id and the rule broken. |
 | FR-16 | One GitHub Actions workflow runs the tests, then builds, then deploys to GitHub Pages. Build and deploy run only if the tests pass. |
 | FR-17 (should) | The best score is saved in `localStorage` and shown on the start screen and the debrief. The game works normally without storage. |
 | FR-18 | Questions come from one shared bank of 8 questions a teller could ask any customer, each with an id and fixed wording, kept in a data file **[D11]**. Each transaction type has a fixed set of 5 bank questions, and every customer of that type offers exactly those 5, with their own answers, listed in bank order **[D13]**. Every bank question is in at least 1 set. The questions on offer then depend only on the transaction type, which is already on the slip, so neither their wording nor their selection hints at the answer. With FR-13, every bank question is still offered by at least 1 scam and 1 legit customer. |
+| FR-19 | Scam customers have been coached and arrive with a cover story **[D18]**. A scam customer's red flags are behind at most 2 of their 5 answers. The other answers are the cover story: they agree with each other and read like a legit customer's answers. A scam customer's slip and behaviour are things a legit customer could also show. Across the pool, at most 1 scam customer admits on the `told` question to being coached or told to keep quiet (RF-6 or RF-17). The data validation test checks the two counts, and the Gemini content review checks the rest. The content rules are in [design.md](design.md) section 2.4. |
 
 ## 4. Non-functional requirements
 
@@ -164,7 +166,7 @@ FinCEN writes its flags about customers aged 60 and over and says "no single red
 
 ## 8. Decisions
 
-Jeff approved D1 to D9 on Nov 27, 2026 and decided D10 differently from the recommendation. He approved D11 and D12 the same day, with the design-step prompt, and decided D13 in it. Decisions made during design continue the numbering from D14 in [design.md](design.md) and [architecture.md](architecture.md).
+Jeff approved D1 to D9 on Nov 27, 2026 and decided D10 differently from the recommendation. He approved D11 and D12 the same day, with the design-step prompt, and decided D13 in it. Decisions made during design continue the numbering from D14 in [design.md](design.md) section 6 and [architecture.md](architecture.md) section 7. D18, behind FR-19, is one of them.
 
 | # | Decision | Outcome | Why | Status |
 |---|---|---|---|---|
@@ -185,5 +187,5 @@ Jeff approved D1 to D9 on Nov 27, 2026 and decided D10 differently from the reco
 **Open items, not decisions**
 
 1. `reviews/01-gift-card-check.md` still has TODOs for ChatGPT's answer and model name. The quotes in section 7 are verified without it, so this is a gap in the process record, not in this document.
-2. The bank's 8 questions and the three sets of 5 are drafted in [design.md](design.md) and wait for Jeff's approval (D14). Every question in a set has to make sense for every customer of that type, scam or legit, which the Gemini content review should check.
+2. The bank's 8 question ids and the three sets of 5 are approved and locked (D14, [design.md](design.md) section 2.3). The wording can still change. Every question in a set has to make sense for every customer of that type, scam or legit, which the Gemini content review should check.
 3. RF-16's quotes are on the pages, but each is a single clause. If a courier customer is written, the Nov 30 fact-check should look for a fuller source.

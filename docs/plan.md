@@ -1,6 +1,6 @@
 # Hold the Line: project plan
 
-Version 5, Fri Nov 27, 2026. Version 1 was a chat draft written before the assignment text was available, version 2 added the AI workflow, version 3 applied the review fixes, version 4 records the gift-card decision, and version 5 brings the scope line on questions in line with the shared question bank in the requirements; see [ai-log.md](ai-log.md) for what changed and why. The assignment is in [assignment.md](assignment.md).
+Version 6, Fri Nov 27, 2026. Version 1 was a chat draft written before the assignment text was available, version 2 added the AI workflow, version 3 applied the review fixes, version 4 records the gift-card decision, version 5 brings the scope line on questions in line with the shared question bank in the requirements, and version 6 takes component tests out of the cut order and adds the branch and pull request rule to section 6; see [ai-log.md](ai-log.md) for what changed and why. The assignment is in [assignment.md](assignment.md).
 
 ## 1. Purpose
 
@@ -98,7 +98,7 @@ Exact model versions are recorded in the AI log the first time each tool is used
 2. Screenshot the prompt before sending it.
 3. Run it and read the whole output.
 4. Question, correct, or reject what is wrong, and re-prompt if needed. Screenshot each iteration. The planning-partner chat also reviews what each tool produces.
-5. Commit the result in a small commit, so the history shows how the work evolved.
+5. Commit the result in small commits, so the history shows how the work evolved. Each thread works on its own branch and ends with a pull request into `main`, which Jeff merges.
 6. Add an entry to `docs/ai-log.md`: the prompt, what worked, what the AI got wrong, and what was changed, with the screenshot filenames.
 
 Screenshots are named `NN-tool-short-description.png`, numbered in order within the phase folder, for example `screenshots/01-planning/02-fable-plan-revision.png`. Prompts sent to the planning-partner chat, Gemini, and ChatGPT are screenshotted too.
@@ -171,6 +171,7 @@ Hours by phase:
 2. The pool, from 10 customers to 8 (3 scam and 5 legit), which still supports draws of 1 to 3 scams.
 3. Start-screen and styling effort: plain, readable CSS with the how-to-play text on the first screen.
 4. The outside playtester: self-playtest, and say so in the test results.
-5. Component-level tests: keep the scoring, draw, and state unit tests, the data validation test, and the manual test plan.
 
-Not to be cut: the debrief screen, the test-then-deploy workflow, the two Gemini reviews and the two fact-checks, the AI log, the prompt screenshots, and the README analysis and reflection. These are what the assignment grades.
+Component-level tests were item 5 until Nov 27. They are no longer planned at all (D16 in [architecture.md](architecture.md)), so there is nothing left there to cut.
+
+Not to be cut: the debrief screen, the scoring, draw, and state unit tests, the data validation test, the manual test plan, the test-then-deploy workflow, the two Gemini reviews and the two fact-checks, the AI log, the prompt screenshots, and the README analysis and reflection. These are what the assignment grades.
