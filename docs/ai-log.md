@@ -798,7 +798,7 @@ Two commits on the branch `docs/screenshots`, plus the commit that adds this ent
 
 - `2cfc847`: the 58 PNGs in `screenshots/01-planning` (23), `02-requirements` (8), `03-design` (15), and `04-implementation` (12), with their names unchanged. A `sha256sum` of every file matched the source folder, so none was changed in the copy.
 - `fdbbf8a`: the screenshot lines in entries 1 to 9, each a list of links. Each file was matched to an entry by its name and by what it shows. Entry 4 keeps a TODO for the ChatGPT conversation.
-- Entry 10 is only on the branch `game/logic` (PR #7), so its screenshots are filled in by a separate commit there: `07-opus-game-logic-p1.png` and `-p2.png`, and `08-planning-chat-game-logic-review-p1.png`.
+- Entry 10 is only on the branch `game/logic` (PR #7), so its screenshots are filled in by commit `bdc8343` there: `07-opus-game-logic-p1.png` and `-p2.png`, and `08-planning-chat-game-logic-review-p1.png`, with a TODO for the review of PR #7.
 - `04-implementation/09-planning-chat-pairing-question-p1.png` is in no entry. It shows the planning chat setting up the screenshot capture, which has no entry of its own.
 
 **Checked before committing (SEC-20)**
