@@ -10,7 +10,7 @@ You are the implementer. The documents in `docs/` are the specification and Jeff
 | `docs/architecture.md` | The layers, the folder layout, what each module does, and the eight packages |
 | `docs/design.md` | The types to copy (sections 1.1, 1.4, 2.1 to 2.3), the transitions (1.2), the content rules (2.4), the validation rules (2.6), and the UI plan and wireframes (3 and 4) |
 | `docs/security.md` | SEC-1 to SEC-21, including the workflow's permissions and pinned actions |
-| `docs/test-plan.md` | Which tests to write and what each must cover (sections 2 and 3) |
+| `docs/test-plan.md` | Which tests to write and what each must cover (sections 2 to 4) |
 | `docs/plan.md` | Who does what (section 5) and how a step runs (section 6) |
 
 Anything a document marks **Proposed** or **Recommended** is not approved. Do not build it until its status says it is.
@@ -22,7 +22,7 @@ These exist once the app is scaffolded.
 ```sh
 npm ci           # install exactly what package-lock.json says
 npm run dev      # dev server, at /hold-the-line/
-npm test         # vitest run: the unit tests and the data validation test
+npm test         # vitest run: the unit tests, the data validation test, and the rules test
 npm run build    # tsc -b && vite build: the type check, then the bundle
 npm run preview  # serve the built site locally
 ```
@@ -46,7 +46,8 @@ The full version is in `docs/architecture.md` section 1.
 Also never:
 
 - Make a network request from the app, or load anything from another origin (NFR-1).
-- Push to `main`, merge a pull request, or change a repository setting. Jeff does those.
+- Push to `main`.
+- Merge a pull request or change a repository setting, except when Jeff's prompt says to, and then only what it names.
 - Change, skip, or delete a test to make it pass. Fix the code, or stop and ask.
 - Write a URL, a commit SHA, a version number, or a quotation from memory. Look it up and say how you checked.
 - Install a tool or download an image on this machine without asking. If `node -v` fails, stop and say so.
@@ -55,7 +56,7 @@ Also never:
 ## How to work
 
 1. A step is one prompt from Jeff. Do what it asks and no more. Ideas for anything else go in your reply, not in the code.
-2. Run `git fetch` and start a new branch from `origin/main`. End the step with a pull request into `main`, and leave it open.
+2. Run `git fetch` and start a new branch from `origin/main`. End the step with a pull request into `main`, and leave it open unless Jeff's prompt says to merge it.
 3. Make small commits, each one a change you can describe in a line, and name the ids it covers: "Add scoreDay (AC-6.1, NFR-8)".
 4. Before you say a step is done, run `npm test` and `npm run build` and paste what they printed. If either failed, or you could not run it, say that first.
 5. Say what you did not check. You cannot see the browser, so layout, focus, and colour are unverified until Jeff runs the manual tests.
