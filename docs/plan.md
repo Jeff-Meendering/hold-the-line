@@ -1,6 +1,6 @@
 # Hold the Line: project plan
 
-Version 3, Fri Nov 27, 2026. Version 1 was a chat draft written before the assignment text was available, version 2 added the AI workflow, and version 3 applies the review fixes; see [ai-log.md](ai-log.md) for what changed and why. The assignment is in [assignment.md](assignment.md).
+Version 3, Fri Nov 27, 2026. Version 1 was a chat draft written before the assignment text was available, version 2 added the AI workflow, version 3 applied the review fixes, and version 4 records the gift-card decision; see [ai-log.md](ai-log.md) for what changed and why. The assignment is in [assignment.md](assignment.md).
 
 ## 1. Purpose
 
@@ -15,7 +15,8 @@ It is also the final project for a course on AI-assisted software engineering. M
 **Game**
 - A pool of 10 scripted customers: 4 scam and 6 legit.
 - Each day draws 6 customers from the pool with 1 to 3 scams. The scam count is picked first, then the customers are drawn.
-- Three transaction types: cash withdrawal, wire, and gift cards, spread across scam and legit customers so the type alone is not a tell. Gift cards are confirmed or replaced on Nov 28: if they do not make sense at a teller window, the third type becomes cashier's checks, and gift cards become a reason a customer gives for a cash withdrawal.
+- Three transaction types: cash withdrawal, wire, and bank-issued Visa gift cards with a $500 maximum per card, spread across scam and legit customers so the type alone is not a tell.
+- Store gift cards, gold, and crypto ATMs appear as the reasons behind cash withdrawals, not as transactions, since that is what the FTC and FBI document.
 - Per customer: a transaction slip, a short text description of their behaviour, and 4–5 available questions with scripted answers, of which the player may ask up to 3.
 - A decision per customer: process or hold.
 - The player is not told how many scams a day can contain.
@@ -76,16 +77,16 @@ It is also the final project for a course on AI-assisted software engineering. M
 | Tool | Role | Does not do |
 |---|---|---|
 | Claude Fable, in the repo | Writes the planning, requirements, and design documents, including `architecture.md`, `security.md`, the test strategy, and the first draft of `CLAUDE.md` | Implementation |
-| Claude Fable, separate chat | Planning partner: drafts the prompts with Jeff and reviews what Fable in the repo produces. It reads the repo | Writing to the repo |
+| Claude Fable, separate chat | Planning partner: drafts the prompts with Jeff and reviews what all the other tools produce. It reads the repo | Writing to the repo |
 | Claude Opus, in the repo | Implementation: code, tests, customer data files, and the CI workflow, guided by `CLAUDE.md` | Reviewing its own work as the final check |
 | Gemini 4 Neon | Independent reviewer of the customer content and of the code, so Claude is not the only thing checking Claude's work | Writing code or content |
-| ChatGPT, in the browser | Fact-checks against real sources: first whether gift cards make sense at a teller window (Nov 28), then the scam scenarios against FTC and AARP sources (Nov 30) | Writing content |
+| ChatGPT, in the browser | Fact-checks against real sources: first whether gift cards make sense at a teller window (done Nov 27, see [reviews/01-gift-card-check.md](reviews/01-gift-card-check.md)), then the scam scenarios against FTC and AARP sources (Nov 30) | Writing content |
 | Jeff | Engineer of record: drafts the prompts with the planning partner, edits and approves every prompt before it is sent, makes every decision, triages every review finding, and approves every commit | — |
 
 Exact model versions are recorded in the AI log the first time each tool is used.
 
 **Rules for coordinating them**
-- No tool has the last word on its own output. Fable's documents are reviewed by the planning-partner chat; Opus's code and content go to Gemini; factual claims go to ChatGPT; every finding comes back to Jeff.
+- No tool has the last word on its own output. The planning-partner chat reviews what every other tool produces; Opus's code and content also go to Gemini; factual claims go to ChatGPT, and its sources are checked in turn; every finding comes back to Jeff.
 - Review findings are triaged one by one as accept, reject, or defer, with the reason recorded in the AI log. A rejected finding is as useful to the record as an accepted one.
 - For the fact-check, every cited source is opened and read before it is trusted. The source URL is stored with the customer it supports.
 - Reviewers get the artefact and the requirements, not the author's reasoning, so the review is not steered toward agreeing.
@@ -96,7 +97,7 @@ Exact model versions are recorded in the AI log the first time each tool is used
 1. Draft the prompt with the planning-partner chat. Jeff edits and approves every prompt before it is sent.
 2. Screenshot the prompt before sending it.
 3. Run it and read the whole output.
-4. Question, correct, or reject what is wrong, and re-prompt if needed. Screenshot each iteration. The planning-partner chat also reviews what Fable in the repo produces.
+4. Question, correct, or reject what is wrong, and re-prompt if needed. Screenshot each iteration. The planning-partner chat also reviews what each tool produces.
 5. Commit the result in a small commit, so the history shows how the work evolved.
 6. Add an entry to `docs/ai-log.md`: the prompt, what worked, what the AI got wrong, and what was changed, with the screenshot filenames.
 
@@ -132,7 +133,7 @@ Screenshots are named `NN-tool-short-description.png`, numbered in order within 
 | 7 | The game is too obvious or too ambiguous to be fun | Medium / medium | Give legit customers some red-flag-like traits, have Gemini review for ambiguity, and playtest on Dec 4 |
 | 8 | GitHub Pages deployment problems, such as the Vite `base` path | Medium / medium | Deploy a hello-world build through the full workflow on Nov 29 |
 | 9 | Scam scenarios are inaccurate or mock the victims | Low / medium | The ChatGPT fact-check against FTC and AARP sources, and a debrief that explains rather than blames |
-| 10 | Gift cards turn out not to be something a teller sells, which would change the transaction types | Medium / medium | Check with ChatGPT at the start of requirements on Nov 28, before the schema is locked; the fallback is cashier's checks as the third type, with gift cards as a reason given for a cash withdrawal |
+| 10 | Closed Nov 27. Gift cards turn out not to be something a teller sells, which would change the transaction types | — | Checked with ChatGPT before the schema was locked. Some credit unions sell Visa gift cards at their branches, so gift cards stay as bank-issued Visa gift cards. The cashier's-check fallback was dropped because the sources did not support it. See [reviews/01-gift-card-check.md](reviews/01-gift-card-check.md) |
 
 ## 9. Schedule (25 hours)
 
@@ -140,8 +141,8 @@ Each day's hours include the screenshots and AI log entries for that day's steps
 
 | Day | Hours | Phase | Work | Output |
 |---|---|---|---|---|
-| Fri Nov 27 | 2 | Planning 1.5, Requirements 0.5 | Plan draft and revision; save the assignment; start the AI log; start the personas | `plan.md`, `assignment.md`, `ai-log.md`, screenshots 01 |
-| Sat Nov 28 | 3 | Requirements 1.5, Design 1.5 | **ChatGPT fact-check**, 15 minutes, on whether gift cards make sense at a teller window, which settles the third transaction type; then functional and non-functional requirements, personas, user stories, acceptance criteria, scoring and day-draw rules; then the customer data schema, the game-flow state diagram, and `architecture.md` | `reviews/` gift-card check, `requirements.md`, `architecture.md`, schema, screenshots 02 |
+| Fri Nov 27 | 2 | Planning 1.5, Requirements 0.5 | Plan draft and revision; save the assignment; start the AI log; **ChatGPT fact-check** on whether gift cards make sense at a teller window, done a day ahead of its Nov 28 slot; start the personas | `plan.md`, `assignment.md`, `ai-log.md`, `reviews/01-gift-card-check.md`, screenshots 01 |
+| Sat Nov 28 | 3 | Requirements 1.5, Design 1.5 | Functional and non-functional requirements, personas, user stories, acceptance criteria, scoring and day-draw rules; then the customer data schema, the game-flow state diagram, and `architecture.md` | `requirements.md`, `architecture.md`, schema, screenshots 02 |
 | Sun Nov 29 | 3 | Design 1.5, Testing 0.5, Implementation 1 | Wireframes, UI plan, and design decisions; `security.md`; `CLAUDE.md`; the test strategy; then scaffold the app with the workflow that tests, builds, and deploys | `design.md`, `security.md`, `CLAUDE.md`, `test-plan.md`, screenshots 03, **M1: live URL through CI** |
 | Mon Nov 30 | 2.5 | Implementation 2, Testing 0.5 | Types and the data validation test from the schema; draft all 10 customers with Opus; **ChatGPT fact-check** of the scam scenarios, with sources recorded | Customer data files, `reviews/` fact-check |
 | Tue Dec 1 | 2.5 | Testing 0.5, Implementation 2 | **Gemini content review**; fix the content from both reviews; then the game-state reducer, scoring, and day draw as pure functions with unit tests | `reviews/` content review, **M2: content locked**, tested core logic |
@@ -156,7 +157,7 @@ Hours by phase:
 | Phase | Hours | Notes |
 |---|---|---|
 | Planning | 1.5 | |
-| Requirements | 2 | Includes the 15-minute gift-card check |
+| Requirements | 2 | Includes the gift-card check |
 | Design | 3 | Includes `architecture.md`, `security.md`, and `CLAUDE.md` |
 | Implementation | 8.5 | 6.5 code, 2 customer content |
 | Testing | 3.5 | Includes the scenario fact-check and both Gemini reviews |

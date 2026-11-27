@@ -144,6 +144,8 @@ The full assignment text was pasted below the prompt; it is saved as [assignment
 
 **What the AI got wrong**
 
+The planning-partner chat found these three when it reviewed the plan. I agreed with all of them.
+
 1. It contradicted itself. Assumption 2 said 4 scam and 6 legit was the smallest pool that supports draws of 1 to 3 scams, while its own cut order dropped the pool to 3 and 5.
 2. It raised the gift-card question and then scheduled the check for Nov 30, two days after the data schema is locked on Nov 28. A question that can change the transaction types has to be answered before the schema, not after.
 3. The roles table was inaccurate about the planning-partner chat. It said the chat reviews "large prompts" and does not touch the repo. In fact the chat drafts every prompt with me, reviews what the AI in the repo produces, and reads the repo but never writes to it, and I edit and approve every prompt before sending. The AI had filled in details I never gave it. It did flag that column as its own wording for me to check.
@@ -151,7 +153,7 @@ The full assignment text was pasted below the prompt; it is saved as [assignment
 **My decisions on the pushback**
 
 - Change 4: kept 8.5 and 5. If the UI runs over, the pool drops to 8 first, as the cut order says.
-- Change 6: kept 1 to 3 scams. I rejected zero-scam days, because my instructor might only play once and would see no scam. I accepted hiding the range, and added a second rule of my own: the game does not show whether a call was right until the debrief.
+- Change 6: kept 1 to 3 scams. I rejected zero-scam days, because my instructor might only play once and would see no scam. I accepted hiding the range. The planning-partner chat's review added a second rule, which I agreed with: the game does not show whether a call was right until the debrief.
 - Change 1: the rule about opening every cited source stays in the plan.
 
 **What I changed**
@@ -176,3 +178,52 @@ Sent a follow-up prompt with my decisions and six fixes, three to the plan and t
 > Leave the screenshot filename TODOs, I'll fill those in. Commit and push.
 
 The entry 1 prompt followed and is quoted in entry 1. The result is `docs/plan.md` version 3.
+
+---
+
+## 4. Gift-card fact-check
+
+- **Date:** Fri Nov 27, 2026
+- **Phase:** Requirements
+- **Tool:** ChatGPT, in the browser. Model: TODO. The planning-partner chat checked the sources.
+- **Screenshots:** TODO: add filenames
+
+**Prompt**
+
+> I'm making a small educational browser game where the player is a bank teller who has to spot customers who are being scammed. I need the transactions to be realistic for a US bank teller window.
+>
+> 1. Do US banks or credit unions actually sell gift cards or prepaid cards at the teller window? How common is it and what are the typical limits?
+> 2. In real gift card scams, where does the victim usually buy the cards, and what part of it does a bank teller see, if any?
+> 3. Besides cash withdrawals and wire transfers, what other teller transactions are commonly used in scams where the victim is being coached by the scammer?
+>
+> Please search the web and give me a link for every claim, preferring the FTC, AARP, FBI/IC3, CFPB, or FinCEN. Quote the sentence from the source that supports each claim. If you can't find a source for something, say so instead of guessing.
+
+**Result**
+
+An answer with linked and quoted sources, saved with my triage as [reviews/01-gift-card-check.md](reviews/01-gift-card-check.md). The planning-partner chat fetched the cited pages and checked the quotes against them.
+
+**What worked**
+
+- Asking for the supporting sentence to be quoted. It made every claim checkable against its page, and that is how the errors below were found.
+- The quotes from both FTC pages, both FinCEN PDFs, and the OCC handbook are on the pages cited.
+- It answered the question the check was run for: some credit unions do sell Visa gift cards at their branches. The $10 to $1,000 limit it gave for Educational Systems FCU is correct.
+
+**What the AI got wrong**
+
+- It changed a quote. It quoted Educational Systems FCU as selling gift cards "from any lobby teller", which is not on the page. The page says "Members can purchase Visa gift cards at any of our branch locations." The prompt had asked it to quote the source.
+- It gave the wrong title for the CFPB link. The page is "Who do I contact for help with a scam or fraud?". The quote itself is on it.
+- It used a FinCEN case study as evidence that victims pay scammers with cashier's checks, but the quote is about a defendant buying them. The source does not support the claim it was attached to.
+- It cited a FinCEN check statistic without saying that the figure also includes counterfeit checks.
+- It went past the question. Sections 4 to 6 are game design and scenarios, which I did not ask for and which is not ChatGPT's job in this project.
+
+**Not verified yet**
+
+FBI Albuquerque, the IC3 image, Together CU, Priority First FCU, and the FinCEN case study page.
+
+**What I changed**
+
+- Decided that gift cards stay as the third transaction type, as bank-issued Visa gift cards with a $500 maximum per card.
+- Store gift cards, gold, and crypto ATMs become reasons behind cash withdrawals, since that is what the FTC and FBI document.
+- Dropped the cashier's-check fallback, because the sources did not support it.
+- Rejected sections 4 to 6 as out of scope. Not using money orders, money mules, or configurable limits.
+- Updated `docs/plan.md` to version 4 with the decision, and closed risk 10.
