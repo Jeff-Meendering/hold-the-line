@@ -1,6 +1,6 @@
 # Hold the Line: architecture
 
-Version 1, Fri Nov 27, 2026. Built on [requirements.md](requirements.md) version 3. This document covers the system architecture, the folder layout, what each module is responsible for, and the technical decisions. The game flow and the data schema are in [design.md](design.md). Security is in `security.md`, written in the next step.
+Version 2, Fri Nov 27, 2026. Built on [requirements.md](requirements.md) version 4. Version 2 records the approval of D16 and D17 and adds what the UI design needs: a shared `Slip` component and a single `buildDebrief` call. This document covers the system architecture, the folder layout, what each module is responsible for, and the technical decisions. The game flow and the data schema are in [design.md](design.md). Security is in `security.md`, written in the next step.
 
 Nothing is implemented yet. This is what the code will be checked against, and it is brought in line with what was built on Dec 5.
 
@@ -117,10 +117,11 @@ hold-the-line/
         ├── StartScreen.tsx
         ├── CustomerScreen.tsx
         ├── DebriefScreen.tsx
+        ├── Slip.tsx          used by both screens above
         └── bestScore.ts      should: FR-17
 ```
 
-The three screens may be split into smaller components once the wireframes exist. Any such component goes in `src/ui/`.
+The wireframes in design.md section 4 need one shared component, `Slip`, because the customer screen and the debrief both show the slip. Any other split of a screen into smaller components also goes in `src/ui/`.
 
 ## 4. Module responsibilities
 
@@ -134,9 +135,9 @@ The types named here are defined in [design.md](design.md).
 | `rng.ts` | A seeded random source for tests, about 10 lines | `mulberry32(seed): () => number` | AC-5.3 |
 | `draw.ts` | The day draw, rules 1 to 7 in requirements section 6. Takes its random source as a parameter | `drawDay(pool, rng): Customer[]` | AC-5.1 to 5.3, NFR-8 |
 | `reducer.ts` | Every state change: start a day, ask a question, decide. Enforces the limit of 3 questions and no repeats. Ignores an action that is not allowed | `gameReducer(state, action): GameState` | FR-2, FR-4 to FR-6, FR-10 |
-| `scoring.ts` | The scoring table and the floor at 0 | `scoreDay(day, results): number` | Requirements section 5, AC-6.1 |
-| `debrief.ts` | Builds the debrief rows: the call, the truth, right or wrong, and each flag's status of *shown*, *you asked*, or *you didn't ask* | `buildDebrief(day, results): DebriefRow[]` | FR-8, FR-9, AC-6.2, AC-6.3 |
-| `validate.ts` | Checks content against the rules in design.md section 2.5 and returns one message per broken rule, each starting with the customer id or question id | `validateData(data): string[]` | FR-15, AC-8.1, AC-8.3 |
+| `scoring.ts` | The scoring table and the floor at 0 | `pointsFor(truth, decision): number`, `scoreDay(day, results): number` | Requirements section 5, AC-6.1 |
+| `debrief.ts` | Builds everything the debrief shows: the score, the counts, and for each customer the call, the truth, right or wrong, the points, and each flag's status of *shown*, *you asked*, or *you didn't ask* | `buildDebrief(day, results): Debrief` | FR-8, FR-9, AC-6.2, AC-6.3 |
+| `validate.ts` | Checks content against the rules in design.md section 2.6 and returns one message per broken rule, each starting with the customer id or question id | `validateData(data): string[]` | FR-15, AC-8.1, AC-8.3 |
 
 **`src/data/`: content**
 
@@ -155,7 +156,8 @@ The types named here are defined in [design.md](design.md).
 | `App.tsx` | Holds the game state with `useReducer(gameReducer)`. On Start and Play again it calls `drawDay(customers, Math.random)` and dispatches the result. Renders the screen that matches `state.phase` | FR-2, FR-10 |
 | `StartScreen.tsx` | Title, how-to-play text, Start button, best score | FR-1, FR-17 |
 | `CustomerScreen.tsx` | Slip, behaviour text, question list, answers, Process and Hold. Receives a `CustomerView`, which has no truth, flags, or explanation | FR-3 to FR-7 |
-| `DebriefScreen.tsx` | Calls `scoreDay` and `buildDebrief` and renders the result. Play again button | FR-8 to FR-10 |
+| `DebriefScreen.tsx` | Calls `buildDebrief` and renders the result. Play again button | FR-8 to FR-10 |
+| `Slip.tsx` | Renders a slip for any of the three transaction types, in full on the customer screen and in short form on a debrief card | FR-3, FR-8 |
 | `bestScore.ts` | Reads and writes one number in `localStorage`, inside `try`/`catch`, so the game works without storage | FR-17, NFR-2 |
 
 ## 5. Dependencies
@@ -178,7 +180,7 @@ These eight packages are what React, Vite, TypeScript, and Vitest need to work t
 | T3 | Randomness comes in at the edge. `drawDay(pool, rng)` takes the random source; `App` passes `Math.random` and dispatches the drawn day; tests pass `mulberry32(seed)` | Drawing inside the reducer; a seed carried in the action; the `seedrandom` package; mocking `Math.random` in tests | A reducer that calls `Math.random` is not pure, and React's strict mode runs reducers twice in development to catch exactly that. A seed in the action would be pure, but the reducer would then need the customer pool and the random generator for no gain. `mulberry32` is about 10 lines, so a package is not worth a dependency. Passing the source as a parameter is what NFR-8 asks for, and it makes AC-5.1 to AC-5.3 plain unit tests. |
 | T4 | Content is TypeScript modules imported into the bundle | JSON files fetched at runtime; JSON checked by a schema library such as Zod | A `.ts` file gets editor and compiler checking against the schema for free. It is bundled, so there is no extra request (NFR-1) and no loading or error state to build. A schema library would be a runtime dependency that checks things `validateData` has to check anyway, such as the cross-customer rules in FR-13 and FR-14. |
 | T5 | Content rules are checked by a pure function, `validateData`, that returns a list of messages. One test runs it on the real content, and another feeds it broken content | Assertions written directly in a test; relying on the types alone | Returning messages lets one run report every problem and makes AC-8.1 testable: break a copy of a customer and expect a message with its id. The types cannot do it alone. Vitest strips types without checking them, so `npm test` would pass on a customer with a missing field, and no type can express "at least 3 legit customers have a look-alike trait". `validateData` therefore checks its input at runtime, even though it is typed. |
-| T6 | Hidden information is kept hidden by the structure. `CustomerScreen` takes a `CustomerView` type without the truth, flags, or explanation. The score and flag statuses are computed only by `DebriefScreen` and are never in the state | A convention in `CLAUDE.md` only; separate public and secret data files | FR-7 is the rule a small UI change is most likely to break. With the narrower type, reading `customer.truth` in the customer screen is a compile error. With the score computed only at the debrief, there is no score in memory to show early by accident. Splitting the files would make each customer harder to write and review. The truth is still in the JavaScript a player downloads, which `security.md` records as accepted. |
+| T6 | Hidden information is kept hidden by the structure. `CustomerScreen` takes a `CustomerView` type without the truth, flags, or explanation. The score and flag statuses are computed only when `DebriefScreen` calls `buildDebrief`, and are never in the state | A convention in `CLAUDE.md` only; separate public and secret data files | FR-7 is the rule a small UI change is most likely to break. With the narrower type, reading `customer.truth` in the customer screen is a compile error. With the score computed only at the debrief, there is no score in memory to show early by accident. Splitting the files would make each customer harder to write and review. The truth is still in the JavaScript a player downloads, which `security.md` records as accepted. |
 | T7 | One plain CSS file, with custom properties for colours and spacing | CSS Modules; Tailwind; a component library | Three screens do not have a class-name collision problem. No build setup, nothing to learn, and nothing added to the bundle. The plan rules out custom art and makes polish a "should". |
 | T8 | Tests run in Vitest's default Node environment and cover `src/game/` and `src/data/` only | Adding `jsdom` and React Testing Library for component tests | See D16. Every rule is in a pure function, so the components are thin, and the acceptance criteria about what is on screen are in the manual test plan. |
 | T9 | One workflow with two jobs, using GitHub's own Pages actions | The `gh-pages` npm package pushing to a branch; a single job; separate test and deploy workflows | FR-16 asks for one workflow. Two jobs make AC-8.2 visible in the Actions tab: when a test fails, the deploy job shows as skipped. The official actions deploy an uploaded artifact and need no write access to the repository's contents. |
@@ -187,9 +189,9 @@ These eight packages are what React, Vite, TypeScript, and Vitest need to work t
 
 ## 7. Decisions for Jeff
 
-The numbering continues from [requirements.md section 8](requirements.md#8-decisions). D14 and D15 are about the schema and are in [design.md section 6](design.md#6-decisions-for-jeff).
+The numbering continues from [requirements.md section 8](requirements.md#8-decisions). D14, D15, and D18 to D20 are about the schema and the UI and are in [design.md section 6](design.md#6-decisions).
 
 | # | Decision | Recommendation | Why | Status |
 |---|---|---|---|---|
-| D16 | Component tests | None. Do not add `jsdom` or React Testing Library | The plan's cut order treats component tests as planned but cuttable (item 5). They need two or three more dev dependencies and a test environment to set up, out of 6.5 hours of coding. The logic they would exercise is already unit-tested in `src/game/`, and what is left is whether the right text is on screen, which the manual test plan checks against each acceptance criterion. If you want one, the cheapest useful test is a single run through a scripted day that asserts nothing about correctness appears before the debrief (FR-7). | Recommended |
-| D17 | Linter and formatter | Leave both out | Vite's React template comes with ESLint and about six dev dependencies. Strict `tsc` already stops a build on type errors, and each extra package is something `security.md` has to account for. The cost is that nothing checks React's hook rules, which matters little with one `useReducer` and no effects beyond the best score. | Recommended |
+| D16 | Component tests | None. Do not add `jsdom` or React Testing Library | The plan's cut order treats component tests as planned but cuttable (item 5). They need two or three more dev dependencies and a test environment to set up, out of 6.5 hours of coding. The logic they would exercise is already unit-tested in `src/game/`, and what is left is whether the right text is on screen, which the manual test plan checks against each acceptance criterion. The plan's cut order was updated to match. | Approved by Jeff, Nov 27 |
+| D17 | Linter and formatter | Leave both out | Vite's React template comes with ESLint and about six dev dependencies. Strict `tsc` already stops a build on type errors, and each extra package is something `security.md` has to account for. The cost is that nothing checks React's hook rules, which matters little with one `useReducer` and a few small effects (moving focus, the best score, and the decision guard if D19 is approved). | Approved by Jeff, Nov 27 |
