@@ -11,7 +11,15 @@ Each entry records the tool, the prompt, what worked, what the AI got wrong, and
 - **Date:** Fri Nov 27, 2026
 - **Phase:** Planning
 - **Tool:** Claude Opus 5.5 (co-author on commit `50d5063`)
-- **Screenshots:** TODO: add filenames
+- **Screenshots**, in [`/screenshots`](../screenshots):
+  - [`01-planning/01-planning-chat-kickoff-p1.png`](../screenshots/01-planning/01-planning-chat-kickoff-p1.png)
+  - [`01-planning/01-planning-chat-kickoff-p2.png`](../screenshots/01-planning/01-planning-chat-kickoff-p2.png)
+  - [`01-planning/01-planning-chat-kickoff-p3.png`](../screenshots/01-planning/01-planning-chat-kickoff-p3.png)
+  - [`01-planning/01-planning-chat-kickoff-p4.png`](../screenshots/01-planning/01-planning-chat-kickoff-p4.png)
+  - [`01-planning/02-planning-chat-project-name-p1.png`](../screenshots/01-planning/02-planning-chat-project-name-p1.png)
+  - [`01-planning/03-planning-chat-first-prompt-p1.png`](../screenshots/01-planning/03-planning-chat-first-prompt-p1.png)
+  - [`01-planning/04-opus-repo-setup-p1.png`](../screenshots/01-planning/04-opus-repo-setup-p1.png)
+  - [`01-planning/05-planning-chat-repo-setup-review-p1.png`](../screenshots/01-planning/05-planning-chat-repo-setup-review-p1.png)
 
 **Prompt**
 
@@ -51,7 +59,12 @@ Nothing.
 - **Date:** Fri Nov 27, 2026
 - **Phase:** Planning
 - **Tool:** Claude Fable 5.2, in the repo. The prompt was drafted in the planning-partner chat.
-- **Screenshots:** TODO: add filenames
+- **Screenshots**, in [`/screenshots`](../screenshots):
+  - [`01-planning/06-fable-plan-draft-p1.png`](../screenshots/01-planning/06-fable-plan-draft-p1.png)
+  - [`01-planning/06-fable-plan-draft-p2.png`](../screenshots/01-planning/06-fable-plan-draft-p2.png)
+  - [`01-planning/06-fable-plan-draft-p3.png`](../screenshots/01-planning/06-fable-plan-draft-p3.png)
+  - [`01-planning/07-planning-chat-plan-draft-review-p1.png`](../screenshots/01-planning/07-planning-chat-plan-draft-review-p1.png)
+  - [`01-planning/07-planning-chat-plan-draft-review-p2.png`](../screenshots/01-planning/07-planning-chat-plan-draft-review-p2.png)
 
 **Prompt**
 
@@ -105,7 +118,17 @@ The biggest miss was a handoff, not the model. The prompt was drafted in the pla
 - **Date:** Fri Nov 27, 2026
 - **Phase:** Planning
 - **Tool:** Claude Fable 5.2, in the repo
-- **Screenshots:** TODO: add filenames
+- **Screenshots**, in [`/screenshots`](../screenshots):
+  - [`01-planning/08-planning-chat-full-revision-prompt-p1.png`](../screenshots/01-planning/08-planning-chat-full-revision-prompt-p1.png)
+  - [`01-planning/08-planning-chat-full-revision-prompt-p2.png`](../screenshots/01-planning/08-planning-chat-full-revision-prompt-p2.png)
+  - [`01-planning/09-fable-plan-revision-p1.png`](../screenshots/01-planning/09-fable-plan-revision-p1.png)
+  - [`01-planning/09-fable-plan-revision-p2.png`](../screenshots/01-planning/09-fable-plan-revision-p2.png)
+  - [`01-planning/09-fable-plan-revision-p3.png`](../screenshots/01-planning/09-fable-plan-revision-p3.png)
+  - [`01-planning/09-fable-plan-revision-p4.png`](../screenshots/01-planning/09-fable-plan-revision-p4.png)
+  - [`01-planning/10-planning-chat-plan-v2-review-p1.png`](../screenshots/01-planning/10-planning-chat-plan-v2-review-p1.png)
+  - [`01-planning/10-planning-chat-plan-v2-review-p2.png`](../screenshots/01-planning/10-planning-chat-plan-v2-review-p2.png)
+  - [`01-planning/11-fable-plan-fixes-p1.png`](../screenshots/01-planning/11-fable-plan-fixes-p1.png)
+  - [`01-planning/12-planning-chat-plan-v3-review-p1.png`](../screenshots/01-planning/12-planning-chat-plan-v3-review-p1.png)
 
 **Prompt**
 
@@ -186,7 +209,11 @@ The entry 1 prompt followed and is quoted in entry 1. The result is `docs/plan.m
 - **Date:** Fri Nov 27, 2026
 - **Phase:** Requirements
 - **Tool:** ChatGPT, in the browser. Model: TODO. The planning-partner chat checked the sources.
-- **Screenshots:** TODO: add filenames
+- **Screenshots**, in [`/screenshots`](../screenshots):
+  - [`02-requirements/01-planning-chat-fact-check-review-p1.png`](../screenshots/02-requirements/01-planning-chat-fact-check-review-p1.png)
+  - [`02-requirements/01-planning-chat-fact-check-review-p2.png`](../screenshots/02-requirements/01-planning-chat-fact-check-review-p2.png)
+  - [`02-requirements/02-fable-save-fact-check-p1.png`](../screenshots/02-requirements/02-fable-save-fact-check-p1.png)
+  - TODO: the ChatGPT conversation
 
 **Prompt**
 
@@ -235,7 +262,12 @@ FBI Albuquerque, the IC3 image, Together CU, Priority First FCU, and the FinCEN 
 - **Date:** Fri Nov 27, 2026
 - **Phase:** Requirements
 - **Tool:** Claude Fable 5.2, in the repo. The prompt was drafted in the planning-partner chat, which also reviewed the result.
-- **Screenshots:** TODO: add filenames
+- **Screenshots**, in [`/screenshots`](../screenshots):
+  - [`02-requirements/03-fable-requirements-draft-p1.png`](../screenshots/02-requirements/03-fable-requirements-draft-p1.png)
+  - [`02-requirements/04-planning-chat-requirements-review-p1.png`](../screenshots/02-requirements/04-planning-chat-requirements-review-p1.png)
+  - [`02-requirements/04-planning-chat-requirements-review-p2.png`](../screenshots/02-requirements/04-planning-chat-requirements-review-p2.png)
+  - [`02-requirements/05-fable-requirements-revision-p1.png`](../screenshots/02-requirements/05-fable-requirements-revision-p1.png)
+  - [`02-requirements/06-planning-chat-requirements-v2-review-p1.png`](../screenshots/02-requirements/06-planning-chat-requirements-v2-review-p1.png)
 
 **Prompt**
 
@@ -336,7 +368,11 @@ I approved D11 and D12 in the design-step prompt (entry 6).
 - **Date:** Fri Nov 27, 2026, a day ahead of the plan's Nov 28 slot
 - **Phase:** Design, with two small updates to the requirements and the plan
 - **Tool:** Claude Fable 5.2, in the repo. The prompt was drafted in the planning-partner chat.
-- **Screenshots:** TODO: add filenames
+- **Screenshots**, in [`/screenshots`](../screenshots):
+  - [`03-design/01-fable-architecture-schema-p1.png`](../screenshots/03-design/01-fable-architecture-schema-p1.png)
+  - [`03-design/01-fable-architecture-schema-p2.png`](../screenshots/03-design/01-fable-architecture-schema-p2.png)
+  - [`03-design/02-planning-chat-architecture-review-p1.png`](../screenshots/03-design/02-planning-chat-architecture-review-p1.png)
+  - [`03-design/02-planning-chat-architecture-review-p2.png`](../screenshots/03-design/02-planning-chat-architecture-review-p2.png)
 
 **Prompt**
 
@@ -411,7 +447,13 @@ The planning-partner chat reviewed both documents. Its findings and my follow-up
 - **Date:** Fri Nov 27, 2026
 - **Phase:** Design
 - **Tool:** Claude Fable 5.2, in the repo. The prompt was drafted in the planning-partner chat, and the findings in it came from that chat's review of entry 6.
-- **Screenshots:** TODO: add filenames
+- **Screenshots**, in [`/screenshots`](../screenshots):
+  - [`03-design/03-planning-chat-screenshot-question-p1.png`](../screenshots/03-design/03-planning-chat-screenshot-question-p1.png)
+  - [`03-design/04-fable-design-part-2-p1.png`](../screenshots/03-design/04-fable-design-part-2-p1.png)
+  - [`03-design/04-fable-design-part-2-p2.png`](../screenshots/03-design/04-fable-design-part-2-p2.png)
+  - [`03-design/05-planning-chat-design-review-p1.png`](../screenshots/03-design/05-planning-chat-design-review-p1.png)
+  - [`03-design/05-planning-chat-design-review-p2.png`](../screenshots/03-design/05-planning-chat-design-review-p2.png)
+  - [`03-design/06-fable-design-final-fixes-p1.png`](../screenshots/03-design/06-fable-design-final-fixes-p1.png), the same capture as `04-fable-design-part-2-p2.png`
 
 **Prompt**
 
@@ -527,7 +569,12 @@ Commit `c75ce1f`, then the commit that updates this entry, then the merge of PR 
 - **Date:** Fri Nov 27, 2026, two days ahead of the plan's Nov 29 slot
 - **Phase:** Design (`security.md`, `CLAUDE.md`) and Testing (the test strategy)
 - **Tool:** Claude Fable 5.2, in the repo. The prompt was drafted in the planning-partner chat.
-- **Screenshots:** TODO: add filenames
+- **Screenshots**, in [`/screenshots`](../screenshots):
+  - [`03-design/07-fable-security-test-plan-claude-md-p1.png`](../screenshots/03-design/07-fable-security-test-plan-claude-md-p1.png)
+  - [`03-design/07-fable-security-test-plan-claude-md-p2.png`](../screenshots/03-design/07-fable-security-test-plan-claude-md-p2.png)
+  - [`03-design/08-planning-chat-security-review-p1.png`](../screenshots/03-design/08-planning-chat-security-review-p1.png)
+  - [`03-design/08-planning-chat-security-review-p2.png`](../screenshots/03-design/08-planning-chat-security-review-p2.png)
+  - [`03-design/09-fable-security-decisions-merge-p1.png`](../screenshots/03-design/09-fable-security-decisions-merge-p1.png), the same capture as `07-fable-security-test-plan-claude-md-p2.png`
 
 **Prompt**
 
@@ -640,7 +687,15 @@ Three commits, then the commit that updates this entry, then the merge of PR #2.
 - **Date:** Fri Nov 27, 2026, two days ahead of the plan's Nov 29 slot
 - **Phase:** Implementation
 - **Tool:** Claude Opus 5.5, in the repo, through T3 Code
-- **Screenshots:** TODO: add filenames
+- **Screenshots**, in [`/screenshots`](../screenshots):
+  - [`04-implementation/01-planning-chat-new-thread-question-p1.png`](../screenshots/04-implementation/01-planning-chat-new-thread-question-p1.png)
+  - [`04-implementation/02-opus-scaffold-interrupted-p1.png`](../screenshots/04-implementation/02-opus-scaffold-interrupted-p1.png)
+  - [`04-implementation/03-gemini-install-node-p1.png`](../screenshots/04-implementation/03-gemini-install-node-p1.png)
+  - [`04-implementation/04-opus-scaffold-p1.png`](../screenshots/04-implementation/04-opus-scaffold-p1.png)
+  - [`04-implementation/04-opus-scaffold-p2.png`](../screenshots/04-implementation/04-opus-scaffold-p2.png)
+  - [`04-implementation/05-planning-chat-scaffold-review-p1.png`](../screenshots/04-implementation/05-planning-chat-scaffold-review-p1.png)
+  - [`04-implementation/06-opus-merge-and-failing-test-check-p1.png`](../screenshots/04-implementation/06-opus-merge-and-failing-test-check-p1.png)
+  - [`04-implementation/06-opus-merge-and-failing-test-check-p2.png`](../screenshots/04-implementation/06-opus-merge-and-failing-test-check-p2.png)
 
 **Prompt**
 
