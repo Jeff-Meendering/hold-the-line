@@ -1,6 +1,6 @@
 # Hold the Line: architecture
 
-Version 3, Fri Nov 27, 2026. Built on [requirements.md](requirements.md) version 5. Version 2 recorded the approval of D16 and D17 and added what the UI design needs: a shared `Slip` component and a single `buildDebrief` call. Version 3 follows the approval of D19 and D20: the decision guard in `CustomerScreen` and the source links in `DebriefScreen`. This document covers the system architecture, the folder layout, what each module is responsible for, and the technical decisions. The game flow and the data schema are in [design.md](design.md). Security is in `security.md`, written in the next step.
+Version 4, Fri Nov 27, 2026. Built on [requirements.md](requirements.md) version 6. Version 2 recorded the approval of D16 and D17 and added what the UI design needs: a shared `Slip` component and a single `buildDebrief` call. Version 3 follows the approval of D19 and D20: the decision guard in `CustomerScreen` and the source links in `DebriefScreen`. This document covers the system architecture, the folder layout, what each module is responsible for, and the technical decisions. Version 4 applies four decisions from the security and test-plan step: tests on pull requests (D23), the Content-Security-Policy added at build time (D25), the rules test (D28), and messages for rules about the whole pool (D32). The game flow and the data schema are in [design.md](design.md). Security is in [security.md](security.md), and the test strategy is in [test-plan.md](test-plan.md).
 
 Nothing is implemented yet. This is what the code will be checked against, and it is brought in line with what was built on Dec 5.
 
@@ -55,6 +55,7 @@ A game rule can then be tested without rendering anything, and a content change 
 ```mermaid
 flowchart LR
     push["Push to main"]
+    pr["Pull request into main"]
 
     subgraph wf["GitHub Actions: one workflow"]
         subgraph job1["Job 1: build"]
@@ -63,7 +64,7 @@ flowchart LR
             test -->|"pass"| build
         end
         deploy["Job 2: deploy<br/>needs job 1"]
-        build -->|"pass, dist/ uploaded"| deploy
+        build -->|"pass, and only on a push to main"| deploy
     end
 
     stop["Workflow stops,<br/>live site unchanged"]
@@ -71,17 +72,18 @@ flowchart LR
     browser["Player's browser"]
 
     push --> test
+    pr --> test
     test -.->|"fail"| stop
     build -.->|"fail"| stop
     deploy --> pages
     pages --> browser
 ```
 
-- `npm test` is `vitest run`. It runs the unit tests and the data validation test (FR-15).
-- `npm run build` is `tsc -b && vite build`, so a type error also stops a deploy.
-- The deploy job has `needs:` on the build job and runs only on `main`. A failing test or build means it never starts (FR-16, AC-8.2).
+- `npm test` is `vitest run`. It runs the unit tests, the data validation test (FR-15), and the rules test (D28).
+- `npm run build` is `tsc -b && vite build`, so a type error also stops a deploy. A few lines in `vite.config.ts` add the Content-Security-Policy `<meta>` tag to the built `index.html` only (D25, security.md SEC-12).
+- The workflow runs on a push to `main` and on a pull request into `main` (D23). The deploy job has `needs:` on the build job and runs only for a push to `main`, so a pull request is tested and built but never deployed. A failing test or build means the deploy job never starts (FR-16, AC-8.2).
 - Vite's `base` is `/hold-the-line/`, because the site is served from `https://jeff-meendering.github.io/hold-the-line/` (plan risk 8).
-- The workflow's permissions and action versions are specified in `security.md`.
+- The workflow's permissions, triggers, and action versions are specified in [security.md](security.md) (SEC-5 to SEC-9).
 
 ## 3. Folder layout
 
@@ -89,7 +91,7 @@ flowchart LR
 hold-the-line/
 ├── index.html
 ├── package.json
-├── vite.config.ts            Vite and Vitest settings, base path
+├── vite.config.ts            Vite and Vitest settings, base path, CSP at build
 ├── tsconfig.json             strict mode
 ├── CLAUDE.md                 instructions for the coding agent
 ├── .github/workflows/
@@ -100,6 +102,7 @@ hold-the-line/
     ├── main.tsx              mounts <App />
     ├── App.tsx               state, day draw, screen switch
     ├── styles.css
+    ├── rules.test.ts         layer rules and banned APIs
     ├── game/                 pure TypeScript, no React or DOM
     │   ├── types.ts
     │   ├── rng.ts
@@ -131,13 +134,13 @@ The types named here are defined in [design.md](design.md).
 
 | Module | Responsibility | Main export | Covers |
 |---|---|---|---|
-| `types.ts` | The schema: customers, slips, red flags, game state, actions, and the lists of valid ids | Types and `as const` id lists | FR-11, FR-12 |
+| `types.ts` | The schema: customers, slips, red flags, game state, actions, and the lists of valid ids and source hosts | Types and `as const` id lists | FR-11, FR-12 |
 | `rng.ts` | A seeded random source for tests, about 10 lines | `mulberry32(seed): () => number` | AC-5.3 |
 | `draw.ts` | The day draw, rules 1 to 7 in requirements section 6. Takes its random source as a parameter | `drawDay(pool, rng): Customer[]` | AC-5.1 to 5.3, NFR-8 |
 | `reducer.ts` | Every state change: start a day, ask a question, decide. Enforces the limit of 3 questions and no repeats. Ignores an action that is not allowed | `gameReducer(state, action): GameState` | FR-2, FR-4 to FR-6, FR-10 |
 | `scoring.ts` | The scoring table and the floor at 0 | `pointsFor(truth, decision): number`, `scoreDay(day, results): number` | Requirements section 5, AC-6.1 |
-| `debrief.ts` | Builds everything the debrief shows: the score, the counts, and for each customer the call, the truth, right or wrong, the points, and each flag's status of *shown*, *you asked*, or *you didn't ask* | `buildDebrief(day, results): Debrief` | FR-8, FR-9, AC-6.2, AC-6.3 |
-| `validate.ts` | Checks content against the rules in design.md section 2.6 and returns one message per broken rule, each starting with the customer id or question id | `validateData(data): string[]` | FR-15, AC-8.1, AC-8.3 |
+| `debrief.ts` | Builds everything the debrief shows: the score, whether it was raised to 0, the counts, and for each customer the call, the truth, right or wrong, the points, and each flag's status of *shown*, *you asked*, or *you didn't ask* | `buildDebrief(day, results): Debrief` | FR-8, FR-9, AC-6.2, AC-6.3 |
+| `validate.ts` | Checks content against the rules in design.md section 2.6 and returns one message per broken rule, each starting with the customer id or question id, or with `pool` for a rule about the whole pool | `validateData(data): string[]` | FR-15, AC-8.1, AC-8.3 |
 
 **`src/data/`: content**
 
@@ -153,6 +156,7 @@ The types named here are defined in [design.md](design.md).
 | Module | Responsibility | Covers |
 |---|---|---|
 | `main.tsx` | Mounts `App` and loads `styles.css` | |
+| `rules.test.ts` | Reads every source file that is not a test, as text, and fails if one breaks a layer rule or uses a banned API. The rules are in test-plan.md section 4 | NFR-8, NFR-9, SEC-4, SEC-10, SEC-16, SEC-18 |
 | `App.tsx` | Holds the game state with `useReducer(gameReducer)`. On Start and Play again it calls `drawDay(customers, Math.random)` and dispatches the result. Renders the screen that matches `state.phase` | FR-2, FR-10 |
 | `StartScreen.tsx` | Title, how-to-play text, Start button, best score | FR-1, FR-17 |
 | `CustomerScreen.tsx` | Slip, behaviour text, question list, answers, Process and Hold. Receives a `CustomerView`, which has no truth, flags, or explanation. Holds the one timer in the app: the two decision buttons ignore presses for half a second after a customer appears (D19) | FR-3 to FR-7 |
@@ -182,7 +186,7 @@ These eight packages are what React, Vite, TypeScript, and Vitest need to work t
 | T5 | Content rules are checked by a pure function, `validateData`, that returns a list of messages. One test runs it on the real content, and another feeds it broken content | Assertions written directly in a test; relying on the types alone | Returning messages lets one run report every problem and makes AC-8.1 testable: break a copy of a customer and expect a message with its id. The types cannot do it alone. Vitest strips types without checking them, so `npm test` would pass on a customer with a missing field, and no type can express "at least 3 legit customers have a look-alike trait". `validateData` therefore checks its input at runtime, even though it is typed. |
 | T6 | Hidden information is kept hidden by the structure. `CustomerScreen` takes a `CustomerView` type without the truth, flags, or explanation. The score and flag statuses are computed only when `DebriefScreen` calls `buildDebrief`, and are never in the state | A convention in `CLAUDE.md` only; separate public and secret data files | FR-7 is the rule a small UI change is most likely to break. With the narrower type, reading `customer.truth` in the customer screen is a compile error. With the score computed only at the debrief, there is no score in memory to show early by accident. Splitting the files would make each customer harder to write and review. The truth is still in the JavaScript a player downloads, which `security.md` records as accepted. |
 | T7 | One plain CSS file, with custom properties for colours and spacing | CSS Modules; Tailwind; a component library | Three screens do not have a class-name collision problem. No build setup, nothing to learn, and nothing added to the bundle. The plan rules out custom art and makes polish a "should". |
-| T8 | Tests run in Vitest's default Node environment and cover `src/game/` and `src/data/` only | Adding `jsdom` and React Testing Library for component tests | See D16. Every rule is in a pure function, so the components are thin, and the acceptance criteria about what is on screen are in the manual test plan. |
+| T8 | Tests run in Vitest's default Node environment and cover `src/game/` and `src/data/` only | Adding `jsdom` and React Testing Library for component tests | See D16. Every rule is in a pure function, so the components are thin, and the acceptance criteria about what is on screen are in the manual test plan. `rules.test.ts` reads the source files as text and renders nothing (D28). |
 | T9 | One workflow with two jobs, using GitHub's own Pages actions | The `gh-pages` npm package pushing to a branch; a single job; separate test and deploy workflows | FR-16 asks for one workflow. Two jobs make AC-8.2 visible in the Actions tab: when a test fails, the deploy job shows as skipped. The official actions deploy an uploaded artifact and need no write access to the repository's contents. |
 | T10 | npm, strict TypeScript, and no linter or formatter | ESLint with the React plugins, as in Vite's template; Prettier | See D17. `tsc` in strict mode runs in the build and is the static check. |
 | T11 | The best score is read and written by `bestScore.ts`, called from the components, never from the reducer | Storing it in the game state; a persistence library | Storage is a side effect, and the reducer has to stay pure. It is one number, so two functions with a `try`/`catch` are enough (FR-17). |

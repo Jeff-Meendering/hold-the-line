@@ -1,6 +1,6 @@
 # Hold the Line: design
 
-Version 3, Fri Nov 27, 2026. Built on [requirements.md](requirements.md) version 5. Version 1 covered the game flow and the data schema. Version 2 applied Jeff's review of it (`told` in every question set, the cover-story rule, a harder example customer) and added the UI and UX plan, the wireframes, and the UI decisions. Version 3 records the approval of D19 and D20 and lets a legit look-alike show its trait in an answer (D21). The system architecture and the technical decisions are in [architecture.md](architecture.md).
+Version 4, Fri Nov 27, 2026. Built on [requirements.md](requirements.md) version 6. Version 1 covered the game flow and the data schema. Version 2 applied Jeff's review of it (`told` in every question set, the cover-story rule, a harder example customer) and added the UI and UX plan, the wireframes, and the UI decisions. Version 3 records the approval of D19 and D20 and lets a legit look-alike show its trait in an answer (D21). Version 4 changes the scoring numbers on the debrief and in the wireframes (D1), adds the list of source hosts and rule V17 (D24), adds `floored` to the debrief (D31), and says how a rule about the whole pool reports (D32). The system architecture and the technical decisions are in [architecture.md](architecture.md).
 
 ## 1. Game flow
 
@@ -104,6 +104,7 @@ export interface DebriefRow {
 
 export interface Debrief {
   score: number; // 0 to 60, from scoreDay
+  floored: boolean; // true when the points added up to less than 0 and the score was raised to 0 (D2, D31)
   scams: number;
   scamsHeld: number;
   legit: number;
@@ -166,6 +167,17 @@ export const SCAM_TYPES = [
   'techSupport',
 ] as const;
 export type ScamType = (typeof SCAM_TYPES)[number];
+
+/** The only sites a source link may go to (V17, security.md SEC-13). */
+export const SOURCE_HOSTS = [
+  'consumer.ftc.gov',
+  'www.ftc.gov',
+  'www.fincen.gov',
+  'www.aarp.org',
+  'www.fbi.gov',
+  'www.ic3.gov',
+  'www.consumerfinance.gov',
+] as const;
 ```
 
 ### 2.2 Customers
@@ -222,7 +234,8 @@ export interface ScamCustomer extends CustomerBase {
   /** At least 3: at least 1 on the slip or in the behaviour, and the rest
    *  behind 1 or 2 questions (FR-14, FR-19). */
   redFlags: RedFlag[];
-  /** At least 1 source for the scenario, checked in the fact-check. */
+  /** At least 1 source for the scenario, checked in the fact-check.
+   *  Each is https and on a host in SOURCE_HOSTS (V17). */
   sourceUrls: string[];
 }
 
@@ -416,6 +429,7 @@ This is the specification for `validateData` in `src/game/validate.ts`. The type
 | V7 | A scam customer has a known scam type, at least 1 source URL starting with `https://`, and at least 3 red flags with known ids, none repeated | FR-12, AC-8.1 |
 | V8 | Each of a scam customer's flags shows on the slip, in the behaviour, or behind a question in the customer's set. At least 1 is on the slip or in the behaviour, and at least 1 is behind a question | FR-12, FR-14 |
 | V14 | A scam customer's flags are behind at most 2 different questions | FR-19, AC-8.4 |
+| V17 | Each of a scam customer's source URLs parses as a URL, has the protocol `https:`, and has a hostname that is exactly one of `SOURCE_HOSTS`. The check is on the parsed hostname, not on how the text starts | FR-12, AC-8.6 |
 | V9 | A legit customer's `lookAlike`, if present, names a known flag. Its `shownIn` is the slip, the behaviour, or a question in the customer's set. Its `explainedBy` is a question in the customer's set and is not the question in `shownIn` | FR-14 |
 | **Pool** | | |
 | V10 | At least 3 scam and 5 legit customers | FR-11, section 6 rule 7 |
@@ -426,6 +440,8 @@ This is the specification for `validateData` in `src/game/validate.ts`. The type
 | V16 | At least 2 legit customers have a `lookAlike` whose `shownIn` is a question | FR-14, AC-8.5 |
 
 V10 uses the minimum, not 4 and 6, so the test still passes if the pool is cut to 8 (plan section 10).
+
+Every message starts with the id of the customer or question it is about. A rule about the whole pool (V10 to V13, V15, V16) has no single customer, so its message starts with `pool` and names the customers involved where there are any (D32).
 
 ### 2.7 Schema decisions
 
@@ -502,8 +518,8 @@ The debrief has a score block and then one card per customer, in the order playe
 |---|---|---|
 | Score | "*N* / 60", the largest text on the screen | FR-8, AC-6.1 |
 | Counts | "*a* of *b* scams stopped. *c* of *d* legitimate customers served." | FR-8 |
-| Best score | "Best score: *N* / 60", or "New best score" when this day beat it | FR-17, AC-9.1 |
-| Points key | "Right call +10. Legitimate customer held −5. Scam processed −20." When the sum was below 0, it adds "A day cannot score below 0." | Section 5, D2 |
+| Best score | "Best score: *N* / 60", or "New best score" when this day beat it or was the first one finished (D33) | FR-17, AC-9.1 |
+| Points key | "Right call +10. Legitimate customer held −5. Scam processed −20." When `floored` is true, it adds "A day cannot score below 0." | Section 5, D2, D31 |
 | Play again | In the score block and again after the last card | FR-10 |
 
 **Every card**
@@ -953,7 +969,7 @@ A day with 2 scams. The player asked Walter `purpose`, `urgency`, and `told`, th
 
 ## 6. Decisions
 
-The numbering continues from [requirements.md section 8](requirements.md#8-decisions). D16 and D17 are about tooling and are in [architecture.md section 7](architecture.md#7-decisions-for-jeff). Nothing is waiting for Jeff.
+The numbering continues from [requirements.md section 8](requirements.md#8-decisions). D16 and D17 are about tooling and are in [architecture.md section 7](architecture.md#7-decisions-for-jeff). D22 to D34 are in [security.md section 7](security.md#7-decisions-for-jeff) and [test-plan.md section 9](test-plan.md#9-decisions-for-jeff). Nothing is waiting for Jeff.
 
 | # | Decision | Outcome or recommendation | Why | Status |
 |---|---|---|---|---|
