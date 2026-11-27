@@ -996,3 +996,146 @@ On the branch `docs/screenshot-fixes`, in its own pull request. The problems lis
 - It left `01-planning/09-fable-plan-revision-p4.png` and `11-fable-plan-fixes-p1.png` alone.
 - It looked at the new 08 and 09 itself (SEC-20). Neither shows a token, password, or notification. 08 shows the line "T3 Code pairing token · Request ended" and the start of the sudo-password exchange described above, with no code or password in it.
 - `screenshots/` now holds 56 PNGs. A script checked that every one is linked from this log and that every link in the log points to a file that exists.
+
+---
+
+## 12. The ten customers
+
+- **Date:** Fri Nov 27, 2026, three days ahead of the plan's Nov 30 slot
+- **Phase:** Implementation (customer content)
+- **Tool:** Claude Fable 5.2, in the repo, through T3 Code. The prompt was drafted in the planning-partner chat.
+- **Screenshots**, in [`/screenshots`](../screenshots):
+  - TODO: the prompt in the Fable thread
+  - TODO: the planning chat drafting the prompt
+
+**Prompt**
+
+> Next step: the ten customers. Read CLAUDE.md, design.md sections 2.2 to 2.6 (schema, content rules, example, validation rules) and requirements.md section 7 (red flags and sources).
+>
+> Write src/data/customers.ts with 4 scam and 6 legit customers, and add data.test.ts. Also rewrite the 17 red flag labels in labels.ts to about 8 words each.
+>
+> What I care about:
+> - Spread: each transaction type has at least one scam and one legit. The 4 scams are 4 different scam types. Vary the amounts, ages, and moods.
+> - Difficulty: one scam that's fairly easy, two medium, one hard. The player should never be able to decide from the slip and behaviour alone.
+> - At least 3 legit look-alikes, and at least 2 of them have an answer that sounds alarming until another answer explains it.
+> - Every scam scenario needs a source you actually opened, on an allowed host. Don't reuse the example customer from design.md.
+> - No real businesses or people as scammers, and no real phone numbers or addresses.
+>
+> When they're written, give me a table: customer, type, truth, scam type, where each flag is, and how a player who asks the wrong 3 questions would get it wrong. Then name the two weakest customers and why.
+>
+> Also update the roles table in plan.md: Fable writes the customers because it's a writing and judgment task, and Opus stays on code. This prompt was drafted in the planning chat.
+>
+> Open a PR and stop. Paste the npm test and npm run build output as usual.
+
+**Result**
+
+Four commits on the branch `content/customers`, plus the commit that adds this entry, and a pull request into `main` that is open and not merged.
+
+- `4d5c66c`: the 17 red flag labels in `src/data/labels.ts`, each 6 to 9 words. Five were already short enough and are unchanged (RF-2, RF-4, RF-6, RF-11, RF-15).
+- `8c820fa`: `src/data/customers.ts`, 4 scam and 6 legit customers.
+- `f274247`: `src/data/data.test.ts`, the three checks in test-plan.md section 3.
+- `8d95c86`: the roles table in [plan.md](plan.md), now version 8. Fable writes the content in `src/data/`, and Opus's row no longer lists the customer data files.
+
+`npm test`: 7 files, 115 tests, all passed. `npm run build`: passed. The bundle is the same file as before (`index-WYhNHesa.js`, 68.65 kB gzipped), because nothing in the app imports the customers yet.
+
+**The pool**
+
+| Customer | Type | Truth | Scam type | Where each flag is | How the wrong 3 questions go wrong |
+|---|---|---|---|---|---|
+| `c01` Lorraine Pruitt, late 70s, shaking and in a hurry | Cash, $8,500 | Scam, the easy one | Family emergency | Slip RF-8. Behaviour RF-2. `next` RF-16 (a driver comes to the door). `told` RF-6 (asked to keep it to herself) | `purpose`, `origin`, `urgency`: a furnace story that also explains the shaking and the hurry, because the house is cold. Processed, −20 |
+| `c02` Darius Coleman, mid-20s, on an open call | Gift cards, 4 × $500 | Scam, medium | Government imposter | Slip RF-11. Behaviour RF-1. `urgency` RF-3 (says no rush, then yes). `next` RF-12 (sends pictures of the backs) | `purpose`, `recipient`, `told`: a cousin's wedding and a flat no. What is left is four cards and a phone call, which Frank Delgado also shows. Processed, −20 |
+| `c03` Carol Whitfield, early 60s, cheerful | Wire, $22,500 abroad | Scam, medium | Romance | Slip RF-9. `recipient` RF-13 (met on a dating site). `met` RF-3 (does not answer the question) | `purpose`, `verified`, `told`: a share in a friend's business, and "I called Graham on the number I've always had for him", which sounds like a check and is a call to the scammer. Processed, −20 |
+| `c04` Stephen Nakamura, mid-50s, calm and friendly | Cash, $14,000 | Scam, the hard one | Bank impersonation | Slip RF-8 and RF-10. `origin` RF-7 (a call about odd activity). `next` RF-15 (a machine at a gas station, a code to scan) | `purpose`, `urgency`, `told`: a kitchen, cabinets ordered tomorrow, and a no. Nothing in his manner is off and a closed CD fits a kitchen. Processed, −20 |
+| `c05` Ana Morales, mid-30s, flustered | Cash, $900 | Legit | | Look-alike RF-7 in `origin` (the fraud team called), explained by `next` | `origin`, `urgency`, `told`: a fraud call and "I really can't leave without it". Held, −5 |
+| `c06` Curtis Boyd, mid-40s, watching the time | Cash, $7,500, CD closed early | Legit | | Look-alike RF-16 in `next` (handing it to a man in a parking lot), explained by `purpose` | `urgency`, `next`, `told`: a two o'clock deadline and a hand-over in a parking lot. Held, −5 |
+| `c07` Denise Okafor, about 50, whispering | Gift cards, 3 × $400 | Legit | | Look-alike RF-6 in `told` (asked to keep it quiet), explained by `recipient` | `urgency`, `next`, `told`: a Friday deadline, an envelope hidden in a desk, and secrecy. Held, −5 |
+| `c08` Frank Delgado, late 50s, on the phone | Gift cards, 12 × $250 | Legit | | Look-alike RF-1 in the behaviour, explained by `recipient` | No three questions lead to a hold: every answer but `told` mentions his crew or the pay run. The wrong call comes from deciding on the slip and the phone without asking |
+| `c09` Joel Santos, mid-40s, distressed | Wire, $6,400 abroad | Legit | | Look-alike RF-5 in `purpose` (mother in hospital, today), explained by `verified` | `purpose`, `recipient`, `told`: an emergency, an invoice sent as a picture, and "I just need it sent". Held, −5 |
+| `c10` Margaret Lindqvist, 80s, unhurried | Wire, $30,000 | Legit | | Look-alike RF-9 on the slip, explained by `recipient` | No three questions lead to a hold: `purpose`, `recipient`, and `met` all say it is her daughter. The wrong call comes from not asking, or from asking only `verified` and `told` |
+
+Each scam customer has a legit customer with the same kind of slip and manner: Lorraine and Curtis (large cash, in a hurry), Darius and Frank (many gift cards, on the phone), Carol and Margaret (a first large wire to a person, calm), Stephen and Curtis (cash from a CD closed early).
+
+The two weakest, in the AI's own view:
+
+1. **`c02` Darius Coleman.** He is the nearest to the example customer in design.md: gift cards, on the phone, and flags behind the same two questions, `urgency` and `next`. The scam type, the person, the cover story, and the `urgency` flag are different, but the shape is the same. The `urgency` answer, where he says no and then yes, is a stage device. It only makes sense if the reader works out that the caller heard him, and RF-3 ("the reason changes") fits it loosely.
+2. **`c04` Stephen Nakamura.** No single source describes his whole scenario (see below). His `next` answer never says Bitcoin, so a player who does not know what a crypto ATM is cannot catch it by careful reading, and may feel cheated when the debrief names it. A man coached well enough to stay this calm would probably not volunteer the `origin` line.
+
+Frank and Margaret are thin in a different way: any one good question clears them. That is on purpose, so that some look-alikes reward asking at all.
+
+**Sources, and how each was opened**
+
+`curl` got the two FinCEN PDFs and the IC3 page, and the AI read their text itself. `consumer.ftc.gov` and `www.ftc.gov` refuse `curl` (see below), so those pages were opened with the fetch tool. That tool runs in a subagent and returns quotes of at most 125 characters, so the AI saw short exact quotes from each FTC page and a summary, never the whole page. All were opened on Nov 27.
+
+| Customer | Source | Opened by | What it supports |
+|---|---|---|---|
+| `c01` | FTC, "Don't open your door to grandparent scams", Apr 13, 2021 | Fetch tool | "pretending to be your grandchild", "need bail", "beg you to keep this a secret", "the scammer tells you someone will come to your door to pick up cash" |
+| `c01` | FBI IC3, PSA I-072921, "FBI Warns of a Grandparent Fraud Scheme Using Couriers", July 29, 2021 | Read directly | "pose as a grandchild … who has been arrested and needs bail money", "send couriers to collect the money in person from the victim's residence". This is the fuller source for RF-16 that requirements open item 3 asks for |
+| `c02` | FTC, "How To Avoid a Government Impersonation Scam" | Fetch tool | "impersonate your local sheriff's office or a court official", "pay a penalty for missing jury duty", "pay with gift cards" |
+| `c02` | F1, the gift card page | Fetch tool | "They say you have to pay taxes or a fine", "stay on the phone with you", "send them a photo of the card" |
+| `c03` | FTC, "What To Know About Romance Scams" | Fetch tool | "dating website or app", "working on an oil rig", "Scammers say they can't meet you in person", "talking or chatting several times a day" |
+| `c03` | A, the FinCEN advisory, p. 6 | Read directly | "may offer to meet in person (though they almost never do)", "a supposed investment or business deal" |
+| `c04` | T, the FinCEN trend analysis, p. 11 | Read directly | "Bank impersonators typically tell victims that their accounts are compromised, and they need to move their funds to a secure account" |
+| `c04` | FTC data spotlight, "Bitcoin ATMs: A payment portal for scammers", Sept 3, 2024 | Fetch tool | "a call or message about supposed suspicious activity", "They direct you to go to your bank to take out cash", "They text you a QR code to scan at the machine", machines at "convenience stores, gas stations" |
+| `c04` | F4, the Bitcoin ATM alert | Fetch tool | "they'll send you to a Bitcoin ATM to 'secure' your money", "They'll scare you into keeping it a secret" |
+| `c04` | F7 | Fetch tool | "will tell you to lie, so the bank won't stop your transfer" |
+| `c01` to `c03` | F8 | Fetch tool | "Only say what I tell you to say." and the line about lying to bank tellers. It is the source for the cover stories |
+
+The AI also opened F3 and F5 and does not cite them. F5 does not mention bail, cash, or a courier, so it does not support `c01` on its own.
+
+What the sources do not say, for the ChatGPT fact-check:
+
+- `c04` is put together from three sources. T says bank impersonators send people to a "secure account". The FTC pages say callers send people to a Bitcoin ATM, and name government, business, and tech support impersonators, not banks.
+- The cover stories themselves (a furnace, a wedding present, a business partner, a kitchen) are invented. The sources say only that scammers tell people to lie.
+- The FTC romance page says "dating website or app" and "oil rig". `c03` follows that, but "North Sea" and "engineer" are invented.
+
+**Seeing `data.test.ts` fail (D34)**
+
+Each break was one edit to the committed content, then a run of the test file, then `git checkout` and a check that the tree was clean.
+
+| The break | What failed |
+|---|---|
+| `c03`'s answer to `told` removed | `c03-wire-romance: V5 has no answer to told, which is in the wire set` |
+| `c01`'s two flags behind questions removed | `c01-cash-emergency: V7 has 2 red flags, needs at least 3`, and V8 |
+| `c02`'s source URLs removed | `c02-gift-government: V7 has no source URL` |
+| The four look-alikes in answers removed or moved to the slip | `pool: V16 has 0 legit customers with a look-alike in an answer (none), needs at least 2` |
+| The RF-9 label made blank | `RF-9: RED_FLAG_LABELS has no label` |
+
+The third test, the draw on the real pool, was not broken on purpose.
+
+**What worked**
+
+This part is the record of what the AI did. TODO: add my own view after reading the customers.
+
+- It read the source pages before fixing the scenarios, and changed two scenarios to fit them: the gift card scam became a missed-jury-duty call because that is what the FTC page describes, and the romance scammer became an oil-rig worker met on a dating site.
+- It left out a legit customer who sends gift card numbers to someone, although that would have mirrored `c02`, because "never give anyone the numbers" is the one gift card rule the sources state without exception.
+- It kept its own reasoning out of `customers.ts`. The file has no comments on difficulty or intent, so it can go to Gemini as it is (plan section 5).
+- It searched for the two invented names that matter most, the romance scammer's and the hospital's, and found no real person or business with either.
+
+**What the AI got wrong**
+
+- It tried `curl` on eight FTC pages and all eight came back 404, including six that requirements.md records as fetched the same day. It fetched the site's home page, got the same 404 from the same server, and concluded the site refuses `curl`, not that the pages were gone. It then used the fetch tool.
+- It had planned to cite F5 for the grandparent scam before reading it. F5 mentions neither bail nor a courier.
+- The first address it found for the 2021 grandparent alert was on `www.consumer.ftc.gov`, which is not in `SOURCE_HOSTS`. The same article loads at the `consumer.ftc.gov` address, which is the one in the data. It could not read the page's canonical link, so it does not know which address the FTC treats as the main one.
+- In the first draft every calm customer was a scam and every legit customer was upset, hurried, or curt, so mood was a tell (C8). It caught this on a re-read and made Margaret Lindqvist unhurried before committing.
+- It did not see the full text of any FTC page (see above).
+
+**Where it departed from the documents, or had to guess**
+
+1. **Labels and the wireframe.** design.md section 4.3 shows label text for five flags. Three match `labels.ts` (RF-4, RF-11, and RF-1 apart from "taking directions"). RF-12 and RF-13 are worded differently, because the wireframe's RF-12 covers only half of the flag and its RF-13 is 10 words. design.md was not edited.
+2. **Every legit customer has a `lookAlike`**, and four of the six show it in an answer. The minimums are 3 and 2. With none, a legit customer's slip and behaviour would give them away, since every scam customer must show a flag up front.
+3. **plan.md still says Opus in two places**: the first coordination rule ("Opus's code and content also go to Gemini") and the Nov 30 row of the schedule ("draft all 10 customers with Opus"). The prompt named the roles table, so only the table and the version line changed. `CLAUDE.md` still opens with "You are the implementer".
+4. **Other documents are now behind the code**: architecture.md and test-plan.md say nothing beyond `src/game/` and two data files is implemented, and design.md section 2.5 says the pool is written on Nov 30. Not edited.
+5. **The data test was written by Fable**, as the prompt asked, although the new roles table gives code to Opus. The table says so.
+6. **The explanations are two sentences.** AC-6.4 says "one-line". They run 163 to 220 characters, against about 170 for the example in design.md.
+7. **The data test does not check for 4 and 6.** V10 checks the minimum of 3 and 5, as design.md section 2.6 says, so the test still passes on a pool of 8.
+8. **Four flags are on no scam customer**: RF-4, RF-5, RF-14, and RF-17. RF-5 appears only as Joel Santos's look-alike.
+
+**Not checked**
+
+- Nothing has been seen in a browser. The longest answer is 119 characters and the longest behaviour text 159, against about 85 and 125 for the example customer in design.md. Whether three open answers still fit at 1280×720 is MT-15.
+- No other tool has reviewed this. The ChatGPT fact-check and the Gemini content review are still to come, and MT-25 still has to open every URL.
+- Only two of the invented names were searched.
+
+**What I changed**
+
+TODO.
