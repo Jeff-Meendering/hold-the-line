@@ -321,10 +321,85 @@ The result is `docs/requirements.md` version 2 and the corrected header in `docs
 - It pointed out that the bank does not close the leak completely. The wording can no longer give the answer away, but which 4 or 5 questions a customer offers still can, because a question offered by three scam customers and one legit customer passes the rule. It added this to the open items for the Gemini content review.
 - It noted that the document is now about 3,500 words, further over the 10-minute limit than version 1.
 
-TODO: my decision on D11 and D12.
+I approved D11 and D12 in the design-step prompt (entry 6).
 
 **Open items**
 
 - `reviews/01-gift-card-check.md` still has TODOs for ChatGPT's answer and model name.
 - The bank's 8 questions are not written yet. Their ids are part of the data schema, which is locked on Nov 28.
 - The plan's scope line still says "4–5 available questions" and does not mention the shared bank.
+
+---
+
+## 6. Architecture and design, part 1
+
+- **Date:** Fri Nov 27, 2026, a day ahead of the plan's Nov 28 slot
+- **Phase:** Design, with two small updates to the requirements and the plan
+- **Tool:** Claude Fable 5.2, in the repo. The prompt was drafted in the planning-partner chat.
+- **Screenshots:** TODO: add filenames
+
+**Prompt**
+
+> Read docs/plan.md and docs/requirements.md, then do the first half of the design step.
+>
+> Two small updates first:
+> - I approve D11 and D12.
+> - Tighten FR-18 so which questions a customer offers can't hint at the answer either. Each transaction type gets a fixed set of 5 questions from the bank, and every customer of that type offers the same 5. Update the validation rule, AC-3.1, FR-12, and the plan's scope line that still says "4–5 available questions".
+>
+> Then write docs/architecture.md and start docs/design.md, split the way the plan's deliverables table says:
+> - the system architecture with a diagram (Mermaid, so GitHub renders it)
+> - the folder layout and what each module is responsible for, with the pure game logic kept separate from React like NFR-8 says
+> - the customer and question bank data schema as TypeScript types, plus one example customer to prove the schema works. Don't write the real customers yet.
+> - the game flow as a state diagram
+> - the main technical decisions, each with what you considered and why you picked it
+>
+> Keep it as simple as the requirements allow. If you want a library beyond React, Vite, and Vitest, justify it or leave it out. Put anything I need to decide in a "Decisions for Jeff" list like last time. Leave the UI wireframes for the next step.
+>
+> Commit, push, and add the ai-log entry. This prompt was drafted in the planning chat.
+
+**Result**
+
+Two commits on the branch `t3/architecture-design-part-1`, plus the commit that adds this entry.
+
+- `8743c2e`: [requirements.md](requirements.md) version 3 and [plan.md](plan.md) version 5. FR-18 now fixes 5 questions per transaction type. AC-3.1, AC-8.3, FR-4, and FR-12 match it. D11 and D12 are marked approved, and the new rule is recorded as D13.
+- `fc43d80`: [architecture.md](architecture.md) version 1 and [design.md](design.md) version 1, part 1. Architecture has two Mermaid diagrams (the layers, and test-build-deploy), the folder layout, a responsibility table per module, the 8 packages, and 11 technical decisions. Design has the state diagram, the state and action types, the transition table, the schema as TypeScript types, a draft question bank, one example customer, 13 validation rules, and 12 flow and schema decisions. Four decisions are waiting for me: D14 to D17.
+
+**What worked**
+
+This part is the record of what the AI did. TODO: add my own view after reading the documents.
+
+- It added no library. The dependency list is React, Vite, TypeScript, Vitest, and the four packages those need to work together. It decided against a router, a state library, a schema library, a seeded-random package, a CSS framework, React Testing Library, and ESLint, and gave the reason for each.
+- It checked its own output before committing. This machine has no Node, so it ran the checks in containers: it took the code blocks out of `design.md`, compiled them with `tsc --strict`, and compiled three broken copies of the example to confirm the types reject them. It rendered all three Mermaid diagrams with mermaid-cli and looked at the images.
+- It noticed that `npm test` does not type-check, because Vitest strips types. So the types alone cannot meet AC-8.1, and the validator has to check typed data at runtime. That shaped three of the decisions (T5, S2, S7).
+- It worked out that the fixed sets make part of the old FR-18 rule redundant: if every bank question is in at least one set, FR-13 already guarantees a scam and a legit customer offer it. The validation rule is now three checks on the sets and one on each customer's answers.
+- It read the FinCEN PDFs for the list of scam types before putting them in the schema, and opened both FTC pages the example customer cites. The page numbers it gives match the printed pages.
+- FR-7 (nothing about correctness before the debrief) is enforced by the structure: the customer screen gets a type without the truth or the flags, and no score exists in the state.
+- The decisions it could not make are numbered D14 to D17, continuing the requirements' numbering, with a recommendation and a reason each.
+
+**What the AI got wrong**
+
+- Its first architecture diagram was not readable. It had every arrow drawn between individual modules, and when rendered the arrows crossed through the layers they had nothing to do with. It only saw this because it rendered the diagram. It redrew it with arrows between layers.
+- It went past the prompt on the question bank. I asked for the schema and one example customer. It also drafted the wording of all 8 questions and chose which 5 go with each transaction type. Its reason is that the ids and sets are part of the schema and the example needs real questions to answer. It did flag the whole draft as D14, not as settled.
+- It downloaded two container images, about 1.7 GB together, to run the checks, without asking first. They are still on my machine.
+- The diagrams were checked with mermaid-cli, not with GitHub's renderer. I still need to look at both files on GitHub.
+- Length again. `architecture.md` is about 2,350 words and `design.md` about 3,700, counting code and diagrams.
+- It bumped the plan to version 5 for a one-line scope change. I had only asked for the line to be updated.
+- The example customer's scenario has not been through the fact-check. The document says so, but it is a scam scenario written by the AI that wrote the schema, which is the thing the plan gives to ChatGPT and Gemini to check.
+
+**What I changed**
+
+TODO: after my review and the planning-partner chat's review.
+
+**Decisions waiting for me**
+
+- D14: the 8 question ids, their wording, and the set of 5 for each transaction type ([design.md](design.md) section 2.3).
+- D15: the debrief shows a shared label per red flag plus the customer's own answer, with no sentence written per customer per flag.
+- D16: no component tests, so no `jsdom` or React Testing Library. This changes what the plan's cut-order item 5 assumes.
+- D17: no ESLint or Prettier.
+
+**Open items**
+
+- The schema is not locked until I decide D14 and D15. The plan locks it on Nov 28.
+- The work is on the branch `t3/architecture-design-part-1`, not on `main`.
+- `design.md` sections 3 to 5 (UI plan, wireframes, UI decisions) are placeholders for the next step.
+- The open items from entry 5 on the gift-card review file still stand. The one about the plan's scope line is closed.
