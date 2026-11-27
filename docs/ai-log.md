@@ -254,7 +254,7 @@ FBI Albuquerque, the IC3 image, Together CU, Priority First FCU, and the FinCEN 
 
 **Result**
 
-[requirements.md](requirements.md), version 1: 3 personas, 9 user stories with 20 acceptance criteria, FR-1 to FR-17, NFR-1 to NFR-11, the scoring table, the 7 day-draw rules, 16 documented red flags and 3 marked as undocumented, and 10 decisions waiting for me.
+[requirements.md](requirements.md), version 1: 3 personas, 9 user stories with 21 acceptance criteria, FR-1 to FR-17, NFR-1 to NFR-11, the scoring table, the 7 day-draw rules, 16 documented red flags and 3 marked as undocumented, and 10 decisions waiting for me.
 
 **What worked**
 
