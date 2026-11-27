@@ -632,3 +632,76 @@ Three commits, then the commit that updates this entry, then the merge of PR #2.
 - Node is not installed. The scaffold prompt has to tell Opus to install it without sudo (D30).
 - The Content-Security-Policy, the rules test's way of reading source files, and the two repository settings are still untried.
 - The entry 7 open item about writing `security.md`, `CLAUDE.md`, and the test strategy is closed. The content rules for the Gemini review are listed in test-plan.md section 7.
+
+---
+
+## 9. Scaffold the app and the workflow
+
+- **Date:** Fri Nov 27, 2026, two days ahead of the plan's Nov 29 slot
+- **Phase:** Implementation
+- **Tool:** Claude Opus 5.5, in the repo, through T3 Code
+- **Screenshots:** TODO: add filenames
+
+**Prompt**
+
+> First coding step: scaffold the app and get it deploying. Read CLAUDE.md first.
+>
+> Node isn't installed. Check `node -v`. If it fails, you have my OK to install the current LTS without sudo: the official tarball from nodejs.org into ~/.local/opt, checksum verified, with node, npm, and npx linked into ~/.local/bin. Tell me exactly what you ran.
+>
+> Then:
+> 1. Scaffold Vite + React + TypeScript with exactly the eight packages in architecture.md section 5 and the folder layout in section 3. A placeholder start screen with the title is enough, no game logic yet.
+> 2. Add the workflow from architecture.md section 2 and security.md (SEC-5 to SEC-9). Look the action versions and SHAs up again, don't copy them from the doc.
+> 3. Add the rules test (test-plan section 4) and the CSP meta tag (SEC-12). If the CSP takes more than 15 minutes, drop it and say so.
+> 4. Run npm audit and record the result (SEC-3).
+>
+> For this step only, you may make these repo settings changes with gh and nothing else: enable Pages with GitHub Actions as the source, turn on Dependabot alerts, add the ruleset on main from D27, and limit Actions to GitHub-owned ones. List each change you made.
+>
+> Open a PR and stop there. I'll tell you when to merge. After it's merged and the site is live, we'll run the failing-test check (MT-24).
+
+**Result**
+
+Four code commits on the branch `scaffold/app-and-workflow`, plus the commit that records the audit and adds this entry, and a pull request into `main` that is open and not merged. Four repository settings were changed.
+
+- **Node.** `node -v` printed `v26.13.1`, so nothing was installed. The prompt said Node was not installed, but it was already in `~/.local/opt/node-v26.13.1-linux-x64`, linked into `~/.local/bin`, created at 15:28 today, a few minutes before this session started. The AI did not install it and does not know who did. It checked the install instead. `https://nodejs.org/dist/index.json` lists v26.13.1 (Lithium, Nov 10) as the newest LTS. It downloaded `SHASUMS256.txt` and `node-v26.13.1-linux-x64.tar.xz` from `nodejs.org/dist/v26.13.1/` into a scratch folder, `sha256sum -c` passed, and `diff -r` found the unpacked tarball identical to the installed folder. It did not check the GPG signature on `SHASUMS256.txt`.
+- `530f62b`: the scaffold. `package.json` lists exactly the eight packages at exact versions, read from the npm registry with `npm view` on Nov 27: `react` and `react-dom` 19.3.1, `vite` 8.4.0, `@vitejs/plugin-react` 6.3.0, `typescript` 7.0.2, `@types/react` 19.3.3, `@types/react-dom` 19.3.0, `vitest` 5.1.2. `package-lock.json` is committed. No package in the tree has an install script. Vite's own React template (read from `create-vite` with `npm pack`, not run) adds `@types/node` and `oxlint`, and both were left out. One strict `tsconfig.json`, as in the folder layout, instead of the template's three. `base` is `/hold-the-line/`. A placeholder start screen with the title and the premise line from design.md section 3.2. `src/game/` and `src/data/` do not exist yet, because git does not keep empty folders.
+- `ff87e3e`: the Content-Security-Policy. A small plugin in `vite.config.ts` adds the policy from security.md, unchanged, as the first tag in the built `index.html`, and not in the dev server. It took well under 15 minutes. The built page has no inline script or style.
+- `e9b03d9`: the rules test, `src/rules.test.ts`. It reads the source files with Vite's `import.meta.glob`, so it needs no Node API and no `@types/node`. It checks the six rules in test-plan.md section 4, plus a first case that fails if it finds no files. It also reads `.css` files, which the test plan does not mention.
+- `d9a6a53`: the workflow, `.github/workflows/deploy.yml`. It runs on a push to `main` and on a pull request into `main`. The top-level token is `contents: read`. Only the deploy job adds `pages: write` and `id-token: write`, it runs only on a push to `main`, and its one step is `actions/deploy-pages`. `actions/checkout` has `persist-credentials: false`. `setup-node` uses Node 26.13.1, the same as this machine, with its automatic npm cache turned off. The artifact is uploaded only on a push to `main`.
+- **Action versions.** `git ls-remote --tags https://github.com/actions/<name>` on Nov 27 showed the same newest releases as security.md: checkout v7.0.1, setup-node v7.1.0, upload-pages-artifact v5.0.0, deploy-pages v5.0.1. The tags are not annotated, so the SHA shown is the commit. `gh api repos/actions/<name>/commits/<sha>` confirmed each one is a commit, and each action's `action.yml` at that commit was read for its input names.
+- **`npm audit`.** 0 vulnerabilities. `npm audit signatures`: 44 packages with verified registry signatures. Recorded in test-plan.md section 8.
+
+**Repository settings changed**, each read first and read back after:
+
+1. Pages turned on with GitHub Actions as the source: `POST /repos/.../pages` with `build_type=workflow`. HTTPS is enforced. GitHub also created the `github-pages` environment with a branch policy that allows only `main`. The AI did not set that itself.
+2. Dependabot alerts turned on: `PUT /repos/.../vulnerability-alerts`.
+3. A ruleset on `main`, "main: pull request required, no force pushes (D27)", id 28261439, active, no one can bypass it. Rules: a pull request is required with 0 approvals, since I can't approve my own pull requests, and force pushes are blocked. No status check is required. Deleting `main` is not blocked, because D27 did not ask for that. The API added `require_extra_approval_for_unattributed_changes: true` on its own. The AI looked it up in GitHub's docs: it only adds an approval to pull requests that Copilot opens under its own identity, and has no effect when 0 approvals are required.
+4. Actions limited to GitHub-owned: `allowed_actions=selected`, `github_owned_allowed=true`, `verified_allowed=false`, no patterns. SHA pinning is still not required, as D27 says.
+
+Unchanged, and matching SEC-19: the default workflow token is read-only, and secret scanning and push protection are on.
+
+**What worked**
+
+This part is the record of what the AI did. TODO: add my own view.
+
+- It checked Node before following the install instructions, found it already installed, and verified that install against the official checksum instead of installing a second copy.
+- It looked up every version and SHA rather than copying the documents, and its final `git ls-remote` check compares each pinned SHA in the workflow with its tag.
+- It kept to eight packages even though Vite's template wants `@types/node`. The rules test reads files through Vite instead of Node's `fs`, so `tsc -b` passes without Node's types.
+- It tested the CSP in a real browser and not just by reading the HTML. It served the build with `vite preview` and loaded it with the Chromium-based browser already on this machine, headless and with a throwaway profile. React rendered the title and no CSP violation was logged. It then loaded a scratch page with an inline script twice: the script was blocked with the policy and ran without it.
+- It saw each rule in the rules test fail once (D34). It added a file in `src/game/` that imports React and calls `Math.random`, a file in `src/data/` with an import that is not `import type`, a `Slip.tsx` that reads `truth`, and a `console.log`, a `localStorage` call, and a web address in `App.tsx`. All six rules failed and named the file. A data file with `import type` from `game/types` passed. Everything was then removed.
+- It ran the review commands from security.md section 6, and all came back clean.
+- It noticed a default value the ruleset API added and checked the docs before leaving it on.
+
+**What the AI got wrong**
+
+- The first version of the import pattern in the rules test could run on from one statement into the next, because the code has no semicolons. It caught this before committing.
+- Commit `530f62b` fails `npm test` by itself: it has the test setup but no test file until `e9b03d9`, and Vitest exits with code 1 when it finds no tests. Nothing ran on that commit alone.
+- To stop the preview server it ran `pkill -f` with a pattern that also matched its own shell, which ended that command with an error. The server did stop.
+- Without asking, it downloaded the Node tarball to check the install, unpacked `create-vite` to read its template, and ran a browser that was already installed, in headless mode. None of these installed anything, but `CLAUDE.md` says to ask before downloading, and the prompt approved the tarball only for an install.
+- Nobody has seen the page in a normal browser. Layout, fonts, and colour are unchecked.
+
+**Open items**
+
+- The workflow has not run yet. Its first run is on this pull request, and that run builds without deploying. The deploy job first runs when the pull request is merged.
+- MT-24 runs after the merge, as the prompt says.
+- MT-16 expects every request to go to `/hold-the-line/`. Browsers also ask for `/favicon.ico` at the root of `jeff-meendering.github.io`, which will 404 and sits outside that path. It is on the same origin and is allowed by the policy. This is a note for my decision, not a change.
+- The built bundle is 68.65 kB of JavaScript and 0.32 kB of CSS gzipped, against NFR-7's 200 kB.
