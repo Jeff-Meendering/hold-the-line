@@ -1,6 +1,6 @@
 # Hold the Line: project plan
 
-Version 7, Fri Nov 27, 2026. Version 1 was a chat draft written before the assignment text was available, version 2 added the AI workflow, version 3 applied the review fixes, version 4 records the gift-card decision, version 5 brings the scope line on questions in line with the shared question bank in the requirements, version 6 takes component tests out of the cut order and adds the branch and pull request rule to section 6, and version 7 gives the planning-partner chat the job of capturing the prompt screenshots; see [ai-log.md](ai-log.md) for what changed and why. The assignment is in [assignment.md](assignment.md).
+Version 8, Fri Nov 27, 2026. Version 1 was a chat draft written before the assignment text was available, version 2 added the AI workflow, version 3 applied the review fixes, version 4 records the gift-card decision, version 5 brings the scope line on questions in line with the shared question bank in the requirements, version 6 takes component tests out of the cut order and adds the branch and pull request rule to section 6, version 7 gives the planning-partner chat the job of capturing the prompt screenshots, and version 8 moves the writing of the ten customers from Opus to Fable in the roles table; see [ai-log.md](ai-log.md) for what changed and why. The assignment is in [assignment.md](assignment.md).
 
 ## 1. Purpose
 
@@ -76,9 +76,9 @@ It is also the final project for a course on AI-assisted software engineering. M
 
 | Tool | Role | Does not do |
 |---|---|---|
-| Claude Fable, in the repo | Writes the planning, requirements, and design documents, including `architecture.md`, `security.md`, the test strategy, and the first draft of `CLAUDE.md` | Implementation |
+| Claude Fable, in the repo | Writes the planning, requirements, and design documents, including `architecture.md`, `security.md`, the test strategy, and the first draft of `CLAUDE.md`. Also writes the content in `src/data/`: the ten customers and the red flag labels, because that is a writing and judgment task | Code, other than the data test that checks that content |
 | Claude Fable, separate chat | Planning partner: drafts the prompts with Jeff and reviews what all the other tools produce. It reads the repo. It also captures the prompt screenshots through T3 Code's built-in browser and saves them into `screenshots/` | Writing anything else to the repo |
-| Claude Opus, in the repo | Implementation: code, tests, customer data files, and the CI workflow, guided by `CLAUDE.md` | Reviewing its own work as the final check |
+| Claude Opus, in the repo | Implementation: code, tests, and the CI workflow, guided by `CLAUDE.md` | Writing the customers. Reviewing its own work as the final check |
 | Gemini 4 Neon | Independent reviewer of the customer content and of the code, so Claude is not the only thing checking Claude's work | Writing code or content |
 | ChatGPT, in the browser | Fact-checks against real sources: first whether gift cards make sense at a teller window (done Nov 27, see [reviews/01-gift-card-check.md](reviews/01-gift-card-check.md)), then the scam scenarios against FTC and AARP sources (Nov 30) | Writing content |
 | Jeff | Engineer of record: drafts the prompts with the planning partner, edits and approves every prompt before it is sent, makes every decision, triages every review finding, and approves every commit | — |
