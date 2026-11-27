@@ -234,7 +234,7 @@ FBI Albuquerque, the IC3 image, Together CU, Priority First FCU, and the FinCEN 
 
 - **Date:** Fri Nov 27, 2026
 - **Phase:** Requirements
-- **Tool:** Claude Fable 5.2, in the repo. TODO: say whether the prompt was drafted in the planning-partner chat.
+- **Tool:** Claude Fable 5.2, in the repo. The prompt was drafted in the planning-partner chat, which also reviewed the result.
 - **Screenshots:** TODO: add filenames
 
 **Prompt**
@@ -262,7 +262,7 @@ This part is the record of what the AI did. TODO: add my own view after reading 
 
 - It noticed that the fact-check file has no source URLs and a TODO where ChatGPT's answer should be, so "the sources in the fact-check" could not be read from the repo. It said so in the document and did not invent citations.
 - It fetched the sources itself: two FinCEN PDFs and six FTC pages. It read the full text of both PDFs and quoted each indicator with a page number.
-- It marked the flag closest to the game's premise, that the scammer coaches the victim on what to tell the teller (RF-P1), as not documented in any of the eight sources. The documented indicators are about being directed over the phone and not keeping a consistent reason, which is not the same claim.
+- It marked the flag closest to the game's premise, that the scammer coaches the victim on what to tell the teller (RF-P1), as not documented in any of the eight sources. That was right about those eight and wrong about the FTC (see below). The documented indicators are about being directed over the phone and not keeping a consistent reason, which is not the same claim.
 - It marked one indicator as only a partial match (RF-14) and noted where a quote covers less than the flag it supports (RF-6, RF-11).
 - The decisions are tagged in the text ([D1] to [D10]) and collected at the end with a reason each, as the prompt asked.
 
@@ -273,13 +273,58 @@ This part is the record of what the AI did. TODO: add my own view after reading 
 - It told its fetch helper the FinCEN trend analysis was published in February 2024. The PDF is dated April 2024. The document only says 2024.
 - Its fetch tool could not read either PDF, so it extracted the text locally. The FTC quotes came back through the fetch tool with a length cap and were not read on the page. None of the eight sources has had my open-and-read check yet.
 - It could not find an FTC page describing couriers collecting cash or gold, so RF-16 rests on two short clauses.
-- TODO: anything I find on review.
+- It marked coaching as undocumented. It is documented, in two FTC alerts from March 7, 2024 that its search did not find. It did find a third FTC alert from the same day.
+- Each customer had their own questions. A question like "did someone tell you to keep this secret?" would then only show up on scam customers, so the list of questions could give the answer away.
+- The debrief marked a flag on the slip or in the behaviour text as "seen". Those were always on screen, so the label was misleading.
+
+**My mistake**
+
+I sent the fact-check prompt with the placeholders still in it. That is why the AI in the repo did not have ChatGPT's sources, and why it marked coaching as unsourced.
+
+**What the review found**
+
+The planning-partner chat reviewed version 1. These are its findings, and I agreed with all of them.
+
+1. Coaching is documented. Two FTC alerts from March 7, 2024 say scammers tell victims to lie to the bank.
+2. Custom questions per customer can leak the answer.
+3. "Seen" is misleading for a flag that was always on screen.
+4. It checked all 16 source quotes against the FinCEN PDFs and the FTC pages, and they are all there.
+5. The header of `plan.md` said version 3.
 
 **What I changed**
 
-TODO: my decision on D1 to D10, and any corrections.
+I approved D1 to D9 as written and sent this follow-up:
 
-**Open items it raised**
+> Good doc. I approve D1 to D9 as written. Changes:
+>
+> 1. D10: the coaching flag is documented, you just didn't have the sources. Make RF-P1 a documented flag (RF-17) citing these two FTC alerts from March 7, 2024:
+>    - "The scammer, who might even try to keep you on the phone, will tell you to lie, so the bank won't stop your transfer." https://consumer.ftc.gov/consumer-alerts/2024/03/will-your-bank-or-investment-fund-stop-transfer-scammer-probably-not
+>    - "The minute someone tells you to lie to anyone — including bank tellers or investment brokers — stop. It's a scam." https://consumer.ftc.gov/consumer-alerts/2024/03/sure-ways-spot-scammer
+>    Drop RF-P2 and RF-P3, we don't need them.
+> 2. Questions can leak the answer. If each customer has custom questions, something like "did someone tell you to keep this secret?" only shows up on scam customers. Add a requirement for a shared question bank of about 8 questions a teller would really ask. Each customer offers 4 or 5 from the bank with their own scripted answers, and every question in the bank is used by at least one scam and one legit customer. Add that to the data validation rules.
+> 3. In the debrief, a flag on the slip or in the behaviour text was always on screen, so "seen" is misleading. Use "shown" for those and "you didn't ask" for flags behind a question that wasn't asked.
+> 4. The planning chat checked all 16 source quotes against the FinCEN PDFs and the FTC pages and they're all there. Update section 7 and the open items so they don't say unverified.
+> 5. Fix the plan.md header to say version 4.
+>
+> For ai-log entry 5: the prompt was drafted in the planning chat. Also record that I sent the fact-check prompt with the placeholders still in it, which is why you didn't have ChatGPT's sources and marked coaching as unsourced. The findings above came from the planning chat's review and I agreed with them.
+>
+> Bump requirements to version 2, commit and push. Tell me if you disagree with anything.
 
-- Paste ChatGPT's answer into `reviews/01-gift-card-check.md`, so the sources used here can be matched against the ones the fact-check verified.
-- The header of `plan.md` says "Version 3" while its text describes version 4.
+The result is `docs/requirements.md` version 2 and the corrected header in `docs/plan.md`.
+
+**What the AI did with the follow-up**
+
+- It applied all five changes and did not disagree with any of them.
+- It fetched both FTC alerts before citing them. Both quotes are on the pages, and both pages are dated March 7, 2024.
+- It added the question bank as FR-18, so that FR-1 to FR-17 keep their numbers, with a new acceptance criterion (AC-8.3) for the validation rules.
+- It made two choices I had not, and listed them as D11 and D12: the bank has exactly 8 questions shown in bank order, and a flag behind a question the player did ask is labelled "you asked".
+- It pointed out that the bank does not close the leak completely. The wording can no longer give the answer away, but which 4 or 5 questions a customer offers still can, because a question offered by three scam customers and one legit customer passes the rule. It added this to the open items for the Gemini content review.
+- It noted that the document is now about 3,500 words, further over the 10-minute limit than version 1.
+
+TODO: my decision on D11 and D12.
+
+**Open items**
+
+- `reviews/01-gift-card-check.md` still has TODOs for ChatGPT's answer and model name.
+- The bank's 8 questions are not written yet. Their ids are part of the data schema, which is locked on Nov 28.
+- The plan's scope line still says "4–5 available questions" and does not mention the shared bank.

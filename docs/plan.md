@@ -1,6 +1,6 @@
 # Hold the Line: project plan
 
-Version 3, Fri Nov 27, 2026. Version 1 was a chat draft written before the assignment text was available, version 2 added the AI workflow, version 3 applied the review fixes, and version 4 records the gift-card decision; see [ai-log.md](ai-log.md) for what changed and why. The assignment is in [assignment.md](assignment.md).
+Version 4, Fri Nov 27, 2026. Version 1 was a chat draft written before the assignment text was available, version 2 added the AI workflow, version 3 applied the review fixes, and version 4 records the gift-card decision; see [ai-log.md](ai-log.md) for what changed and why. The assignment is in [assignment.md](assignment.md).
 
 ## 1. Purpose
 

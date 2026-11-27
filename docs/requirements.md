@@ -1,6 +1,6 @@
 # Hold the Line: requirements
 
-Version 1, Fri Nov 27, 2026. Scope comes from [plan.md](plan.md) version 4; nothing here adds to it. Choices the plan left open are marked **[D*n*]** and listed in [section 8](#8-decisions-for-jeff). They are recommendations until Jeff approves them.
+Version 2, Fri Nov 27, 2026. Scope comes from [plan.md](plan.md) version 4. Version 2 applies Jeff's review of version 1: a shared question bank (FR-18), the coaching flag as a documented one (RF-17), clearer debrief labels (FR-9), and the source check (section 7). Choices the plan left open are marked **[D*n*]** and listed in [section 8](#8-decisions).
 
 IDs are stable so the test plan can trace to them: `US` story, `AC` acceptance criterion, `FR` functional, `NFR` non-functional, `RF` red flag.
 
@@ -22,8 +22,8 @@ IDs are stable so the test plan can trace to them: `US` story, `AC` acceptance c
 **US-2. Read a customer.** As a player, I want to see the transaction and how the customer is acting. *(FR-2, FR-3)*
 - AC-2.1 Each customer screen shows the name, the slip (type, amount, account note, and the type's extra fields), a behaviour description, and "Customer *n* of 6".
 
-**US-3. Ask questions.** As a player, I want to question the customer to test my suspicion. *(FR-4, FR-5)*
-- AC-3.1 The customer has 4 or 5 questions. Choosing one shows its answer, which stays on screen.
+**US-3. Ask questions.** As a player, I want to question the customer to test my suspicion. *(FR-4, FR-5, FR-18)*
+- AC-3.1 The customer has 4 or 5 questions, each worded exactly as in the shared bank and listed in bank order. Choosing one shows this customer's answer, which stays on screen.
 - AC-3.2 After the third question the rest are disabled and the counter reads 0.
 - AC-3.3 An asked question cannot be asked again.
 
@@ -40,15 +40,16 @@ IDs are stable so the test plan can trace to them: `US` story, `AC` acceptance c
 **US-6. Debrief.** As Ray, I want to see what I got right, what I missed, and why. *(FR-8, FR-9, section 5)*
 - AC-6.1 The debrief appears after the sixth decision with a score out of 60 that matches section 5 for a scripted day.
 - AC-6.2 All 6 customers are listed in the order played, with the player's call, the truth, and right or wrong.
-- AC-6.3 Each scam customer lists its red flags marked *seen* or *not seen*, matching the questions actually asked.
+- AC-6.3 Each scam customer lists its red flags. Flags on the slip or in the behaviour text are marked *shown*. Flags behind a question are marked *you asked* or *you didn't ask*, matching the questions actually asked.
 - AC-6.4 Each customer has a one-line explanation. For scams it names the scammer's tactic. None blames the customer.
 
 **US-7. Replay.** As a player, I want to play again with a different day. *(FR-10)*
 - AC-7.1 Play again starts a new day with a fresh draw and nothing carried over.
 
-**US-8. Safe content changes.** As the developer, I want bad customer data and failing tests to stop a deploy. *(FR-11 to FR-16)*
+**US-8. Safe content changes.** As the developer, I want bad customer data and failing tests to stop a deploy. *(FR-11 to FR-16, FR-18)*
 - AC-8.1 Removing a question, a red flag, or a source URL from a customer makes `npm test` fail and name the customer.
 - AC-8.2 With a failing test on `main`, the deploy job does not run and the live site is unchanged.
+- AC-8.3 `npm test` fails if a customer uses a question that is not in the bank, or if any bank question is left without a scam customer or without a legit customer.
 
 **US-9 (should). Best score.** As a returning player, I want to see my best score. *(FR-17)*
 - AC-9.1 After a day that beats the stored best, the new best shows on the debrief, and on the start screen after a reload.
@@ -60,20 +61,21 @@ IDs are stable so the test plan can trace to them: `US` story, `AC` acceptance c
 | FR-1 | The start screen shows the title, the how-to-play text (AC-1.2), and a Start button. It never states the number or range of scams in a day. |
 | FR-2 | Start draws a day (section 6) and shows its 6 customers one at a time in drawn order, with "Customer *n* of 6". |
 | FR-3 | The customer screen shows the name, a behaviour description, and a slip: transaction type, amount, a one-line account note on the customer's usual activity **[D5]**, and by type the wire recipient and destination or the number of gift cards and value per card. |
-| FR-4 | The customer's 4 or 5 questions are listed. Choosing one reveals its scripted answer, keeps it visible, and marks it asked. |
+| FR-4 | The customer's 4 or 5 questions (FR-18) are listed. Choosing one reveals that customer's scripted answer, keeps it visible, and marks it asked. |
 | FR-5 | At most 3 questions per customer. The number left is shown; at 0 the rest are disabled. |
 | FR-6 | Process and Hold are available at any time, including before any question **[D7]**. The decision is final and moves to the next customer. |
 | FR-7 | Before the debrief the game shows no correctness, truth, red flag, or score information. |
 | FR-8 | After the sixth decision the debrief shows the score (section 5) as "*N* / 60" and the 6 customers in the order played, each with name, transaction, the player's call, the truth, and right or wrong. |
-| FR-9 | For each scam customer the debrief shows the scam type, a one-line explanation, and every red flag marked *seen* (on the slip, in the behaviour text, or in an answer the player revealed) or *not seen*. For each legit customer it shows one line on why the transaction was fine **[D4]**. |
+| FR-9 | For each scam customer the debrief shows the scam type, a one-line explanation, and every red flag marked *shown* (it was on the slip or in the behaviour text), *you asked* (it was in an answer the player revealed) **[D12]**, or *you didn't ask* (it was behind a question the player did not ask). For each legit customer it shows one line on why the transaction was fine **[D4]**. |
 | FR-10 | Play again starts a new day with a fresh draw and cleared state. A reload returns to the start screen; no game in progress is saved **[D8]**. |
 | FR-11 | Customers live in typed data files, with no customer text in component code. The pool is 4 scam and 6 legit; the smallest valid pool is 3 and 5. |
-| FR-12 | Every customer has an id, name, truth, slip fields, behaviour text, 4 or 5 question-and-answer pairs, and a debrief explanation. Every scam customer also has a scam type, at least 1 source URL, and at least 3 red flags, each naming an `RF` id from section 7 and where it shows (slip, behaviour, or a question). |
+| FR-12 | Every customer has an id, name, truth, slip fields, behaviour text, scripted answers to 4 or 5 different bank questions, and a debrief explanation. Every scam customer also has a scam type, at least 1 source URL, and at least 3 red flags, each naming an `RF` id from section 7 and where it shows (slip, behaviour, or a bank question). |
 | FR-13 | Each transaction type (cash withdrawal, wire, gift cards) is used by at least 1 scam and 1 legit customer. Gift cards are bank-issued Visa gift cards, at most $500 each. Store gift cards, gold, and crypto ATMs appear only as the reason behind a cash withdrawal. |
 | FR-14 | Each scam customer has at least 1 red flag visible without asking and at least 1 that only a question reveals. At least 3 legit customers show a trait from section 7 and have a question whose answer explains it. The 4 scam customers use 4 different scam types named in the FinCEN sources **[D6]**. |
-| FR-15 | A data validation test checks FR-11 to FR-14 and fails with the customer id and the rule broken. |
+| FR-15 | A data validation test checks FR-11 to FR-14 and FR-18, and fails with the customer id or question id and the rule broken. |
 | FR-16 | One GitHub Actions workflow runs the tests, then builds, then deploys to GitHub Pages. Build and deploy run only if the tests pass. |
 | FR-17 (should) | The best score is saved in `localStorage` and shown on the start screen and the debrief. The game works normally without storage. |
+| FR-18 | Questions come from one shared bank of 8 questions a teller could ask any customer, each with an id and fixed wording, kept in a data file **[D11]**. A customer offers 4 or 5 of them with its own answers, listed in bank order. Every bank question is offered by at least 1 scam and at least 1 legit customer, so the questions on offer do not give the answer away. |
 
 ## 4. Non-functional requirements
 
@@ -119,7 +121,7 @@ Examples: perfect day, 60. One scam let through and the rest right, 20. One legi
 
 ## 7. Red flags
 
-The fact-check file does not include ChatGPT's answer or its URLs, so the flags are tied to these eight documents, fetched Nov 27, 2026 (see the open items in section 8). The FinCEN wording was read from the PDF text in this session. The FTC wording came back from a fetch tool and was not read on the page.
+Every flag is tied to one of the ten documents below. ChatGPT's answer to the gift-card check was not saved in the repo, so the documents were fetched directly on Nov 27, 2026. The planning-partner chat then checked the quoted wording for RF-1 to RF-16 against the FinCEN PDFs and the FTC pages, and all of it is there. The two RF-17 quotes came from that review and were confirmed by fetching both pages the same day.
 
 | Key | Source |
 |---|---|
@@ -131,6 +133,8 @@ The fact-check file does not include ChatGPT's answer or its URLs, so the flags 
 | F4 | FTC, [Did someone send you to a Bitcoin ATM? It's a scam](https://consumer.ftc.gov/consumer-alerts/2024/03/did-someone-send-you-bitcoin-atm-its-scam) |
 | F5 | FTC, [Scammers Use Fake Emergencies To Steal Your Money](https://consumer.ftc.gov/articles/scammers-use-fake-emergencies-steal-your-money) |
 | F6 | FTC, [How To Spot, Avoid, and Report Tech Support Scams](https://consumer.ftc.gov/articles/how-spot-avoid-and-report-tech-support-scams) |
+| F7 | FTC, [Will your bank or investment fund stop a transfer to a scammer? Probably not](https://consumer.ftc.gov/consumer-alerts/2024/03/will-your-bank-or-investment-fund-stop-transfer-scammer-probably-not), March 7, 2024 |
+| F8 | FTC, [Sure ways to spot a scammer](https://consumer.ftc.gov/consumer-alerts/2024/03/sure-ways-spot-scammer), March 7, 2024 |
 
 FinCEN writes its flags about customers aged 60 and over and says "no single red flag is determinative" (A, p. 8), which is why FR-12 asks for at least 3 per scam customer.
 
@@ -154,35 +158,31 @@ FinCEN writes its flags about customers aged 60 and over and says "no single red
 | RF-14 | The payment is for tech support, a refund sent "by mistake", prize fees, or taxes owed to a caller | Answers, slip | Memo lines "such as 'tech support services,' 'winnings,' or 'taxes'" (A, p. 10). **Partial:** the indicator is about repeated checks or wires; the game shows one. |
 | RF-15 | The cash is going into a crypto ATM | Answers | "Is there a legit reason for someone to send you to a Bitcoin ATM? The short answer is NO." (F4) |
 | RF-16 | The cash, or gold bought with it, will be handed to someone who collects it | Answers | "buy gold or get cash and give it to someone" (F6); "cash pick-up at the victims' houses" (A, p. 5) |
+| RF-17 | Says someone told them to lie to the bank, or told them what to say | Answers | "The scammer, who might even try to keep you on the phone, will tell you to lie, so the bank won't stop your transfer." (F7); "The minute someone tells you to lie to anyone — including bank tellers or investment brokers — stop. It's a scam." (F8) |
 
-**Plausible but not documented in these sources.** These do not count toward a scam customer's 3 flags and are not shown in the debrief as official indicators unless the Nov 30 fact-check finds a source **[D10]**.
+**Plausible but not documented.** None in this version. A flag without a source is listed here, and kept out of FR-12's count and out of the debrief, until it has one. Version 1 listed three: one is now RF-17 and two were dropped (D10).
 
-| ID | Flag | Why it is marked |
-|---|---|---|
-| RF-P1 | The customer repeats a cover story the caller supplied, or says the caller told them what to tell the teller | None of the eight sources says scammers script what victims tell bank staff. RF-3 is the closest documented flag. |
-| RF-P2 | The customer reads the wire details from a note or a text message | Not in any source read. |
-| RF-P3 | Every gift card is loaded to the $500 maximum | The sources flag the number of cards, not the value of each. |
+## 8. Decisions
 
-## 8. Decisions for Jeff
+Jeff approved D1 to D9 on Nov 27, 2026 and decided D10 differently from the recommendation. D11 and D12 are new in version 2 and are recommendations until he approves them.
 
-Each recommendation is already written into the sections above so the document reads as a whole.
-
-| # | Decision | Recommendation | Why |
-|---|---|---|---|
-| D1 | Scoring numbers | +10 for a right call, −10 for holding a legit customer, −30 for processing a scam | The maximum is 60 on every day, so scores compare across draws. Counting the lost +10, a missed scam costs 40 and a wrong hold 20. At −20 instead of −30, processing everyone on a 1-scam day scores 30 of 60 for never looking. |
-| D2 | Negative totals | Show a sum below 0 as 0 | The raw sum can reach −120, which reads as blame and tells the player nothing more than 0 does. |
-| D3 | How the scam count is picked | 1, 2, and 3 equally likely | The plan says the count is picked first, not how. Equal odds is the simplest rule to state and test. |
-| D4 | What "red flags missed" means | Every flag for every scam customer, marked *seen* or *not seen*, plus one line for every legit customer | Flags only for wrong calls would hide what a player missed on a scam they held on a hunch, and a player who blocked a legit customer needs the innocent explanation. This is debrief text, not a new screen. |
-| D5 | Account note on the slip | One line of usual activity per customer | RF-8, RF-9, and RF-10 all mean "unusual for this account". Without the line the player cannot see them. |
-| D6 | Content minimums | 3 flags per scam, 1 or more up front and 1 or more behind a question; 3 legit customers with a look-alike trait; 4 different scam types | They keep the game from being obvious or a coin flip (plan risk 7) and give the data test exact rules. They constrain the Nov 30 content work. |
-| D7 | Questions and score | Deciding with no questions is allowed; questions do not affect the score | The limit of 3 is already the cost. Scoring questions would be a mechanic the plan does not have. |
-| D8 | Reload and replay | A reload returns to the start screen; Play again goes straight to a new day | Saving a game in progress is out of scope, and a returning player has read the rules. |
-| D9 | NFR numbers | Chrome and Firefox; 375 px; 200 kB gzipped; 10 minutes | The plan gives no numbers for browsers, phone width, size, or session length. These are mine, each checkable in a few minutes. |
-| D10 | Flags RF-P1 to RF-P3 | Keep them out of the required 3 and the debrief until sourced | RF-P1 is closest to the game's premise ("coached") and I could not source it. Ask about it directly in the Nov 30 fact-check. |
+| # | Decision | Outcome | Why | Status |
+|---|---|---|---|---|
+| D1 | Scoring numbers | +10 for a right call, −10 for holding a legit customer, −30 for processing a scam | The maximum is 60 on every day, so scores compare across draws. Counting the lost +10, a missed scam costs 40 and a wrong hold 20. At −20 instead of −30, processing everyone on a 1-scam day scores 30 of 60 for never looking. | Approved |
+| D2 | Negative totals | Show a sum below 0 as 0 | The raw sum can reach −120, which reads as blame and tells the player nothing more than 0 does. | Approved |
+| D3 | How the scam count is picked | 1, 2, and 3 equally likely | The plan says the count is picked first, not how. Equal odds is the simplest rule to state and test. | Approved |
+| D4 | What "red flags missed" means | Every flag for every scam customer, with a label saying whether the player had it in front of them, plus one line for every legit customer | Flags only for wrong calls would hide what a player missed on a scam they held on a hunch, and a player who blocked a legit customer needs the innocent explanation. | Approved. Labels changed in version 2: "seen" was misleading for a flag that was always on screen |
+| D5 | Account note on the slip | One line of usual activity per customer | RF-8, RF-9, and RF-10 all mean "unusual for this account". Without the line the player cannot see them. | Approved |
+| D6 | Content minimums | 3 flags per scam, 1 or more up front and 1 or more behind a question; 3 legit customers with a look-alike trait; 4 different scam types | They keep the game from being obvious or a coin flip (plan risk 7) and give the data test exact rules. | Approved |
+| D7 | Questions and score | Deciding with no questions is allowed; questions do not affect the score | The limit of 3 is already the cost. Scoring questions would be a mechanic the plan does not have. | Approved |
+| D8 | Reload and replay | A reload returns to the start screen; Play again goes straight to a new day | Saving a game in progress is out of scope, and a returning player has read the rules. | Approved |
+| D9 | NFR numbers | Chrome and Firefox; 375 px; 200 kB gzipped; 10 minutes | The plan gives no numbers for browsers, phone width, size, or session length. | Approved |
+| D10 | Flags RF-P1 to RF-P3 | RF-P1 is documented and is now RF-17. RF-P2 and RF-P3 are dropped. | Two FTC alerts say scammers tell victims to lie to the bank. Version 1 recommended holding the flag back as unsourced because the search behind it missed both alerts. The other two flags are not needed. | Decided by Jeff |
+| D11 | Size and order of the question bank | Exactly 8 questions, listed in bank order on every customer | Jeff asked for "about 8"; a fixed number is what the data test can check. A fixed order stops the order of questions from hinting at the answer. | Recommended |
+| D12 | Label for a flag behind a question the player did ask | *you asked* | Jeff set *shown* and *you didn't ask*. The third case needs its own label, and *shown* would hide that the player found the flag by asking. | Recommended |
 
 **Open items, not decisions**
 
-1. `reviews/01-gift-card-check.md` has a TODO where ChatGPT's answer should be. A and T are very likely the two FinCEN PDFs it verified (T contains the check statistic the triage mentions), but until the answer is pasted nobody can confirm that, or which two FTC pages it used.
-2. All eight sources need the open-and-read check the plan requires.
-3. No FTC page I found describes couriers collecting cash or gold in detail. RF-16 rests on one clause in F6 and one in A.
-4. The header of `plan.md` says "Version 3" while its text describes version 4.
+1. `reviews/01-gift-card-check.md` still has TODOs for ChatGPT's answer and model name. The quotes in section 7 are verified without it, so this is a gap in the process record, not in this document.
+2. FR-18 stops the wording of a question from giving the answer away. Which 4 or 5 questions a customer offers can still hint: a question offered by three scam customers and one legit customer passes the rule. The Gemini content review should check for it.
+3. RF-16's quotes are on the pages, but each is a single clause. If a courier customer is written, the Nov 30 fact-check should look for a fuller source.
