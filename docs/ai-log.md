@@ -483,16 +483,39 @@ It did not disagree with any change. It raised four consequences:
 
 **What I changed**
 
-TODO: after my review and the planning-partner chat's review.
+The planning-partner chat reviewed version 2 of the design. The three changes below came from that review, and I agreed with them. I approved D19 and D20. Both were already drawn in the wireframes before I had approved them, which the AI said itself in its reply.
 
-**Decisions waiting for me**
+> D19 and D20 are approved. Three last changes, then merge PR #1:
+>
+> 1. Your point 4 needs a rule, not just a review note. Right now no legit customer ever says anything alarming, so one odd answer always means scam. Give `lookAlike` a `shownIn` like red flags have (slip, behaviour, or a question), and require at least 2 legit look-alikes to show their trait in an answer, explained by a different question. Add the validation rule and a content rule, and show where the trait appeared on the look-alike's debrief card.
+> 2. Leave `told` as it is. I accept that it's usually a dead question, since that's the real lesson. Add a note to check it in the playtest.
+> 3. Roles table in plan.md: the planning chat will also capture the prompt screenshots through T3 Code's built-in browser and save them into screenshots/. It writes nothing else to the repo. Add a line to the plan's README notes that the README has to say how the screenshots were captured.
+>
+> Update the ai-log entry (these came from the planning chat's review, and note that D19 and D20 were drawn before I approved them). Then merge the PR and tell me the merge commit.
 
-- D19: Hold and Process ignore presses for the first half second after a customer appears.
-- D20: two additions to the debrief, source links on scam cards and a look-alike line on legit cards.
+The AI had raised point 4 itself, as a consequence of the cover-story rule, and had left it for the Gemini review to look at. The review's point was that a known hole in the rules should be closed with a rule.
+
+**What the AI did with the follow-up**
+
+Commit `c75ce1f`, then the commit that updates this entry, then the merge of PR #1.
+
+- `lookAlike` now has `flag`, `shownIn`, and `explainedBy`. Rule V16 requires at least 2 legit look-alikes whose trait is in an answer, and V9 requires the explaining question to be a different one. Two content rules were added: C9 for the alarming answer and C10 for making it point toward the question that explains it. The rule is D21, and the requirements carry it in FR-14 and AC-8.5.
+- It added a second example, a fragment of a legit wire customer who says "No, never. It has all been by email" when asked if they have met the recipient, and explains it under `verified`. That fragment is the second card in the debrief wireframe, where the look-alike's trait gets the same *you asked* and *you didn't ask* labels as a red flag.
+- It worked out the odds for this rule too: a player who has heard the alarming answer and has 2 questions left finds the explanation half the time by picking blind. That is why C10 exists.
+- D19 and D20 are in the requirements as FR-6 and FR-9, with AC-4.4 and AC-6.5 to test them. NFR-1 now says the source links leave the site only on a click.
+- `told` is unchanged. [design.md](design.md) has a new section 7, notes for the test plan, and its first note is the playtest check on `told`. The section also lists the double-click test, the measurements the UI plan only estimated, and the content rules that go to Gemini.
+- [plan.md](plan.md) is version 7: the planning-partner chat's row says it captures the prompt screenshots through T3 Code's built-in browser and writes nothing else, and the README has to say how the screenshots were captured.
+
+**What the AI got wrong in the follow-up**
+
+- The source links have no titles, because the schema stores only URLs. The debrief can only show "consumer.ftc.gov (1)", which tells the player nothing about what they will read. It kept the schema as it was and did not raise it as a decision.
+- It added a second example customer fragment, although the earlier prompt asked for one example.
+- It left step 2 in the plan's section 6 as "Screenshot the prompt before sending it". With the planning-partner chat capturing the screenshots, I need to check that this still describes what happens.
+- Two of the regenerated wireframe lines were too wide at first. The script that builds them refused to write the file, so the mistake did not reach the document.
 
 **Open items**
 
-- The pull request is open and not merged.
+- PR #1 is merged at the end of this step.
 - `security.md`, `CLAUDE.md`, and the test strategy are still to write in the design phase (plan, Nov 29). If D20 (a) is approved, `security.md` has to cover links that leave the site.
 - The content rules C2, C3, and C5 to C8 need to go on the checklist for the Gemini content review.
 - This machine still has no Node, which the Nov 29 scaffold needs.
