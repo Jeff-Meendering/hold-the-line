@@ -450,10 +450,9 @@ The planning-partner chat reviewed both documents. Its findings and my follow-up
 - **Screenshots**, in [`/screenshots`](../screenshots):
   - [`03-design/03-planning-chat-screenshot-question-p1.png`](../screenshots/03-design/03-planning-chat-screenshot-question-p1.png)
   - [`03-design/04-fable-design-part-2-p1.png`](../screenshots/03-design/04-fable-design-part-2-p1.png)
-  - [`03-design/04-fable-design-part-2-p2.png`](../screenshots/03-design/04-fable-design-part-2-p2.png)
   - [`03-design/05-planning-chat-design-review-p1.png`](../screenshots/03-design/05-planning-chat-design-review-p1.png)
   - [`03-design/05-planning-chat-design-review-p2.png`](../screenshots/03-design/05-planning-chat-design-review-p2.png)
-  - [`03-design/06-fable-design-final-fixes-p1.png`](../screenshots/03-design/06-fable-design-final-fixes-p1.png), the same capture as `04-fable-design-part-2-p2.png`
+  - [`03-design/06-fable-design-final-fixes-p1.png`](../screenshots/03-design/06-fable-design-final-fixes-p1.png)
 
 **Prompt**
 
@@ -571,10 +570,9 @@ Commit `c75ce1f`, then the commit that updates this entry, then the merge of PR 
 - **Tool:** Claude Fable 5.2, in the repo. The prompt was drafted in the planning-partner chat.
 - **Screenshots**, in [`/screenshots`](../screenshots):
   - [`03-design/07-fable-security-test-plan-claude-md-p1.png`](../screenshots/03-design/07-fable-security-test-plan-claude-md-p1.png)
-  - [`03-design/07-fable-security-test-plan-claude-md-p2.png`](../screenshots/03-design/07-fable-security-test-plan-claude-md-p2.png)
   - [`03-design/08-planning-chat-security-review-p1.png`](../screenshots/03-design/08-planning-chat-security-review-p1.png)
   - [`03-design/08-planning-chat-security-review-p2.png`](../screenshots/03-design/08-planning-chat-security-review-p2.png)
-  - [`03-design/09-fable-security-decisions-merge-p1.png`](../screenshots/03-design/09-fable-security-decisions-merge-p1.png), the same capture as `07-fable-security-test-plan-claude-md-p2.png`
+  - [`03-design/09-fable-security-decisions-merge-p1.png`](../screenshots/03-design/09-fable-security-decisions-merge-p1.png)
 
 **Prompt**
 
@@ -799,8 +797,8 @@ This part is the record of what the AI did. TODO: add my own view.
 - **Screenshots**, in [`/screenshots`](../screenshots):
   - [`04-implementation/07-opus-game-logic-p1.png`](../screenshots/04-implementation/07-opus-game-logic-p1.png)
   - [`04-implementation/07-opus-game-logic-p2.png`](../screenshots/04-implementation/07-opus-game-logic-p2.png)
-  - [`04-implementation/08-planning-chat-game-logic-review-p1.png`](../screenshots/04-implementation/08-planning-chat-game-logic-review-p1.png), which shows the end of the step 9 prompt and not the review
-  - TODO: the planning chat's review of PR #7
+  - [`04-implementation/08-planning-chat-game-logic-review-p1.png`](../screenshots/04-implementation/08-planning-chat-game-logic-review-p1.png): the planning chat's review of PR #7
+  - TODO: the follow-up prompt and the reply to it
 
 **Prompt**
 
@@ -916,6 +914,7 @@ The prompt in the new screenshot 08 is the planning chat's draft. The prompt abo
 - PR #6 conflicted with `main` in this file: PR #6 added lines to the end of entry 9, and PR #8 had added entry 11 after it. It merged `main` into PR #6's branch (`1c81a80`), kept both, PR #6's lines first, and merged PR #6 after its check passed (run [46073640920](https://github.com/Jeff-Meendering/hold-the-line/actions/runs/46073640920), deploy skipped). The merge is `486a62e`.
 - It merged `main` into this branch (`edc5983`). The conflict was the same file, resolved by taking `main`'s log and putting this entry between 9 and 11. Against `main`, the only change to the log in that commit is this entry.
 - It looked at both new screenshots itself before copying them (SEC-20). Neither shows a token, password, or notification.
+- It merged PR #7 after its check passed on `05eb42d` (run [46073781723](https://github.com/Jeff-Meendering/hold-the-line/actions/runs/46073781723), deploy skipped). The merge is `3d403d7`.
 
 **What the AI got wrong in the follow-up**
 
@@ -928,7 +927,9 @@ The prompt in the new screenshot 08 is the planning chat's draft. The prompt abo
 - **Date:** Fri Nov 27, 2026
 - **Phase:** Documentation (process evidence for every phase so far)
 - **Tool:** Claude Opus 5.5, in the repo, through T3 Code. The screenshots were captured by the planning-partner chat through T3 Code's built-in browser, as plan.md section 5 says.
-- **Screenshots:** TODO: add filenames
+- **Screenshots**, in [`/screenshots`](../screenshots):
+  - [`04-implementation/09-planning-chat-screenshot-capture-p1.png`](../screenshots/04-implementation/09-planning-chat-screenshot-capture-p1.png): the planning chat reporting the capture, and writing the prompt for this step
+  - TODO: the prompt in the Opus thread
 
 Numbered 11 because PR #7, still open, adds entry 10.
 
@@ -974,3 +975,24 @@ This part is the record of what the AI did. TODO: add my own view.
 
 - It called the T3 Code wait tool twice with subagent ids, which that tool does not take, and then started a subagent that did nothing just to wait. Subagents report back on their own.
 - The privacy check of 56 of the 58 images was done by its subagents, not by the AI that wrote this entry. SEC-20 asks that every screenshot be looked at, and I have not looked at them yet.
+
+**What I changed**
+
+The screenshot part of the follow-up quoted in full in entry 10:
+
+> Then one small PR for screenshot fixes, which you may also merge when green:
+> - Copy two files from ~/Desktop/hold-the-line-screenshots/04-implementation/: 08-planning-chat-game-logic-review-p1.png (replaces the wrong one, link it in entry 10) and 09-planning-chat-screenshot-capture-p1.png (new, link it in entry 11).
+> - Delete 04-implementation/09-planning-chat-pairing-question-p1.png. The planning chat couldn't get a clean capture of that exchange.
+> - Delete the two duplicates, 03-design/04-fable-design-part-2-p2.png and 03-design/07-fable-security-test-plan-claude-md-p2.png, and fix their links in the log.
+> - Leave the two screenshots that show my unfilled [model name] placeholder. That's the real mistake and entry 5 already describes it.
+
+**What the AI did with the follow-up**
+
+On the branch `docs/screenshot-fixes`, in its own pull request. The problems listed above are left as they were written, and this part says what became of them.
+
+- It copied the two files and checked each with `cmp` against the source: both are byte for byte the same. The new 08 shows the planning chat's review of PR #7, which is now linked in entry 10 in place of the TODO. It also shows the planning chat's draft of the follow-up prompt, which differs from the one I sent. The new 09 shows the planning chat reporting the capture and writing this step's prompt, and is linked above. It ends with the planning chat's own reply still being written, which is the capture in progress.
+- Before deleting the two duplicates, it compared each with its twin again with ImageMagick `compare`: 14 pixels differ in each pair, as above. It removed their links from entries 7 and 8, and the "same capture as" notes on `03-design/06-fable-design-final-fixes-p1.png` and `09-fable-security-decisions-merge-p1.png`, which stay linked.
+- It deleted `04-implementation/09-planning-chat-pairing-question-p1.png`, after looking at it.
+- It left `01-planning/09-fable-plan-revision-p4.png` and `11-fable-plan-fixes-p1.png` alone.
+- It looked at the new 08 and 09 itself (SEC-20). Neither shows a token, password, or notification. 08 shows the line "T3 Code pairing token · Request ended" and the start of the sudo-password exchange described above, with no code or password in it.
+- `screenshots/` now holds 56 PNGs. A script checked that every one is linked from this log and that every link in the log points to a file that exists.
