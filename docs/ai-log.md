@@ -15,23 +15,34 @@ Each entry records the tool, the prompt, what worked, what the AI got wrong, and
 
 **Prompt**
 
-TODO: paste the prompt. It was sent in a different session, so it is not available to copy here.
+> I'm starting my final project for my AI-assisted software engineering class. It's a browser game called Hold the Line where you play a bank teller trying to spot customers who are being scammed. I'll explain the game more later, right now I just want the repo set up.
+>
+> Can you:
+> - git init here and make a public GitHub repo called hold-the-line with the gh cli
+> - add a docs/ folder and a screenshots/ folder with these subfolders: 01-planning, 02-requirements, 03-design, 04-implementation, 05-testing, 06-documentation, 07-final-app (put a .gitkeep in each)
+> - add a .gitignore for a Node/Vite project
+> - add a placeholder README.md with just the project name and one sentence about it
+> - commit and push to main
+>
+> Please don't scaffold the app or install anything yet, we haven't done planning. Tell me the repo URL when you're done.
 
 **Result**
 
-Commit `50d5063`: a `docs/` folder, seven numbered screenshot folders (`01-planning` to `07-final-app`), a `.gitignore` for a Vite project, and a one-line README.
+Commit `50d5063`: a `docs/` folder, seven numbered screenshot folders (`01-planning` to `07-final-app`), a `.gitignore` for a Vite project, and a one-line README, in a public repository.
 
 **What worked**
 
+- It did exactly what the list asked and nothing more. Nothing was scaffolded or installed.
+- It set the git name and email for this repo without asking, using my GitHub no-reply address. That was the right call, and it told me it had done it.
 - The screenshot folders follow the SDLC phases, so evidence is sorted from the first commit.
 
 **What the AI got wrong**
 
-TODO
+Nothing.
 
 **What I changed**
 
-TODO
+Nothing.
 
 ---
 
@@ -39,7 +50,7 @@ TODO
 
 - **Date:** Fri Nov 27, 2026
 - **Phase:** Planning
-- **Tool:** Claude Fable 5.2, in the repo
+- **Tool:** Claude Fable 5.2, in the repo. The prompt was drafted in the planning-partner chat.
 - **Screenshots:** TODO: add filenames
 
 **Prompt**
@@ -85,7 +96,7 @@ All of the above, in the revision prompt in entry 3.
 
 **Lesson**
 
-The biggest miss was mine. I summarised the assignment as "grades the whole SDLC" and did not paste it, so the AI planned for the summary. It cannot plan for requirements it has not been given, and it will fill the gap with a reasonable guess that looks complete. Give the source document, not my summary of it.
+The biggest miss was a handoff, not the model. The prompt was drafted in the planning chat, which had the full assignment. Neither it nor I carried the assignment over, so the prompt only said "grades the whole SDLC", and the AI in the repo planned for that summary. Context one tool has does not reach another unless I move it. The receiving tool cannot tell what it was not given, and it fills the gap with a reasonable guess that looks complete.
 
 ---
 
@@ -116,24 +127,52 @@ The full assignment text was pasted below the prompt; it is saved as [assignment
 
 **Result**
 
-`docs/assignment.md`, `docs/plan.md` (version 2), and this log, committed and pushed.
+`docs/assignment.md`, `docs/plan.md` (version 2), and this log, committed and pushed in `8e8b785`.
 
 **What worked**
 
 - A numbered list of changes, each with its reason. All seven were applied.
-- Asking the AI to say where it disagreed, after doing the work rather than instead of it.
+- Asking the AI to say where it disagreed, after doing the work and not in place of it. The pushback was useful.
 - With the assignment in hand, the AI found a requirement neither of us had listed: user personas.
+- It raised whether gift cards are something a bank teller sells at all, which I had not questioned.
 
 **What the AI pushed back on**
 
-- Change 4: it applied 8.5 and 5, but pointed out that the same revision adds work (three more documents, two reviews, a fact-check, and 10 customers instead of 6), so only 6.5 of the 8.5 hours are code and the buffer fell from 2 hours to 1.5.
-- Change 6: it applied the pool, but noted that a known range of 1 to 3 still lets a player count at the edges, and suggested not telling the player the range.
+- Change 4: it applied 8.5 and 5, but pointed out that the same revision adds work (three more documents, two reviews, a fact-check, and 10 customers in place of 6), so only 6.5 of the 8.5 hours are code and the buffer fell from 2 hours to 1.5.
+- Change 6: it applied the pool, but noted that a known range of 1 to 3 still lets a player count at the edges. It suggested not telling the player the range, or allowing a zero-scam day.
 - Change 1: it agreed, and added that ChatGPT's sources need to be opened and read, because a fact-checker can invent citations.
 
 **What the AI got wrong**
 
-TODO: fill in after reviewing the plan.
+1. It contradicted itself. Assumption 2 said 4 scam and 6 legit was the smallest pool that supports draws of 1 to 3 scams, while its own cut order dropped the pool to 3 and 5.
+2. It raised the gift-card question and then scheduled the check for Nov 30, two days after the data schema is locked on Nov 28. A question that can change the transaction types has to be answered before the schema, not after.
+3. The roles table was inaccurate about the planning-partner chat. It said the chat reviews "large prompts" and does not touch the repo. In fact the chat drafts every prompt with me, reviews what the AI in the repo produces, and reads the repo but never writes to it, and I edit and approve every prompt before sending. The AI had filled in details I never gave it. It did flag that column as its own wording for me to check.
+
+**My decisions on the pushback**
+
+- Change 4: kept 8.5 and 5. If the UI runs over, the pool drops to 8 first, as the cut order says.
+- Change 6: kept 1 to 3 scams. I rejected zero-scam days, because my instructor might only play once and would see no scam. I accepted hiding the range, and added a second rule of my own: the game does not show whether a call was right until the debrief.
+- Change 1: the rule about opening every cited source stays in the plan.
 
 **What I changed**
 
-TODO: my decision on each pushback.
+Sent a follow-up prompt with my decisions and six fixes, three to the plan and three to this log:
+
+> Thanks, the pushback was useful. My decisions:
+>
+> - Change 4: keeping 8.5 and 5. If the UI runs over, the pool drops to 8 first, like your cut order says.
+> - Change 6: keeping 1 to 3 scams. No zero-scam days, because my instructor might only play once and would see no scam. Instead, don't tell the player the range, and don't show whether a call was right until the debrief. Add both to the scope.
+>
+> Fixes to plan.md:
+> 1. Assumption 2 says 4 scam / 6 legit is the smallest split that works, but your own cut order uses 3 and 5. Fix the wording.
+> 2. The gift card question can't wait until Nov 30, that's after the schema is locked. Move it to the start of requirements on Nov 28: a quick ChatGPT fact-check on whether gift cards make sense at a teller window. If they don't, the third type becomes cashier's checks, and gift cards become a reason someone gives for a cash withdrawal.
+> 3. The roles table isn't accurate about the separate Fable chat. It drafts the prompts with me and reviews what you produce, and it reads the repo but never writes to it. I edit and approve every prompt before sending. Fix the table, the "Jeff" row, and step 1 in section 6 to match.
+>
+> Fixes to ai-log.md:
+> 4. Entry 1: the prompt is below. Nothing was wrong. Worth noting that it set the git name and email for this repo without asking, using my GitHub no-reply address. That was the right call and it told me.
+> 5. Entry 2 lesson: the prompt was drafted in the planning chat, which had the full assignment, and neither it nor I carried the assignment over. Context one tool has doesn't reach another unless I move it.
+> 6. Entry 3: fill in my decisions from above, and for "what the AI got wrong" use fixes 1 to 3.
+>
+> Leave the screenshot filename TODOs, I'll fill those in. Commit and push.
+
+The entry 1 prompt followed and is quoted in entry 1. The result is `docs/plan.md` version 3.
