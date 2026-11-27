@@ -321,10 +321,201 @@ The result is `docs/requirements.md` version 2 and the corrected header in `docs
 - It pointed out that the bank does not close the leak completely. The wording can no longer give the answer away, but which 4 or 5 questions a customer offers still can, because a question offered by three scam customers and one legit customer passes the rule. It added this to the open items for the Gemini content review.
 - It noted that the document is now about 3,500 words, further over the 10-minute limit than version 1.
 
-TODO: my decision on D11 and D12.
+I approved D11 and D12 in the design-step prompt (entry 6).
 
 **Open items**
 
 - `reviews/01-gift-card-check.md` still has TODOs for ChatGPT's answer and model name.
 - The bank's 8 questions are not written yet. Their ids are part of the data schema, which is locked on Nov 28.
 - The plan's scope line still says "4–5 available questions" and does not mention the shared bank.
+
+---
+
+## 6. Architecture and design, part 1
+
+- **Date:** Fri Nov 27, 2026, a day ahead of the plan's Nov 28 slot
+- **Phase:** Design, with two small updates to the requirements and the plan
+- **Tool:** Claude Fable 5.2, in the repo. The prompt was drafted in the planning-partner chat.
+- **Screenshots:** TODO: add filenames
+
+**Prompt**
+
+> Read docs/plan.md and docs/requirements.md, then do the first half of the design step.
+>
+> Two small updates first:
+> - I approve D11 and D12.
+> - Tighten FR-18 so which questions a customer offers can't hint at the answer either. Each transaction type gets a fixed set of 5 questions from the bank, and every customer of that type offers the same 5. Update the validation rule, AC-3.1, FR-12, and the plan's scope line that still says "4–5 available questions".
+>
+> Then write docs/architecture.md and start docs/design.md, split the way the plan's deliverables table says:
+> - the system architecture with a diagram (Mermaid, so GitHub renders it)
+> - the folder layout and what each module is responsible for, with the pure game logic kept separate from React like NFR-8 says
+> - the customer and question bank data schema as TypeScript types, plus one example customer to prove the schema works. Don't write the real customers yet.
+> - the game flow as a state diagram
+> - the main technical decisions, each with what you considered and why you picked it
+>
+> Keep it as simple as the requirements allow. If you want a library beyond React, Vite, and Vitest, justify it or leave it out. Put anything I need to decide in a "Decisions for Jeff" list like last time. Leave the UI wireframes for the next step.
+>
+> Commit, push, and add the ai-log entry. This prompt was drafted in the planning chat.
+
+**Result**
+
+Two commits on the branch `t3/architecture-design-part-1`, plus the commit that adds this entry.
+
+- `8743c2e`: [requirements.md](requirements.md) version 3 and [plan.md](plan.md) version 5. FR-18 now fixes 5 questions per transaction type. AC-3.1, AC-8.3, FR-4, and FR-12 match it. D11 and D12 are marked approved, and the new rule is recorded as D13.
+- `fc43d80`: [architecture.md](architecture.md) version 1 and [design.md](design.md) version 1, part 1. Architecture has two Mermaid diagrams (the layers, and test-build-deploy), the folder layout, a responsibility table per module, the 8 packages, and 11 technical decisions. Design has the state diagram, the state and action types, the transition table, the schema as TypeScript types, a draft question bank, one example customer, 13 validation rules, and 12 flow and schema decisions. Four decisions are waiting for me: D14 to D17.
+
+**What worked**
+
+This part is the record of what the AI did. TODO: add my own view after reading the documents.
+
+- It added no library. The dependency list is React, Vite, TypeScript, Vitest, and the four packages those need to work together. It decided against a router, a state library, a schema library, a seeded-random package, a CSS framework, React Testing Library, and ESLint, and gave the reason for each.
+- It checked its own output before committing. This machine has no Node, so it ran the checks in containers: it took the code blocks out of `design.md`, compiled them with `tsc --strict`, and compiled three broken copies of the example to confirm the types reject them. It rendered all three Mermaid diagrams with mermaid-cli and looked at the images.
+- It noticed that `npm test` does not type-check, because Vitest strips types. So the types alone cannot meet AC-8.1, and the validator has to check typed data at runtime. That shaped three of the decisions (T5, S2, S7).
+- It worked out that the fixed sets make part of the old FR-18 rule redundant: if every bank question is in at least one set, FR-13 already guarantees a scam and a legit customer offer it. The validation rule is now three checks on the sets and one on each customer's answers.
+- It read the FinCEN PDFs for the list of scam types before putting them in the schema, and opened both FTC pages the example customer cites. The page numbers it gives match the printed pages.
+- FR-7 (nothing about correctness before the debrief) is enforced by the structure: the customer screen gets a type without the truth or the flags, and no score exists in the state.
+- The decisions it could not make are numbered D14 to D17, continuing the requirements' numbering, with a recommendation and a reason each.
+
+**What the AI got wrong**
+
+- Its first architecture diagram was not readable. It had every arrow drawn between individual modules, and when rendered the arrows crossed through the layers they had nothing to do with. It only saw this because it rendered the diagram. It redrew it with arrows between layers.
+- It went past the prompt on the question bank. I asked for the schema and one example customer. It also drafted the wording of all 8 questions and chose which 5 go with each transaction type. Its reason is that the ids and sets are part of the schema and the example needs real questions to answer. It did flag the whole draft as D14, not as settled.
+- It downloaded two container images, about 1.7 GB together, to run the checks, without asking first. They are still on my machine.
+- The diagrams were checked with mermaid-cli, not with GitHub's renderer. I still need to look at both files on GitHub.
+- Length again. `architecture.md` is about 2,350 words and `design.md` about 3,700, counting code and diagrams.
+- It bumped the plan to version 5 for a one-line scope change. I had only asked for the line to be updated.
+- The example customer's scenario has not been through the fact-check. The document says so, but it is a scam scenario written by the AI that wrote the schema, which is the thing the plan gives to ChatGPT and Gemini to check.
+
+**What I changed**
+
+The planning-partner chat reviewed both documents. Its findings and my follow-up prompt are in entry 7. I approved D14 with one change and D15 to D17 as written.
+
+**Decisions waiting for me at the time**
+
+- D14: the 8 question ids, their wording, and the set of 5 for each transaction type ([design.md](design.md) section 2.3).
+- D15: the debrief shows a shared label per red flag plus the customer's own answer, with no sentence written per customer per flag.
+- D16: no component tests, so no `jsdom` or React Testing Library. This changes what the plan's cut-order item 5 assumes.
+- D17: no ESLint or Prettier.
+
+**Open items**
+
+- The schema is not locked until I decide D14 and D15. The plan locks it on Nov 28.
+- The work is on the branch `t3/architecture-design-part-1`, not on `main`.
+- `design.md` sections 3 to 5 (UI plan, wireframes, UI decisions) are placeholders for the next step.
+- The open items from entry 5 on the gift-card review file still stand. The one about the plan's scope line is closed.
+
+---
+
+## 7. Design review fixes, and design part 2
+
+- **Date:** Fri Nov 27, 2026
+- **Phase:** Design
+- **Tool:** Claude Fable 5.2, in the repo. The prompt was drafted in the planning-partner chat, and the findings in it came from that chat's review of entry 6.
+- **Screenshots:** TODO: add filenames
+
+**Prompt**
+
+> Nice work. My decisions:
+>
+> - D14: approved with one change. `told` is the question closest to the game's premise, so it goes in every set. On gift cards it replaces `verified`, like you offered.
+> - D15, D16, D17: approved. Update the plan's cut order since component tests are no longer planned.
+> - Branch: open a PR into main when this step is done, but don't merge it yet. From now on every thread works on a branch and ends with a PR.
+>
+> One problem with the example customer: it's too easy. The slip and behaviour already give it away, and all five answers sound like a scam, so no question is worth asking. Whatever is in this doc is what Opus will copy for the real 10. The victims are also supposed to be coached, so they should have a cover story.
+> - Add a content rule and a validation rule: a scam customer has flags behind at most 2 of its 5 answers. The other answers are the cover story and should sound like something a legit customer would say.
+> - Rewrite the example to follow it, and make its slip and behaviour something a legit customer could also show.
+> - An outright confession on `told` should be rare, since they've been told to lie.
+>
+> Then do part 2 of design.md: the UI and UX plan, wireframes for the three screens at 1280 and 375 wide (ASCII is fine), and the UI decisions. Stick to plain CSS, text, and emoji like the plan says. The debrief is the most important screen, so put the most effort there.
+>
+> Add the ai-log entry. The prompt was drafted in the planning chat and the findings came from its review. Tell me if you disagree with anything.
+
+**What the review found**
+
+The planning-partner chat reviewed the documents from entry 6. I agreed with its findings.
+
+1. The example customer was too easy. Its slip and behaviour gave it away before any question, and all five answers sounded like a scam, so no question was worth asking.
+2. The example had no cover story, although the game's premise is that the victims are coached.
+3. The example is what Opus will copy for the real 10, so its faults would be repeated ten times.
+
+The example in entry 6 passed every rule in the requirements. The requirements only had minimums, such as at least 3 flags and at least 1 behind a question, and nothing stopped a customer from having a flag behind every answer.
+
+**Result**
+
+Two commits on the branch `t3/architecture-design-part-1`, plus the commit that adds this entry, and a pull request into `main` that is open and not merged.
+
+- `e112988`: [requirements.md](requirements.md) version 4 and [plan.md](plan.md) version 6. The cover-story rule is FR-19, with AC-8.4 for the test. The plan's cut order no longer has component tests, and section 6 has the branch and pull request rule.
+- `5c08dc6`: [design.md](design.md) version 2 and [architecture.md](architecture.md) version 2.
+  - `told` is in all three question sets.
+  - Eight content rules for writing customers (C1 to C8), each marked as checked by the test or by the Gemini review, and two new validation rules (V14, V15).
+  - The example customer rewritten: three of his five answers are a cover story about presents for his grandchildren, two have a flag, and his answer to `told` is a denial.
+  - Part 2: the UI and UX plan, six ASCII wireframes (three screens at 1280 and 375 px), a colour palette with contrast ratios, a keyboard and focus plan, and 12 UI decisions. The debrief has the most detail: what every card shows, the four verdict sentences, and how each flag status is displayed.
+  - D14 to D17 marked approved and D18 recorded as mine. Two new decisions are waiting: D19 and D20.
+
+**What worked**
+
+This part is the record of what the AI did. TODO: add my own view after reading the documents.
+
+- It turned "the other answers should sound legit" into two things: counts a test can check (V14, V15) and rules only a reader can judge, which it put on the checklist for the Gemini content review. It did not pretend a test could check tone.
+- It worked out the odds the new rule creates. With flags behind 2 of 5 answers, a player who picks 3 questions blind misses both 1 time in 10. With flags behind 1, they miss 4 times in 10. It wrote that into the content rules (C2) as a reason to use 2.
+- The cover story needed no new field. A cover answer is any answer without a flag, and the coaching is named in the explanation line (S8, C7).
+- The debrief wireframe uses the rewritten example with a player who asked three questions and still got it wrong, so one card shows all three flag statuses.
+- It checked again before committing: the code blocks compile with `tsc --strict`, the three broken variants are rejected, the example's answers match the gift-card set, its flags are behind 2 questions, and every wireframe's lines are the same width. It opened the third FTC source (F8) before citing it for the example.
+- The wireframes were generated by a script, not typed by hand, so the boxes line up.
+- It found a problem I had not asked about: after a decision, the next customer's buttons are in the same place, so a double-click decides two customers. It proposed a guard as D19.
+
+**Where the AI disagreed**
+
+It did not disagree with any change. It raised four consequences:
+
+1. `told` is now in every set, and a confession there is rare. So the question closest to the premise will nearly always get "no" from scam and legit customers alike. That is realistic, and it is the lesson, but only if the debrief says the customer was told to lie. C7 makes the explanation carry that. Players may still learn to skip `told`, which the playtest should watch for.
+2. "At most 2" also allows 1, and with 1 the call is luck 4 times in 10. It recommends 2 as the norm and left that as a content rule, not a test.
+3. "Rare" is not testable, so it set the limit at 1 scam customer in the pool. That number is its own.
+4. The rule is one-sided. Scam customers' cover answers must read as legit, but nothing makes a legit customer's answer ever read as suspicious, so any odd answer still means scam. The three look-alikes (FR-14) cover the slip and behaviour, and C8 covers mood. It did not add a rule, and suggested the Gemini review look at it.
+
+**What the AI got wrong**
+
+- The version 1 example, as the review found. It followed the rules it had been given and did not ask whether the result was a game worth playing.
+- It added things I did not ask for and drew them into the wireframes before I approved them: the half-second guard on the decision buttons (D19), source links on scam cards, and a look-alike line on legit cards (D20). They are marked as proposals in the text, but the wireframes show them as if they were settled.
+- Length. `design.md` is about 900 lines. Roughly 350 of them are wireframes.
+- Several numbers in the UI plan are its estimates, not measurements: the start screen being "about 600 px tall", and the customer screen fitting in 1280×720 with three answers open. The contrast ratios were calculated by its own script, not by a browser tool. NFR-6 still has to be checked in the browser.
+- It put the branch and pull request rule into the plan's section 6 without being asked to.
+
+**What I changed**
+
+The planning-partner chat reviewed version 2 of the design. The three changes below came from that review, and I agreed with them. I approved D19 and D20. Both were already drawn in the wireframes before I had approved them, which the AI said itself in its reply.
+
+> D19 and D20 are approved. Three last changes, then merge PR #1:
+>
+> 1. Your point 4 needs a rule, not just a review note. Right now no legit customer ever says anything alarming, so one odd answer always means scam. Give `lookAlike` a `shownIn` like red flags have (slip, behaviour, or a question), and require at least 2 legit look-alikes to show their trait in an answer, explained by a different question. Add the validation rule and a content rule, and show where the trait appeared on the look-alike's debrief card.
+> 2. Leave `told` as it is. I accept that it's usually a dead question, since that's the real lesson. Add a note to check it in the playtest.
+> 3. Roles table in plan.md: the planning chat will also capture the prompt screenshots through T3 Code's built-in browser and save them into screenshots/. It writes nothing else to the repo. Add a line to the plan's README notes that the README has to say how the screenshots were captured.
+>
+> Update the ai-log entry (these came from the planning chat's review, and note that D19 and D20 were drawn before I approved them). Then merge the PR and tell me the merge commit.
+
+The AI had raised point 4 itself, as a consequence of the cover-story rule, and had left it for the Gemini review to look at. The review's point was that a known hole in the rules should be closed with a rule.
+
+**What the AI did with the follow-up**
+
+Commit `c75ce1f`, then the commit that updates this entry, then the merge of PR #1.
+
+- `lookAlike` now has `flag`, `shownIn`, and `explainedBy`. Rule V16 requires at least 2 legit look-alikes whose trait is in an answer, and V9 requires the explaining question to be a different one. Two content rules were added: C9 for the alarming answer and C10 for making it point toward the question that explains it. The rule is D21, and the requirements carry it in FR-14 and AC-8.5.
+- It added a second example, a fragment of a legit wire customer who says "No, never. It has all been by email" when asked if they have met the recipient, and explains it under `verified`. That fragment is the second card in the debrief wireframe, where the look-alike's trait gets the same *you asked* and *you didn't ask* labels as a red flag.
+- It worked out the odds for this rule too: a player who has heard the alarming answer and has 2 questions left finds the explanation half the time by picking blind. That is why C10 exists.
+- D19 and D20 are in the requirements as FR-6 and FR-9, with AC-4.4 and AC-6.5 to test them. NFR-1 now says the source links leave the site only on a click.
+- `told` is unchanged. [design.md](design.md) has a new section 7, notes for the test plan, and its first note is the playtest check on `told`. The section also lists the double-click test, the measurements the UI plan only estimated, and the content rules that go to Gemini.
+- [plan.md](plan.md) is version 7: the planning-partner chat's row says it captures the prompt screenshots through T3 Code's built-in browser and writes nothing else, and the README has to say how the screenshots were captured.
+
+**What the AI got wrong in the follow-up**
+
+- The source links have no titles, because the schema stores only URLs. The debrief can only show "consumer.ftc.gov (1)", which tells the player nothing about what they will read. It kept the schema as it was and did not raise it as a decision.
+- It added a second example customer fragment, although the earlier prompt asked for one example.
+- It left step 2 in the plan's section 6 as "Screenshot the prompt before sending it". With the planning-partner chat capturing the screenshots, I need to check that this still describes what happens.
+- Two of the regenerated wireframe lines were too wide at first. The script that builds them refused to write the file, so the mistake did not reach the document.
+
+**Open items**
+
+- PR #1 is merged at the end of this step.
+- `security.md`, `CLAUDE.md`, and the test strategy are still to write in the design phase (plan, Nov 29). If D20 (a) is approved, `security.md` has to cover links that leave the site.
+- The content rules C2, C3, and C5 to C8 need to go on the checklist for the Gemini content review.
+- This machine still has no Node, which the Nov 29 scaffold needs.
