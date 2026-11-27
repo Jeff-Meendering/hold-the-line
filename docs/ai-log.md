@@ -11,7 +11,15 @@ Each entry records the tool, the prompt, what worked, what the AI got wrong, and
 - **Date:** Fri Nov 27, 2026
 - **Phase:** Planning
 - **Tool:** Claude Opus 5.5 (co-author on commit `50d5063`)
-- **Screenshots:** TODO: add filenames
+- **Screenshots**, in [`/screenshots`](../screenshots):
+  - [`01-planning/01-planning-chat-kickoff-p1.png`](../screenshots/01-planning/01-planning-chat-kickoff-p1.png)
+  - [`01-planning/01-planning-chat-kickoff-p2.png`](../screenshots/01-planning/01-planning-chat-kickoff-p2.png)
+  - [`01-planning/01-planning-chat-kickoff-p3.png`](../screenshots/01-planning/01-planning-chat-kickoff-p3.png)
+  - [`01-planning/01-planning-chat-kickoff-p4.png`](../screenshots/01-planning/01-planning-chat-kickoff-p4.png)
+  - [`01-planning/02-planning-chat-project-name-p1.png`](../screenshots/01-planning/02-planning-chat-project-name-p1.png)
+  - [`01-planning/03-planning-chat-first-prompt-p1.png`](../screenshots/01-planning/03-planning-chat-first-prompt-p1.png)
+  - [`01-planning/04-opus-repo-setup-p1.png`](../screenshots/01-planning/04-opus-repo-setup-p1.png)
+  - [`01-planning/05-planning-chat-repo-setup-review-p1.png`](../screenshots/01-planning/05-planning-chat-repo-setup-review-p1.png)
 
 **Prompt**
 
@@ -51,7 +59,12 @@ Nothing.
 - **Date:** Fri Nov 27, 2026
 - **Phase:** Planning
 - **Tool:** Claude Fable 5.2, in the repo. The prompt was drafted in the planning-partner chat.
-- **Screenshots:** TODO: add filenames
+- **Screenshots**, in [`/screenshots`](../screenshots):
+  - [`01-planning/06-fable-plan-draft-p1.png`](../screenshots/01-planning/06-fable-plan-draft-p1.png)
+  - [`01-planning/06-fable-plan-draft-p2.png`](../screenshots/01-planning/06-fable-plan-draft-p2.png)
+  - [`01-planning/06-fable-plan-draft-p3.png`](../screenshots/01-planning/06-fable-plan-draft-p3.png)
+  - [`01-planning/07-planning-chat-plan-draft-review-p1.png`](../screenshots/01-planning/07-planning-chat-plan-draft-review-p1.png)
+  - [`01-planning/07-planning-chat-plan-draft-review-p2.png`](../screenshots/01-planning/07-planning-chat-plan-draft-review-p2.png)
 
 **Prompt**
 
@@ -105,7 +118,17 @@ The biggest miss was a handoff, not the model. The prompt was drafted in the pla
 - **Date:** Fri Nov 27, 2026
 - **Phase:** Planning
 - **Tool:** Claude Fable 5.2, in the repo
-- **Screenshots:** TODO: add filenames
+- **Screenshots**, in [`/screenshots`](../screenshots):
+  - [`01-planning/08-planning-chat-full-revision-prompt-p1.png`](../screenshots/01-planning/08-planning-chat-full-revision-prompt-p1.png)
+  - [`01-planning/08-planning-chat-full-revision-prompt-p2.png`](../screenshots/01-planning/08-planning-chat-full-revision-prompt-p2.png)
+  - [`01-planning/09-fable-plan-revision-p1.png`](../screenshots/01-planning/09-fable-plan-revision-p1.png)
+  - [`01-planning/09-fable-plan-revision-p2.png`](../screenshots/01-planning/09-fable-plan-revision-p2.png)
+  - [`01-planning/09-fable-plan-revision-p3.png`](../screenshots/01-planning/09-fable-plan-revision-p3.png)
+  - [`01-planning/09-fable-plan-revision-p4.png`](../screenshots/01-planning/09-fable-plan-revision-p4.png)
+  - [`01-planning/10-planning-chat-plan-v2-review-p1.png`](../screenshots/01-planning/10-planning-chat-plan-v2-review-p1.png)
+  - [`01-planning/10-planning-chat-plan-v2-review-p2.png`](../screenshots/01-planning/10-planning-chat-plan-v2-review-p2.png)
+  - [`01-planning/11-fable-plan-fixes-p1.png`](../screenshots/01-planning/11-fable-plan-fixes-p1.png)
+  - [`01-planning/12-planning-chat-plan-v3-review-p1.png`](../screenshots/01-planning/12-planning-chat-plan-v3-review-p1.png)
 
 **Prompt**
 
@@ -186,7 +209,11 @@ The entry 1 prompt followed and is quoted in entry 1. The result is `docs/plan.m
 - **Date:** Fri Nov 27, 2026
 - **Phase:** Requirements
 - **Tool:** ChatGPT, in the browser. Model: TODO. The planning-partner chat checked the sources.
-- **Screenshots:** TODO: add filenames
+- **Screenshots**, in [`/screenshots`](../screenshots):
+  - [`02-requirements/01-planning-chat-fact-check-review-p1.png`](../screenshots/02-requirements/01-planning-chat-fact-check-review-p1.png)
+  - [`02-requirements/01-planning-chat-fact-check-review-p2.png`](../screenshots/02-requirements/01-planning-chat-fact-check-review-p2.png)
+  - [`02-requirements/02-fable-save-fact-check-p1.png`](../screenshots/02-requirements/02-fable-save-fact-check-p1.png)
+  - TODO: the ChatGPT conversation
 
 **Prompt**
 
@@ -235,7 +262,12 @@ FBI Albuquerque, the IC3 image, Together CU, Priority First FCU, and the FinCEN 
 - **Date:** Fri Nov 27, 2026
 - **Phase:** Requirements
 - **Tool:** Claude Fable 5.2, in the repo. The prompt was drafted in the planning-partner chat, which also reviewed the result.
-- **Screenshots:** TODO: add filenames
+- **Screenshots**, in [`/screenshots`](../screenshots):
+  - [`02-requirements/03-fable-requirements-draft-p1.png`](../screenshots/02-requirements/03-fable-requirements-draft-p1.png)
+  - [`02-requirements/04-planning-chat-requirements-review-p1.png`](../screenshots/02-requirements/04-planning-chat-requirements-review-p1.png)
+  - [`02-requirements/04-planning-chat-requirements-review-p2.png`](../screenshots/02-requirements/04-planning-chat-requirements-review-p2.png)
+  - [`02-requirements/05-fable-requirements-revision-p1.png`](../screenshots/02-requirements/05-fable-requirements-revision-p1.png)
+  - [`02-requirements/06-planning-chat-requirements-v2-review-p1.png`](../screenshots/02-requirements/06-planning-chat-requirements-v2-review-p1.png)
 
 **Prompt**
 
@@ -336,7 +368,11 @@ I approved D11 and D12 in the design-step prompt (entry 6).
 - **Date:** Fri Nov 27, 2026, a day ahead of the plan's Nov 28 slot
 - **Phase:** Design, with two small updates to the requirements and the plan
 - **Tool:** Claude Fable 5.2, in the repo. The prompt was drafted in the planning-partner chat.
-- **Screenshots:** TODO: add filenames
+- **Screenshots**, in [`/screenshots`](../screenshots):
+  - [`03-design/01-fable-architecture-schema-p1.png`](../screenshots/03-design/01-fable-architecture-schema-p1.png)
+  - [`03-design/01-fable-architecture-schema-p2.png`](../screenshots/03-design/01-fable-architecture-schema-p2.png)
+  - [`03-design/02-planning-chat-architecture-review-p1.png`](../screenshots/03-design/02-planning-chat-architecture-review-p1.png)
+  - [`03-design/02-planning-chat-architecture-review-p2.png`](../screenshots/03-design/02-planning-chat-architecture-review-p2.png)
 
 **Prompt**
 
@@ -411,7 +447,13 @@ The planning-partner chat reviewed both documents. Its findings and my follow-up
 - **Date:** Fri Nov 27, 2026
 - **Phase:** Design
 - **Tool:** Claude Fable 5.2, in the repo. The prompt was drafted in the planning-partner chat, and the findings in it came from that chat's review of entry 6.
-- **Screenshots:** TODO: add filenames
+- **Screenshots**, in [`/screenshots`](../screenshots):
+  - [`03-design/03-planning-chat-screenshot-question-p1.png`](../screenshots/03-design/03-planning-chat-screenshot-question-p1.png)
+  - [`03-design/04-fable-design-part-2-p1.png`](../screenshots/03-design/04-fable-design-part-2-p1.png)
+  - [`03-design/04-fable-design-part-2-p2.png`](../screenshots/03-design/04-fable-design-part-2-p2.png)
+  - [`03-design/05-planning-chat-design-review-p1.png`](../screenshots/03-design/05-planning-chat-design-review-p1.png)
+  - [`03-design/05-planning-chat-design-review-p2.png`](../screenshots/03-design/05-planning-chat-design-review-p2.png)
+  - [`03-design/06-fable-design-final-fixes-p1.png`](../screenshots/03-design/06-fable-design-final-fixes-p1.png), the same capture as `04-fable-design-part-2-p2.png`
 
 **Prompt**
 
@@ -527,7 +569,12 @@ Commit `c75ce1f`, then the commit that updates this entry, then the merge of PR 
 - **Date:** Fri Nov 27, 2026, two days ahead of the plan's Nov 29 slot
 - **Phase:** Design (`security.md`, `CLAUDE.md`) and Testing (the test strategy)
 - **Tool:** Claude Fable 5.2, in the repo. The prompt was drafted in the planning-partner chat.
-- **Screenshots:** TODO: add filenames
+- **Screenshots**, in [`/screenshots`](../screenshots):
+  - [`03-design/07-fable-security-test-plan-claude-md-p1.png`](../screenshots/03-design/07-fable-security-test-plan-claude-md-p1.png)
+  - [`03-design/07-fable-security-test-plan-claude-md-p2.png`](../screenshots/03-design/07-fable-security-test-plan-claude-md-p2.png)
+  - [`03-design/08-planning-chat-security-review-p1.png`](../screenshots/03-design/08-planning-chat-security-review-p1.png)
+  - [`03-design/08-planning-chat-security-review-p2.png`](../screenshots/03-design/08-planning-chat-security-review-p2.png)
+  - [`03-design/09-fable-security-decisions-merge-p1.png`](../screenshots/03-design/09-fable-security-decisions-merge-p1.png), the same capture as `07-fable-security-test-plan-claude-md-p2.png`
 
 **Prompt**
 
@@ -640,7 +687,15 @@ Three commits, then the commit that updates this entry, then the merge of PR #2.
 - **Date:** Fri Nov 27, 2026, two days ahead of the plan's Nov 29 slot
 - **Phase:** Implementation
 - **Tool:** Claude Opus 5.5, in the repo, through T3 Code
-- **Screenshots:** TODO: add filenames
+- **Screenshots**, in [`/screenshots`](../screenshots):
+  - [`04-implementation/01-planning-chat-new-thread-question-p1.png`](../screenshots/04-implementation/01-planning-chat-new-thread-question-p1.png)
+  - [`04-implementation/02-opus-scaffold-interrupted-p1.png`](../screenshots/04-implementation/02-opus-scaffold-interrupted-p1.png)
+  - [`04-implementation/03-gemini-install-node-p1.png`](../screenshots/04-implementation/03-gemini-install-node-p1.png)
+  - [`04-implementation/04-opus-scaffold-p1.png`](../screenshots/04-implementation/04-opus-scaffold-p1.png)
+  - [`04-implementation/04-opus-scaffold-p2.png`](../screenshots/04-implementation/04-opus-scaffold-p2.png)
+  - [`04-implementation/05-planning-chat-scaffold-review-p1.png`](../screenshots/04-implementation/05-planning-chat-scaffold-review-p1.png)
+  - [`04-implementation/06-opus-merge-and-failing-test-check-p1.png`](../screenshots/04-implementation/06-opus-merge-and-failing-test-check-p1.png)
+  - [`04-implementation/06-opus-merge-and-failing-test-check-p2.png`](../screenshots/04-implementation/06-opus-merge-and-failing-test-check-p2.png)
 
 **Prompt**
 
@@ -721,3 +776,57 @@ This part is the record of what the AI did. TODO: add my own view.
 
 - The favicon is `public/favicon.svg`: one `<text>` element holding 🏦, with no drawn shapes and no style. `index.html` links it as `/favicon.svg`, and Vite rewrites that to `/hold-the-line/favicon.svg` in the build. It served the build with `vite preview` and loaded it headless with a network log. The page asked for exactly four files: the page, the CSS, the JavaScript, and `/hold-the-line/favicon.svg`. It asked for nothing at the site root, and no CSP violation was logged. `img-src 'self'` covers the icon.
 - It corrected the Node bullet above with what I told it, and checked where the second copy is and which one runs.
+
+---
+
+## 11. Prompt screenshots into the repo
+
+- **Date:** Fri Nov 27, 2026
+- **Phase:** Documentation (process evidence for every phase so far)
+- **Tool:** Claude Opus 5.5, in the repo, through T3 Code. The screenshots were captured by the planning-partner chat through T3 Code's built-in browser, as plan.md section 5 says.
+- **Screenshots:** TODO: add filenames
+
+Numbered 11 because PR #7, still open, adds entry 10.
+
+**Prompt**
+
+> The planning chat captured the prompt screenshots into ~/Desktop/hold-the-line-screenshots/ (58 PNGs in four phase folders, taken through T3 Code's built-in browser). Copy them into the repo's screenshots/ folders, keeping the names. Then fill in the screenshot filename TODOs in ai-log entries 1 to 10 by matching the names to the entries. Leave a TODO where there's no screenshot yet. The ChatGPT fact-check is one of those, I'll take it myself. Don't edit the images. Open a PR, and you may merge it once its check is green.
+
+**Result**
+
+Two commits on the branch `docs/screenshots`, plus the commit that adds this entry, and a pull request into `main`.
+
+- `2cfc847`: the 58 PNGs in `screenshots/01-planning` (23), `02-requirements` (8), `03-design` (15), and `04-implementation` (12), with their names unchanged. A `sha256sum` of every file matched the source folder, so none was changed in the copy.
+- `fdbbf8a`: the screenshot lines in entries 1 to 9, each a list of links. Each file was matched to an entry by its name and by what it shows. Entry 4 keeps a TODO for the ChatGPT conversation.
+- Entry 10 is only on the branch `game/logic` (PR #7), so its screenshots are filled in by commit `bdc8343` there: `07-opus-game-logic-p1.png` and `-p2.png`, and `08-planning-chat-game-logic-review-p1.png`, with a TODO for the review of PR #7.
+- `04-implementation/09-planning-chat-pairing-question-p1.png` is in no entry. It shows the planning chat setting up the screenshot capture, which has no entry of its own.
+
+**Checked before committing (SEC-20)**
+
+Subagents of this session read every image and reported what each one shows and anything private. The AI looked at 08 and 09 in `04-implementation` itself. Nothing was edited.
+
+- No token, key, phone number, notification, or other browser tab appears in any image.
+- The GitHub no-reply address `112517844+Jeff-Meendering@users.noreply.github.com` can be read in `01-planning/04-opus-repo-setup-p1.png`, and is in small print in the thumbnails in 02, 03, and 05. It is already the author address on all 36 commits on `main`, so the screenshots publish nothing new.
+- `04-implementation/08` and `09` show my line "Like my sudo password? Because you can use that" and the reply refusing it. No password or token is shown.
+- `04-implementation/05` says my recent threads were started from my phone.
+
+**Problems in the screenshots, for me to decide**
+
+- Two are the same capture: `03-design/06-fable-design-final-fixes-p1.png` and `04-fable-design-part-2-p2.png`, and `03-design/09-fable-security-decisions-merge-p1.png` and `07-fable-security-test-plan-claude-md-p2.png`. ImageMagick `compare` found 14 different pixels in each pair, the blinking cursor in the message box. Both are still linked.
+- `04-implementation/08-planning-chat-game-logic-review-p1.png` does not show the review of PR #7. It shows the end of the step 9 prompt and the pairing-token exchange, and is nearly the same as 09. Entry 10 keeps a TODO for the review.
+- Gaps: no capture shows the end of the step 2b prompt in the planning chat (between `01-planning/08-p2` and `10-p1`), and a few lines of the reply are missing between `03-design/07-p1` and `07-p2`. The prompts themselves are in the Fable thread captures.
+- Several pairs overlap heavily, such as `01-planning/07-p2` and `08-p1`, and `02-requirements/04-p2` and `06-p1`.
+- `04-implementation/03-gemini-install-node-p1.png`: the model picker reads "4 Neon", which is Gemini 4 Neon in plan.md.
+- `01-planning/09-fable-plan-revision-p4.png` and `11-fable-plan-fixes-p1.png` show "[model name]", the placeholder in my message, unfilled.
+
+**What worked**
+
+This part is the record of what the AI did. TODO: add my own view.
+
+- It checked every image for private details before committing, as SEC-20 says, and checked whether the one email address it found was already public.
+- It confirmed the copies are byte for byte the same as the originals, and that every one of the 58 files is linked from an entry or listed as in none.
+
+**What the AI got wrong**
+
+- It called the T3 Code wait tool twice with subagent ids, which that tool does not take, and then started a subagent that did nothing just to wait. Subagents report back on their own.
+- The privacy check of 56 of the 58 images was done by its subagents, not by the AI that wrote this entry. SEC-20 asks that every screenshot be looked at, and I have not looked at them yet.
