@@ -721,3 +721,15 @@ This part is the record of what the AI did. TODO: add my own view.
 
 - The favicon is `public/favicon.svg`: one `<text>` element holding 🏦, with no drawn shapes and no style. `index.html` links it as `/favicon.svg`, and Vite rewrites that to `/hold-the-line/favicon.svg` in the build. It served the build with `vite preview` and loaded it headless with a network log. The page asked for exactly four files: the page, the CSS, the JavaScript, and `/hold-the-line/favicon.svg`. It asked for nothing at the site root, and no CSP violation was logged. `img-src 'self'` covers the icon.
 - It corrected the Node bullet above with what I told it, and checked where the second copy is and which one runs.
+- It waited for PR #3's check on the favicon commit ([46066350026](https://github.com/Jeff-Meendering/hold-the-line/actions/runs/46066350026): build passed, deploy skipped) and merged PR #3 as `cdeabac`. The run on `main`, [46066562082](https://github.com/Jeff-Meendering/hold-the-line/actions/runs/46066562082), built and deployed. `https://jeff-meendering.github.io/hold-the-line/` returned 200 with the CSP `<meta>` first in `<head>`. Loaded headless, it rendered the title, logged no CSP violation, and made only four requests, all under `/hold-the-line/`.
+- MT-24. It noted the script name, `last-modified`, and the last deployment first. PR #4 added `src/mt24.test.ts`, which expects `1 + 1` to be 3. Its check failed at `npm test`, and it merged the pull request while red. The run on `main`, [46066775001](https://github.com/Jeff-Meendering/hold-the-line/actions/runs/46066775001), failed at `npm test` with the deploy job skipped, and the live page and Deployments did not change. PR #5 reverted the merge, its check passed, and its run on `main`, [46066986346](https://github.com/Jeff-Meendering/hold-the-line/actions/runs/46066986346), deployed (deployment 8119180055). All the runs are in [test-plan.md](test-plan.md) section 8. These were the three merges the prompt allowed. This pull request, which records the results, is left open.
+
+**Where things did not go the way the docs say**
+
+- MT-24 says the live page keeps "the same script file name". Here that can't show anything, because a test file never changes the bundle: the name stayed `index-WYhNHesa.js` through the revert's deploy as well. What showed the skipped deploy was Deployments and the page's `last-modified`. The test plan's MT-24 steps were not changed. Section 8 says this.
+- The check summary that T3 Code and GitHub report counts a skipped deploy job as passed ("All 2 checks passed"). The job itself says skipped.
+- Nothing else. The first deploy worked without `actions/configure-pages`, as security.md expected. The ruleset let a pull request with a red check be merged, as D27 meant it to. No run had a warning annotation.
+
+**What the AI got wrong in the follow-up**
+
+- On its first try it passed the wrong task id to the T3 Code tool that keeps the thread waiting, and had to call it again.
