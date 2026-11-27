@@ -253,7 +253,8 @@ Empty until the tests are run. A bug found here is fixed, `npm test` is run agai
 
 | Date | Finding | Package | Reaches the built site? | Action |
 |---|---|---|---|---|
-| | | | | |
+| Nov 27, at the scaffold, two days early | None. `npm audit` with npm 11.20.0 found 0 vulnerabilities. Its report counts 90 dependencies, which includes optional platform packages not installed on this machine. `npm audit signatures`: 44 installed packages with verified registry signatures, 22 with verified attestations | None | Not applicable | None |
+| Dec 4 | | | | |
 
 **Defects**
 
