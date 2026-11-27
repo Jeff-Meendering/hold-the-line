@@ -662,7 +662,7 @@ Three commits, then the commit that updates this entry, then the merge of PR #2.
 
 Four code commits on the branch `scaffold/app-and-workflow`, plus the commit that records the audit and adds this entry, and a pull request into `main` that is open and not merged. Four repository settings were changed.
 
-- **Node.** `node -v` printed `v26.13.1`, so nothing was installed. The prompt said Node was not installed, but it was already in `~/.local/opt/node-v26.13.1-linux-x64`, linked into `~/.local/bin`, created at 15:28 today, a few minutes before this session started. The AI did not install it and does not know who did. It checked the install instead. `https://nodejs.org/dist/index.json` lists v26.13.1 (Lithium, Nov 10) as the newest LTS. It downloaded `SHASUMS256.txt` and `node-v26.13.1-linux-x64.tar.xz` from `nodejs.org/dist/v26.13.1/` into a scratch folder, `sha256sum -c` passed, and `diff -r` found the unpacked tarball identical to the installed folder. It did not check the GPG signature on `SHASUMS256.txt`.
+- **Node.** `node -v` printed `v26.13.1`, so nothing was installed. The prompt said Node was not installed, but it was already in `~/.local/opt/node-v26.13.1-linux-x64`, linked into `~/.local/bin`, created at 15:28 today, a few minutes before this session started. It had been installed by my first scaffold thread, with the OK in the same prompt, and I interrupted that thread at 15:28 just after the install. I had also had Gemini install nvm, so there are two copies of v26.13.1: `~/.local/opt/node-v26.13.1-linux-x64` and `~/.nvm/versions/node/v26.13.1`. In an interactive shell `~/.local/bin` comes first on `PATH`, so the `~/.local/opt` copy is the one that runs. The AI checked that install instead of installing a third copy. `https://nodejs.org/dist/index.json` lists v26.13.1 (Lithium, Nov 10) as the newest LTS. It downloaded `SHASUMS256.txt` and `node-v26.13.1-linux-x64.tar.xz` from `nodejs.org/dist/v26.13.1/` into a scratch folder, `sha256sum -c` passed, and `diff -r` found the unpacked tarball identical to the installed folder. It did not check the GPG signature on `SHASUMS256.txt`.
 - `530f62b`: the scaffold. `package.json` lists exactly the eight packages at exact versions, read from the npm registry with `npm view` on Nov 27: `react` and `react-dom` 19.3.1, `vite` 8.4.0, `@vitejs/plugin-react` 6.3.0, `typescript` 7.0.2, `@types/react` 19.3.3, `@types/react-dom` 19.3.0, `vitest` 5.1.2. `package-lock.json` is committed. No package in the tree has an install script. Vite's own React template (read from `create-vite` with `npm pack`, not run) adds `@types/node` and `oxlint`, and both were left out. One strict `tsconfig.json`, as in the folder layout, instead of the template's three. `base` is `/hold-the-line/`. A placeholder start screen with the title and the premise line from design.md section 3.2. `src/game/` and `src/data/` do not exist yet, because git does not keep empty folders.
 - `ff87e3e`: the Content-Security-Policy. A small plugin in `vite.config.ts` adds the policy from security.md, unchanged, as the first tag in the built `index.html`, and not in the dev server. It took well under 15 minutes. The built page has no inline script or style.
 - `e9b03d9`: the rules test, `src/rules.test.ts`. It reads the source files with Vite's `import.meta.glob`, so it needs no Node API and no `@types/node`. It checks the six rules in test-plan.md section 4, plus a first case that fails if it finds no files. It also reads `.css` files, which the test plan does not mention.
@@ -703,5 +703,21 @@ This part is the record of what the AI did. TODO: add my own view.
 
 - The workflow has not run yet. Its first run is on this pull request, and that run builds without deploying. The deploy job first runs when the pull request is merged.
 - MT-24 runs after the merge, as the prompt says.
-- MT-16 expects every request to go to `/hold-the-line/`. Browsers also ask for `/favicon.ico` at the root of `jeff-meendering.github.io`, which will 404 and sits outside that path. It is on the same origin and is allowed by the policy. This is a note for my decision, not a change.
+- MT-16 expects every request to go to `/hold-the-line/`. Browsers also ask for `/favicon.ico` at the root of `jeff-meendering.github.io`, which will 404 and sits outside that path. It is on the same origin and is allowed by the policy. This is a note for my decision, not a change. Closed in the follow-up below.
 - The built bundle is 68.65 kB of JavaScript and 0.32 kB of CSS gzipped, against NFR-7's 200 kB.
+
+**What I changed**
+
+> Reviewed, looks good.
+>
+> 1. Favicon: add a small SVG favicon in public/ (the 🏦 emoji as text in an SVG, no drawn art) and link it from index.html, so the browser stops asking for /favicon.ico at the site root. Check the CSP still allows it.
+> 2. In ai-log entry 9: Node was installed by my first scaffold thread, which I interrupted at 15:28 after it had installed Node with the OK from the same prompt. I then also had Gemini install nvm, so there are two copies of the same version. That answers "I don't know who installed it".
+> 3. Then merge PR #3. Wait for the deploy and confirm the live site loads at https://jeff-meendering.github.io/hold-the-line/ with the CSP in place.
+> 4. Then run MT-24. Open a PR with one deliberately failing test, and merge it even though its check is red. Confirm the deploy job is skipped and the live site is unchanged. Then open and merge a PR that reverts it and confirm the deploy runs again. Record the run links in test-plan section 8.
+>
+> Those three merges are the only ones you may do. Tell me the run links and anything that didn't behave the way the docs say.
+
+**What the AI did with the follow-up**
+
+- The favicon is `public/favicon.svg`: one `<text>` element holding 🏦, with no drawn shapes and no style. `index.html` links it as `/favicon.svg`, and Vite rewrites that to `/hold-the-line/favicon.svg` in the build. It served the build with `vite preview` and loaded it headless with a network log. The page asked for exactly four files: the page, the CSS, the JavaScript, and `/hold-the-line/favicon.svg`. It asked for nothing at the site root, and no CSP violation was logged. `img-src 'self'` covers the icon.
+- It corrected the Node bullet above with what I told it, and checked where the second copy is and which one runs.
