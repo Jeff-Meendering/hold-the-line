@@ -227,3 +227,59 @@ FBI Albuquerque, the IC3 image, Together CU, Priority First FCU, and the FinCEN 
 - Dropped the cashier's-check fallback, because the sources did not support it.
 - Rejected sections 4 to 6 as out of scope. Not using money orders, money mules, or configurable limits.
 - Updated `docs/plan.md` to version 4 with the decision, and closed risk 10.
+
+---
+
+## 5. Requirements
+
+- **Date:** Fri Nov 27, 2026
+- **Phase:** Requirements
+- **Tool:** Claude Fable 5.2, in the repo. TODO: say whether the prompt was drafted in the planning-partner chat.
+- **Screenshots:** TODO: add filenames
+
+**Prompt**
+
+> Read docs/plan.md, docs/assignment.md, and docs/reviews/01-gift-card-check.md, then write docs/requirements.md. This is the requirements step in the plan.
+>
+> It needs:
+> - 3 short user personas
+> - user stories with acceptance criteria I can actually test
+> - numbered functional requirements (FR-1...) and non-functional requirements (NFR-1...), each one testable, so the test plan can trace back to them
+> - the exact scoring rules and the exact day-draw rules
+> - the list of red flags the game uses, each tied to a real indicator from the FinCEN or FTC sources in the fact-check. Mark anything that's plausible but not documented.
+>
+> Keep it proportional to a 25-hour project, I should be able to read it in 10 minutes. Don't add features that aren't in the plan's scope.
+>
+> Where you have to make a decision I haven't made (like the scoring numbers), don't bury it in the doc. Put those in a "Decisions for Jeff" list at the end with your recommendation and why. Commit, push, and add the ai-log entry.
+
+**Result**
+
+[requirements.md](requirements.md), version 1: 3 personas, 9 user stories with 20 acceptance criteria, FR-1 to FR-17, NFR-1 to NFR-11, the scoring table, the 7 day-draw rules, 16 documented red flags and 3 marked as undocumented, and 10 decisions waiting for me.
+
+**What worked**
+
+This part is the record of what the AI did. TODO: add my own view after reading the document.
+
+- It noticed that the fact-check file has no source URLs and a TODO where ChatGPT's answer should be, so "the sources in the fact-check" could not be read from the repo. It said so in the document and did not invent citations.
+- It fetched the sources itself: two FinCEN PDFs and six FTC pages. It read the full text of both PDFs and quoted each indicator with a page number.
+- It marked the flag closest to the game's premise, that the scammer coaches the victim on what to tell the teller (RF-P1), as not documented in any of the eight sources. The documented indicators are about being directed over the phone and not keeping a consistent reason, which is not the same claim.
+- It marked one indicator as only a partial match (RF-14) and noted where a quote covers less than the flag it supports (RF-6, RF-11).
+- The decisions are tagged in the text ([D1] to [D10]) and collected at the end with a reason each, as the prompt asked.
+
+**What the AI got wrong**
+
+- Length. The first draft was about 4,000 words against a 10-minute limit. It cut the draft itself to about 3,200 words, which is still over. The red-flag and source tables are roughly a third of that.
+- It guessed both FinCEN PDF URLs from memory and both returned 404. The working URLs came from fincen.gov's own pages.
+- It told its fetch helper the FinCEN trend analysis was published in February 2024. The PDF is dated April 2024. The document only says 2024.
+- Its fetch tool could not read either PDF, so it extracted the text locally. The FTC quotes came back through the fetch tool with a length cap and were not read on the page. None of the eight sources has had my open-and-read check yet.
+- It could not find an FTC page describing couriers collecting cash or gold, so RF-16 rests on two short clauses.
+- TODO: anything I find on review.
+
+**What I changed**
+
+TODO: my decision on D1 to D10, and any corrections.
+
+**Open items it raised**
+
+- Paste ChatGPT's answer into `reviews/01-gift-card-check.md`, so the sources used here can be matched against the ones the fact-check verified.
+- The header of `plan.md` says "Version 3" while its text describes version 4.
