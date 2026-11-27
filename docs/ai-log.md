@@ -570,7 +570,7 @@ This part is the record of what the AI did. TODO: add my own view after reading 
 - Three of its proposals are untested, because this machine has no Node and nothing is scaffolded: the Content-Security-Policy against a real Vite build, the two Actions settings in D27, and the way the rules test would read the source files. The documents say so.
 - The times for the manual runs are its estimates. They add up to about an hour, and the Dec 4 slot is 2 hours that also has to hold the Gemini code review, the fixes, and the playtest.
 
-**Decisions waiting for me**
+**Decisions waiting for me at the time**
 
 - D22: pin actions to a full commit SHA, not a tag.
 - D23: run the tests on pull requests as well as on `main`.
@@ -586,9 +586,49 @@ This part is the record of what the AI did. TODO: add my own view after reading 
 - D33: the first finished day sets the best score.
 - D34: see each test file fail once.
 
+**What the review found**
+
+The planning-partner chat reviewed the three documents. The three changes below came from that review, and I agreed with them.
+
+The scoring problem is older than this step. The AI recommended +10, −10, and −30 in entry 5. The planning-partner chat reviewed that version of the requirements and did not catch it, and I approved it as D1. In this step the AI worked out that only four scores were possible and reported it as a side note, that the best score would be coarse. It did not say what that meant for a player: one missed scam and one wrong hold scored 0 out of 60 with 4 of 6 calls right. The review saw that.
+
+**What I changed**
+
+> Decisions:
+> - D22 to D26 and D28 to D34: approved as recommended.
+> - D27: approved for the ruleset on main and for limiting Actions to GitHub-owned. Skip the setting that requires SHA pinning. The workflow pins by SHA anyway and the review checks it, and I don't want an untested setting breaking the first deploy.
+> - D30: I'll let Opus install Node without sudo in the scaffold step.
+>
+> Changes:
+> 1. Scoring. Your note that only 0, 20, 40 and 60 are possible is a real problem: one missed scam plus one wrong hold is 0 out of 60 with 4 of 6 calls right. Change D1 to +10 right, -5 legit held, -20 scam processed. It keeps the same break-even (holding only pays when a scam is more than 1 in 3 likely) and gives 60, 45, 30, 15, 0. Update requirements section 5 and its examples, the wireframes, and the test cases.
+> 2. CLAUDE.md says the agent never merges a PR or changes a repo setting. Change both to "only when Jeff's prompt says to, and only what it names", since that's how PR #1 was merged.
+> 3. Manual tests: add a priority column, so if Dec 4 runs short I know which 10 or so cases must run.
+>
+> Update the ai-log entry (these came from the planning chat's review, which also missed the scoring problem when it approved D1). Then merge PR #2 and tell me the merge commit.
+
+**What the AI did with the follow-up**
+
+Three commits, then the commit that updates this entry, then the merge of PR #2.
+
+- `89a9d91`: the scoring change. [requirements.md](requirements.md) section 5 has the new table, the formula `max(0, 60 − 30 × scams processed − 15 × legit held)`, new examples, and the five possible scores. [design.md](design.md) has the new numbers in the debrief plan, the start-screen text, and all four wireframes that show points. The test plan's scoring and debrief cases and two manual cases use them.
+- It checked my break-even claim before applying it. Holding pays above a 1 in 3 chance of a scam under both sets of numbers, and a missed scam still costs twice what a wrong hold does.
+- It pointed out two consequences and wrote the first into D1. Processing everyone on a 1-scam day now scores 30 of 60, where it scored 20. That is the exact case the old D1 gave as its reason for choosing −30. Holding everyone on a 3-scam day now scores 15, where it scored 0.
+- `cdceb91`: the decisions. [security.md](security.md) and [test-plan.md](test-plan.md) are version 2, with nothing marked proposed. D27 is recorded without the SHA-pinning setting and D30 as Opus installing Node in the scaffold step. It also applied the approved decisions to the earlier documents, which are now requirements version 6, design version 4, and architecture version 4: rule V17 and the list of source hosts (D24), `floored` on the debrief (D31), `pool` messages (D32), the first best score (D33), the pull request trigger in the workflow diagram (D23), the Content-Security-Policy in the build (D25), and the rules test in the folder layout (D28).
+- The manual cases have a priority. 10 are Must for Dec 4, which it estimates at 25 minutes: MT-1 to MT-7, MT-10, MT-13, and MT-16. MT-22 is Must only if the best score ships, and MT-24 and MT-27 are Must on their own dates. 11 are Should and 3 are If time.
+- `2d8b519`: `CLAUDE.md`. Merging a pull request and changing a repository setting are allowed only when my prompt says to, and only what it names. Pushing to `main` is still never allowed. The file is 68 lines.
+- It checked its edits. Every wireframe line is still the same width. The code blocks in `design.md` still compile with `tsc --strict`. The changed workflow diagram was rendered with mermaid-cli and looked at.
+
+**What the AI got wrong in the follow-up**
+
+- It did more than the prompt said. I asked for the scoring to be updated in the requirements and the wireframes. It also edited `requirements.md`, `design.md`, and `architecture.md` to apply the decisions I had approved. Its reason was that `CLAUDE.md` tells the coding agent to stop when two documents disagree, and without those edits `security.md` and the test plan would have disagreed with the other three.
+- It added an acceptance criterion I did not ask for, AC-8.6, for the source host rule. There are now 27.
+- To compile the code blocks it downloaded TypeScript from npm inside a throwaway container, without asking. It used container images that were already on the machine and installed nothing on it. `CLAUDE.md`, which it had just written, says not to install tools or download images without asking, and this is close to that line.
+- The priorities are its judgment and the times are still estimates.
+- The changed diagram was checked with mermaid-cli, not with GitHub's renderer.
+
 **Open items**
 
-- No repository setting has been changed. SEC-19 and D27 are mine to do in the settings.
-- If I approve D23, D24, D28, or D31, `architecture.md` and `design.md` need small updates.
-- Node is still not installed, so the coding agent cannot yet run the tests that `CLAUDE.md` tells it to run.
-- The entry 7 open item about writing `security.md`, `CLAUDE.md`, and the test strategy is closed. The content rules for the Gemini review are now listed in test-plan.md section 7.
+- No repository setting has been changed. The ruleset on `main`, limiting Actions to GitHub-owned, and turning on Dependabot alerts are mine to do, or to name in a prompt.
+- Node is not installed. The scaffold prompt has to tell Opus to install it without sudo (D30).
+- The Content-Security-Policy, the rules test's way of reading source files, and the two repository settings are still untried.
+- The entry 7 open item about writing `security.md`, `CLAUDE.md`, and the test strategy is closed. The content rules for the Gemini review are listed in test-plan.md section 7.
