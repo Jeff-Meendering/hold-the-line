@@ -97,7 +97,7 @@ export interface DebriefRow {
   customer: Customer;
   decision: Decision;
   correct: boolean;
-  points: number; // +10, -10, or -30
+  points: number; // +10, -5, or -20
   flags: DebriefFlag[]; // slip, then behaviour, then answers in bank order. Empty for a legit customer
   lookAlike?: DebriefLookAlike; // only for a legit customer that has one
 }
@@ -503,7 +503,7 @@ The debrief has a score block and then one card per customer, in the order playe
 | Score | "*N* / 60", the largest text on the screen | FR-8, AC-6.1 |
 | Counts | "*a* of *b* scams stopped. *c* of *d* legitimate customers served." | FR-8 |
 | Best score | "Best score: *N* / 60", or "New best score" when this day beat it | FR-17, AC-9.1 |
-| Points key | "Right call +10. Legitimate customer held −10. Scam processed −30." When the sum was below 0, it adds "A day cannot score below 0." | Section 5, D2 |
+| Points key | "Right call +10. Legitimate customer held −5. Scam processed −20." When the sum was below 0, it adds "A day cannot score below 0." | Section 5, D2 |
 | Play again | In the score block and again after the last card | FR-10 |
 
 **Every card**
@@ -512,15 +512,15 @@ The debrief has a score block and then one card per customer, in the order playe
 |---|---|
 | Number and name | The position in the day and the customer's name |
 | Transaction | One line: "Gift cards: 6 × $500 = $3,000", "Wire: $18,400 to *recipient*, *destination*", or "Cash withdrawal: $9,000" |
-| Verdict | "RIGHT CALL +10" or "WRONG CALL −10" or "WRONG CALL −30", at the right of the name |
+| Verdict | "RIGHT CALL +10" or "WRONG CALL −5" or "WRONG CALL −20", at the right of the name |
 | What happened | One of the four sentences below |
 
 | The customer was | The player | Sentence | Verdict |
 |---|---|---|---|
 | A scam | Held | "You held it. It was a scam: *scam type*." | RIGHT CALL +10 |
-| A scam | Processed | "You processed it. It was a scam: *scam type*." | WRONG CALL −30 |
+| A scam | Processed | "You processed it. It was a scam: *scam type*." | WRONG CALL −20 |
 | Legit | Processed | "You processed it. It was legitimate." | RIGHT CALL +10 |
-| Legit | Held | "You held it. It was legitimate." | WRONG CALL −10 |
+| Legit | Held | "You held it. It was legitimate." | WRONG CALL −5 |
 
 **A scam card adds**, in this order:
 
@@ -623,13 +623,13 @@ Each screen is drawn at 1280 px and at 375 px. The frames show layout and wordin
 |                     |   3. Process the transaction, or hold it.                |                     |
 |                     |                                                          |                     |
 |                     | A right call scores 10. Holding an honest customer       |                     |
-|                     | costs 10. Letting a scam through costs 30.               |                     |
+|                     | costs 5. Letting a scam through costs 20.                |                     |
 |                     | You find out how you did at the end of the day.          |                     |
 |                     +----------------------------------------------------------+                     |
 |                                                                                                      |
 |                                          [ Start the day ]                                           |
 |                                                                                                      |
-|                                         Best score: 40 / 60                                          |
+|                                         Best score: 45 / 60                                          |
 |                                                                                                      |
 +------------------------------------------------------------------------------------------------------+
 ```
@@ -661,15 +661,15 @@ Each screen is drawn at 1280 px and at 375 px. The frames show layout and wordin
 | |    or hold it.                     | |
 | |                                    | |
 | | A right call scores 10. Holding an | |
-| | honest customer costs 10. Letting  | |
-| | a scam through costs 30.           | |
+| | honest customer costs 5. Letting   | |
+| | a scam through costs 20.           | |
 | | You find out how you did at the    | |
 | | end of the day.                    | |
 | +------------------------------------+ |
 |                                        |
 | [           Start the day            ] |
 |                                        |
-|          Best score: 40 / 60           |
+|          Best score: 45 / 60           |
 |                                        |
 +----------------------------------------+
 ```
@@ -764,20 +764,20 @@ The player has asked `purpose` and `urgency` and has 1 question left. 1280 px:
 
 ### 4.3 Debrief screen
 
-A day with 2 scams. The player asked Walter `purpose`, `urgency`, and `told`, then processed the transaction. The other five calls were right, so the score is 5 × 10 − 30 = 20. With customer 2 the player asked `met`, did not ask `verified`, and processed anyway. 1280 px:
+A day with 2 scams. The player asked Walter `purpose`, `urgency`, and `told`, then processed the transaction. The other five calls were right, so the score is 5 × 10 − 20 = 30. With customer 2 the player asked `met`, did not ask `verified`, and processed anyway. 1280 px:
 
 ```text
 +------------------------------------------------------------------------------------------------------+
 | Hold the Line                                                                             End of day |
 +------------------------------------------------------------------------------------------------------+
 |                                                                                                      |
-|    20 / 60       1 of 2 scams stopped. 4 of 4 legitimate customers served.            [ Play again ] |
-|                  Best score: 40 / 60                                                                 |
+|    30 / 60       1 of 2 scams stopped. 4 of 4 legitimate customers served.            [ Play again ] |
+|                  Best score: 45 / 60                                                                 |
 |                                                                                                      |
-|    Right call +10.  Legitimate customer held -10.  Scam processed -30.                               |
+|    Right call +10.  Legitimate customer held -5.  Scam processed -20.                                |
 |                                                                                                      |
 +------------------------------------------------------------------------------------------------------+
-|  1   Walter Brandt                                                                  WRONG CALL   -30 |
+|  1   Walter Brandt                                                                  WRONG CALL   -20 |
 |      Gift cards: 6 x $500 = $3,000                                                                   |
 |      You processed it. It was a scam: tech support scam.                                             |
 |                                                                                                      |
@@ -833,8 +833,8 @@ A day with 2 scams. The player asked Walter `purpose`, `urgency`, and `told`, th
 | Hold the Line               End of day |
 +----------------------------------------+
 |                                        |
-|                20 / 60                 |
-|          Best score: 40 / 60           |
+|                30 / 60                 |
+|          Best score: 45 / 60           |
 |                                        |
 | 1 of 2 scams stopped.                  |
 | 4 of 4 legitimate customers served.    |
@@ -842,13 +842,13 @@ A day with 2 scams. The player asked Walter `purpose`, `urgency`, and `told`, th
 | [             Play again             ] |
 |                                        |
 | Right call +10.                        |
-| Legitimate customer held -10.          |
-| Scam processed -30.                    |
+| Legitimate customer held -5.           |
+| Scam processed -20.                    |
 +----------------------------------------+
 | 1  Walter Brandt                       |
 | Gift cards: 6 x $500 = $3,000          |
 |                                        |
-| WRONG CALL                         -30 |
+| WRONG CALL                         -20 |
 | You processed it.                      |
 | It was a scam: tech support scam.      |
 |                                        |
@@ -939,7 +939,7 @@ A day with 2 scams. The player asked Walter `purpose`, `urgency`, and `told`, th
 |---|---|---|---|
 | U1 | From 720 px up, the customer screen is two columns: who and what on the left, questions on the right, decisions in a bar under both | One column at every width; questions under the slip; tabs | The game is comparing an answer with the slip. Side by side, both are visible at 1280×720 with three answers open. Tabs would hide one while reading the other. |
 | U2 | An answer appears under its question and stays | A transcript panel in the order asked; a popup | FR-4 needs answers to stay visible. Under the question, each answer keeps its question, and the list never reorders because bank order is fixed. The cost is that the buttons below move down when an answer opens. |
-| U3 | Hold and Process are the same size, at opposite ends of the bar, blue and amber, with no keyboard shortcut | Side by side; one styled as the main action; green and red; H and P keys | A decision is final (FR-6), so the two must be hard to confuse and hard to hit by accident. A main-action style or a green button would say which call the game expects, which FR-7 forbids in spirit. A shortcut would make one stray key cost up to 40 points. |
+| U3 | Hold and Process are the same size, at opposite ends of the bar, blue and amber, with no keyboard shortcut | Side by side; one styled as the main action; green and red; H and P keys | A decision is final (FR-6), so the two must be hard to confuse and hard to hit by accident. A main-action style or a green button would say which call the game expects, which FR-7 forbids in spirit. A shortcut would make one stray key cost up to 30 points. |
 | U4 | Hold and Process ignore presses for the first half second after a customer appears (D19) | No guard; a confirm step (G1) | Each decision puts the next customer's buttons where the last ones were, so a double-click decides two customers. Ray, the persona who is not a gamer, is the player most likely to double-click. |
 | U5 | The debrief is one page with all six cards open, in the order played | Collapsed rows that open on a click; wrong calls first; one customer per page with a Next button | AC-6.2 fixes the order. With everything open, nothing is missed for want of a click, and a keyboard player only scrolls. A pager would add a position to the game state for the screen that should be simplest to use. |
 | U6 | A scam card repeats the slip and the behaviour text above the flags | Only the name and transaction that FR-8 asks for | A flag marked *shown* teaches nothing unless the player can look again at what was shown, and there is no way back to the customer (AC-4.3). D15's labels are general, so the specific evidence has to sit beside them. |
@@ -960,7 +960,7 @@ The numbering continues from [requirements.md section 8](requirements.md#8-decis
 | D14 | The question bank: 8 ids, their wording, and the set of 5 for each transaction type | As in section 2.3. `told` is in every set; on gift cards it replaced `verified` | The ids and sets are part of the schema and decide which flags a customer of each type can hide behind a question. Jeff's change: `told` is the question closest to the game's premise, so every customer offers it. The ids and sets are locked; the wording can still change. | Approved by Jeff with one change, Nov 27 |
 | D15 | What the debrief says about a flag | The flag's shared label, plus the question and the customer's own answer when the flag is behind a question. No sentence written per customer per flag | It removes 12 or more sentences from the content work on Nov 30, which is the plan's top risk. A flag on the slip or in the behaviour gets its general label next to the slip and behaviour text themselves (U6). | Approved by Jeff, Nov 27 |
 | D18 | Cover stories | A scam customer has flags behind at most 2 of 5 answers. The others are the cover story and read like a legit customer's. The slip and behaviour are things a legit customer could also show. An admission on `told` is rare, which this document sets at 1 scam customer at most (FR-19, C1 to C7, V14, V15) | Jeff's review of version 1: the example gave itself away before any question and all five answers sounded like a scam, so no question was worth asking, and whatever is in this document is what gets copied for the real 10. The victims are coached, so they should arrive with a story. "At most 1" is the AI's reading of "rare", chosen so a test can check it. | Decided by Jeff, Nov 27 |
-| D19 | A guard against deciding twice | Hold and Process ignore presses for the first half second after a customer appears (U4) | A double-click on Process would otherwise process the next customer unseen, at a cost of up to 40 points with no way back. It is one timer in `CustomerScreen`, and the reducer stays pure. It is drawn into the UI plan as U4, and AC-4.4 tests it. | Approved by Jeff, Nov 27 |
+| D19 | A guard against deciding twice | Hold and Process ignore presses for the first half second after a customer appears (U4) | A double-click on Process would otherwise process the next customer unseen, at a cost of up to 30 points with no way back. It is one timer in `CustomerScreen`, and the reducer stays pure. It is drawn into the UI plan as U4, and AC-4.4 tests it. | Approved by Jeff, Nov 27 |
 | D20 | Two things on the debrief that FR-9 does not ask for | (a) On a scam card, a "Read more" line linking to the customer's source URLs. (b) On a legit look-alike's card, the flag it resembled and the question and answer that explain it | Both are built from data the schema already holds (`sourceUrls`, `lookAlike`), so they add no content work. (a) lets Ray check that the scams are real and read further. The links open the FTC in a new tab, which `security.md` has to cover. (b) is the lesson a look-alike exists to teach: a red flag is a reason to ask, not proof. Both were drawn in the version 2 wireframes before Jeff had approved them. | Approved by Jeff, Nov 27 |
 | D21 | Legit customers who say something alarming | `lookAlike` gets a `shownIn`, like a red flag. At least 2 legit look-alikes show their trait in an answer, explained by a different question (FR-14, C9, C10, V9, V16). The debrief card shows where the trait appeared (U13) | The AI pointed out in its reply to version 2 that the cover-story rule was one-sided: scam customers' answers had to read as legit, but no legit customer ever said anything alarming, so one odd answer always meant scam. It had left that as a note for the content review. Jeff made it a rule. | Decided by Jeff, Nov 27 |
 

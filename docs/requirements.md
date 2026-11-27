@@ -104,15 +104,17 @@ IDs are stable so the test plan can trace to them: `US` story, `AC` acceptance c
 |---|---|---|
 | Legit | Processes | +10 |
 | Scam | Holds | +10 |
-| Legit | Holds | −10 |
-| Scam | Processes | −30 |
+| Legit | Holds | −5 |
+| Scam | Processes | −20 |
 
 1. The day score is the sum over the 6 customers. A sum below 0 is shown as 0. The maximum is always 60.
-2. Equivalent form for tests: `max(0, 60 − 40 × scams processed − 20 × legit held)`.
+2. Equivalent form for tests: `max(0, 60 − 30 × scams processed − 15 × legit held)`.
 3. Questions asked and time taken do not affect the score **[D7]**.
 4. The score is calculated after the sixth decision and first shown on the debrief.
 
-Examples: perfect day, 60. One scam let through and the rest right, 20. One legit customer held and the rest right, 40. Process everyone on a 1-scam day, 20. Hold everyone on any day, 0.
+Examples: perfect day, 60. One legit customer held and the rest right, 45. One scam let through and the rest right, 30. One of each and the rest right, 15. Process everyone on a 1-scam day, 30, and on a 2-scam or 3-scam day, 0. Hold everyone on a 1-scam or 2-scam day, 0, and on a 3-scam day, 15.
+
+The only scores a day can have are 60, 45, 30, 15, and 0.
 
 ## 6. Day-draw rules **[D3]**
 
@@ -173,8 +175,8 @@ Jeff approved D1 to D9 on Nov 27, 2026 and decided D10 differently from the reco
 
 | # | Decision | Outcome | Why | Status |
 |---|---|---|---|---|
-| D1 | Scoring numbers | +10 for a right call, −10 for holding a legit customer, −30 for processing a scam | The maximum is 60 on every day, so scores compare across draws. Counting the lost +10, a missed scam costs 40 and a wrong hold 20. At −20 instead of −30, processing everyone on a 1-scam day scores 30 of 60 for never looking. | Approved |
-| D2 | Negative totals | Show a sum below 0 as 0 | The raw sum can reach −120, which reads as blame and tells the player nothing more than 0 does. | Approved |
+| D1 | Scoring numbers | +10 for a right call, −5 for holding a legit customer, −20 for processing a scam | The maximum is 60 on every day, so scores compare across draws. Counting the lost +10, a missed scam costs 30 and a wrong hold 15, so a missed scam still costs twice as much, and holding still only pays when a scam is more than 1 in 3 likely. Version 1 used −10 and −30. With those the only scores were 60, 40, 20, and 0, and one missed scam plus one wrong hold scored 0 with 4 of 6 calls right. The cost of the change is the one version 1 chose −30 to avoid: processing everyone on a 1-scam day now scores 30 of 60, where it scored 20. | Approved Nov 27 as −10 and −30. Changed by Jeff the same day, in version 6 |
+| D2 | Negative totals | Show a sum below 0 as 0 | The raw sum can reach −75, which reads as blame and tells the player nothing more than 0 does. | Approved |
 | D3 | How the scam count is picked | 1, 2, and 3 equally likely | The plan says the count is picked first, not how. Equal odds is the simplest rule to state and test. | Approved |
 | D4 | What "red flags missed" means | Every flag for every scam customer, with a label saying whether the player had it in front of them, plus one line for every legit customer | Flags only for wrong calls would hide what a player missed on a scam they held on a hunch, and a player who blocked a legit customer needs the innocent explanation. | Approved. Labels changed in version 2: "seen" was misleading for a flag that was always on screen |
 | D5 | Account note on the slip | One line of usual activity per customer | RF-8, RF-9, and RF-10 all mean "unusual for this account". Without the line the player cannot see them. | Approved |
