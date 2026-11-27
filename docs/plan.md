@@ -1,6 +1,6 @@
 # Hold the Line: project plan
 
-Version 4, Fri Nov 27, 2026. Version 1 was a chat draft written before the assignment text was available, version 2 added the AI workflow, version 3 applied the review fixes, and version 4 records the gift-card decision; see [ai-log.md](ai-log.md) for what changed and why. The assignment is in [assignment.md](assignment.md).
+Version 5, Fri Nov 27, 2026. Version 1 was a chat draft written before the assignment text was available, version 2 added the AI workflow, version 3 applied the review fixes, version 4 records the gift-card decision, and version 5 brings the scope line on questions in line with the shared question bank in the requirements; see [ai-log.md](ai-log.md) for what changed and why. The assignment is in [assignment.md](assignment.md).
 
 ## 1. Purpose
 
@@ -17,7 +17,7 @@ It is also the final project for a course on AI-assisted software engineering. M
 - Each day draws 6 customers from the pool with 1 to 3 scams. The scam count is picked first, then the customers are drawn.
 - Three transaction types: cash withdrawal, wire, and bank-issued Visa gift cards with a $500 maximum per card, spread across scam and legit customers so the type alone is not a tell.
 - Store gift cards, gold, and crypto ATMs appear as the reasons behind cash withdrawals, not as transactions, since that is what the FTC and FBI document.
-- Per customer: a transaction slip, a short text description of their behaviour, and 4–5 available questions with scripted answers, of which the player may ask up to 3.
+- Per customer: a transaction slip, a short text description of their behaviour, and 5 questions with scripted answers, of which the player may ask up to 3. The questions come from a shared bank of 8, and each transaction type has a fixed set of 5, so the questions on offer say nothing about the customer.
 - A decision per customer: process or hold.
 - The player is not told how many scams a day can contain.
 - No feedback on whether a call was right until the debrief, so the score is also hidden until then.
