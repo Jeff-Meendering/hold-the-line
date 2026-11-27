@@ -191,7 +191,7 @@ A day is random, so the tester cannot choose the customers. Run A is a script fo
 
 | ID | Priority | Covers | Steps | Expected | Result |
 |---|---|---|---|---|---|
-| MT-24 | Must | AC-8.2, FR-16 | Nov 29, against the scaffold (D29). Note the script file name in the live page's source and the last entry under Deployments. On a branch, add a test that fails, open a pull request, and merge it. After checking, revert it with a second pull request | On `main` the build job fails at the test step and the deploy job is skipped. The live page has the same script file name and Deployments has no new entry. After the revert, the run passes and deploys | |
+| MT-24 | Must | AC-8.2, FR-16 | Nov 29, against the scaffold (D29). Note the script file name in the live page's source and the last entry under Deployments. On a branch, add a test that fails, open a pull request, and merge it. After checking, revert it with a second pull request | On `main` the build job fails at the test step and the deploy job is skipped. The live page has the same script file name and Deployments has no new entry. After the revert, the run passes and deploys | Pass, Nov 27. Runs in section 8 |
 | MT-25 | Should | AC-6.5, SEC-13 | Dec 4. Open every URL in every scam customer's `sourceUrls` | Each one loads the page it is meant to, on the official site, not an error page or the site's home page | |
 | MT-26 | Should | SEC-3 | Nov 29 and Dec 4. Run `npm audit` | Each finding is written into section 8 with whether it can reach the built site | |
 | MT-27 | Must | SEC-19, SEC-20 | Dec 6, with the plan's logged-out check. Read the repository settings against SEC-19. Look at every file in `screenshots/` | The settings match. No screenshot shows a token, an email address, a notification, or an unrelated tab | |
@@ -237,6 +237,19 @@ Empty until the tests are run. A bug found here is fixed, `npm test` is run agai
 | `npm test`: files, tests, passed, failed | |
 | `npm run build`: passed, JavaScript and CSS gzip sizes | |
 | Workflow run on the tested commit | |
+
+**Pipeline check (MT-24)**
+
+Run Nov 27, two days early, against the scaffold. Before it, the live page loaded `assets/index-WYhNHesa.js`, its `last-modified` was 20:53:02 GMT, and the only deployment was 8119125287, for `cdeabac` (the merge of PR #3, run [46066562082](https://github.com/Jeff-Meendering/hold-the-line/actions/runs/46066562082), build and deploy both passed).
+
+| Step | Pull request | Run | Build job | Deploy job | Live page and Deployments after |
+|---|---|---|---|---|---|
+| Failing test, on the pull request | [#4](https://github.com/Jeff-Meendering/hold-the-line/pull/4) | [46066706800](https://github.com/Jeff-Meendering/hold-the-line/actions/runs/46066706800) | Failed at `npm test` | Skipped | Not deployed, as for any pull request |
+| Failing test, merged into `main` while red (`6261374`) | [#4](https://github.com/Jeff-Meendering/hold-the-line/pull/4) | [46066775001](https://github.com/Jeff-Meendering/hold-the-line/actions/runs/46066775001) | Failed at `npm test`: `src/mt24.test.ts`, expected 2 to be 3 | Skipped | Unchanged: `index-WYhNHesa.js`, `last-modified` 20:53:02 GMT, still only deployment 8119125287 |
+| Revert, on the pull request | [#5](https://github.com/Jeff-Meendering/hold-the-line/pull/5) | [46066861660](https://github.com/Jeff-Meendering/hold-the-line/actions/runs/46066861660) | Passed | Skipped | Not deployed |
+| Revert, merged into `main` (`1faf74d`) | [#5](https://github.com/Jeff-Meendering/hold-the-line/pull/5) | [46066986346](https://github.com/Jeff-Meendering/hold-the-line/actions/runs/46066986346) | Passed | Passed | New deployment 8119180055 for `1faf74d`, `last-modified` 20:56:54 GMT. Still `index-WYhNHesa.js`, because neither change touched the bundle |
+
+The script file name could not have changed in this check, because a test file is not part of the bundle. Whether a deploy happened shows in Deployments and in the page's `last-modified`, not in the script name.
 
 **Worksheet for run A**
 
