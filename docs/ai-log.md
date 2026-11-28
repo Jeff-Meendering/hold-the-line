@@ -1323,3 +1323,104 @@ On the same branch. The lists above are left as they were written, and this part
 - The PR title and description now cover both rounds.
 - `npm test`: 7 files, 115 tests, all passed. `npm run build`: passed, with the same bundle.
 - The merge and the deploy come after this commit, so their result is not in this entry.
+
+---
+
+## 14. The three screens
+
+- **Date:** Sat Nov 28, 2026
+- **Phase:** Implementation
+- **Tool:** Claude Opus 5.5, in the repo, through T3 Code
+- **Screenshots**, in [`/screenshots`](../screenshots):
+  - TODO: the prompt
+  - TODO: the reply
+
+**Prompt**
+
+> Next step is the UI. Pull main first. Read CLAUDE.md, docs/architecture.md, and docs/design.md sections 1, 3, 4 and 5 before writing anything.
+>
+> Build the three screens from the design: start, customer, and debrief, plus the Slip component and bestScore. Wire App.tsx to gameReducer and drawDay. The game logic in src/game and the content in src/data are done and reviewed, so don't change them. If the design and the code disagree, stop and ask.
+>
+> Things to watch:
+> - The customer screen must not show anything that gives away scam or legit, and there's no score or feedback until the debrief.
+> - The half-second guard on the decision buttons (D19) and the debrief additions (D20).
+> - Keyboard and focus rules from section 3.7.
+> - It has to work at 1280×720 and at 375 wide. The longest answer is 130 characters, and one customer has six source links where the wireframe shows three.
+>
+> Work on a branch, one commit per screen, and open a PR but don't merge it. Add tests for any logic that isn't just rendering. Run npm test and npm run build and paste the output. If you can run it and look at it in a browser at both sizes, do that and tell me what you saw. If you can't, say so.
+>
+> Add the AI log entry. In your report, list everything that differs from the wireframes and everything you didn't check.
+
+**Two questions the AI asked before writing the screens**
+
+1. The slip titles (CASH WITHDRAWAL, WIRE TRANSFER, GIFT CARD PURCHASE) need a home. My follow-up in entry 10 said they go in `labels.ts` in the UI step, and this prompt says not to change `src/data`. I answered: add them to `labels.ts`.
+2. design.md section 3.4 gives a source link's text as the hostname and a number, and does not say whether the number counts across the customer's links or restarts for each host. I answered: across all links, so Stephen's read `www.fincen.gov (1)` to `www.cftc.gov (6)`.
+
+**Result**
+
+Nine code commits on the branch `ui/screens`, plus the commit that adds this entry, and a pull request into `main` that is open and not merged. Nothing in `src/game/` changed. In `src/data/`, only the slip titles were added, as answered above.
+
+- `ca0ee74`: `SLIP_TITLES` in `src/data/labels.ts`, and one more row in the label check in `data.test.ts`.
+- `7e14a34`: `src/ui/bestScore.ts`: one key, `hold-the-line:best-score`; a stored value is used only if it is a whole number from 0 to 60, written plainly; every storage call is inside `try`/`catch`; `nextBest` makes the first finished day the best and does not count a tie as new. With `bestScore.test.ts`.
+- `4249dfc`: `src/ui/Slip.tsx`, in full and in short, and `src/ui/format.ts` for the text built from more than one value: money, points, the transaction line, the four outcome sentences, the counts, the points key, and the source link text, taken from `new URL(href).hostname`. With `format.test.ts`. The base styles and the slip go into `styles.css`.
+- `a2573d4`: the start screen, and `src/ui/useHeadingFocus.ts`, which moves focus to a screen's heading and scrolls to the top when the screen appears.
+- `4d6fef8`: the customer screen, and `src/ui/customerView.ts`: `toCustomerView` (copies the name, slip, behaviour, and answers, and nothing else), the questions in bank order, the three question states, and the 500 ms guard. With `customerView.test.ts`. Asked and locked questions use `aria-disabled`, and each answer is in an `aria-live="polite"` region.
+- `c9a436a`: the debrief screen. It calls `buildDebrief` once. The stored best is read when the debrief appears, compared with the day's score, and saved if it is new.
+- `2b58544`: `App.tsx` holds `useReducer(gameReducer)`, draws the day with `drawDay(customers, Math.random)` on Start and Play again, gives the customer screen a new `key` for each customer, and passes it `toCustomerView(...)`.
+- `9a401ba`: two layout fixes found in the browser (below).
+
+`npm test`: 10 files, 143 tests, all passed. `npm run build`: passed. The JavaScript and CSS are 80.6 kB gzipped together, against NFR-7's 200 kB.
+
+**What the AI saw in the browser**
+
+It served the built site with `npm run preview`, so the Content-Security-Policy was on, and drove it in T3 Code's built-in browser (Chromium) at 1280×720 and at 375×667.
+
+- Start screen: everything fits at 1280×720 without scrolling. After a reload it showed the stored best score.
+- Customer screen at 1280×720 with three answers open: fits for Ana, Carol (a wire, with two questions that take two lines), and Stephen (his 130-character answer). Every customer's three longest answers were also measured in the page, and on that estimate the decision buttons end at 670 px or higher for all ten. The estimate came out 30 px above what was measured for Stephen.
+- A fourth question press did nothing. Focus stayed on a question after Enter, and a second Enter on it did nothing. Tab went through the questions to Hold, then to Process. Enter and Space both worked. After a decision, focus was on the next customer's name.
+- The guard: presses on the new Process button 100 ms and 450 ms after a decision were both ignored. A real double-click with the mouse decided one customer, but only because the decision bar had moved and the second click landed on empty page.
+- No class name, id, or attribute on the customer screen mentioned scam, legit, a flag, or a customer id, and the tab title stayed "Hold the Line".
+- Debrief: focus went to "End of day". "New best score" showed after the first day and after a higher score, and "Best score: 0 / 60" after a tie. The floor line showed on a day that added up to less than 0. Links had `target="_blank"` and `rel="noopener noreferrer"`. No horizontal scroll at either size. At 375 the verdict sat under the transaction line, each status sat above its text, and Stephen's six links were one per line.
+- No console errors at any point, and the only requests were the page and its two files from the same origin.
+
+**What worked**
+
+This part is the record of what the AI did. TODO: add my own view.
+
+- It read the documents first and found the clash between entry 10 and this prompt before writing any code, and asked.
+- Logic that is not rendering is in plain functions with tests: the best score, the question states, the guard, `toCustomerView`, and the text helpers. It broke three of them once each (the tie in `nextBest`, the guard's `>=`, the link number) and saw the tests fail.
+- Looking at the page found two layout bugs that the tests could not: card text ran to about 105 characters a line, against "under about 75" in design.md section 3.1, and "Read more:" sat on its own line above Stephen's six links. Both are fixed in `9a401ba`.
+
+**What the AI got wrong**
+
+- To break `nextBest` on purpose it edited `bestScore.ts` and then ran `git checkout` on it to undo the break. The file was new and not yet committed, so `git checkout` did nothing and the break stayed. It noticed from the file-changed notice and undid the break by hand before committing.
+- It read the first double-click result, focus on the page instead of the new name, as a focus bug. Logging the events showed the second click had landed on empty page because the buttons had moved.
+- Its first command to stop the preview server matched its own shell and killed it, so the commit in the same command did not run. It ran the commit again.
+
+**Where it departed from the documents, or chose**
+
+1. Three helper files in `src/ui/` that architecture.md section 3 does not list: `format.ts`, `customerView.ts`, and `useHeadingFocus.ts`. Three test files sit next to them in `src/ui/`, where test-plan.md section 2 has unit tests only in `src/game/`. They test plain functions in Node, so they need no new package and are not the component tests D16 rules out.
+2. The question states repeat the reducer's limit of 3 in the UI, to grey out the buttons. The reducer is still the backstop (G2). CLAUDE.md says a rule a component needs goes in `src/game/`, and the prompt said not to change `src/game/`.
+3. The guard compares two `performance.now()` times instead of running a `setTimeout`. architecture.md calls it "the one timer".
+4. Without storage the debrief and the start screen show no best-score line, instead of "New best score" every day.
+5. The counts line says "1 scam", not "1 scams".
+
+**Unclear in the documents, and what the AI guessed**
+
+1. The debrief's `<h1>` is "End of day" in the header bar. design.md says each screen has one `<h1>` but does not say what it is on the debrief.
+2. The short slip on a scam card: the wireframe shows only gift cards ("6 Visa gift cards at $500."). Cash reads "Cash withdrawal of $14,000." and a wire "Wire of $22,500 to Graham Tolliver, Aberdeen, United Kingdom."
+3. "New best score" replaces the "Best score" line, without the number, because the score is next to it.
+
+**Not checked**
+
+- Firefox, Safari, real phones, and a screen reader. Whether the live region reads an answer out was not heard.
+- Contrast was not measured, and the focus ring was checked by its computed style, not by eye.
+- The 375 checks ran with a desktop scrollbar, so the page was 360 px wide.
+- At 375 the AI looked closely at one customer screen and the debrief. The other customers were played by a script, with only the horizontal overflow checked.
+- Widths between 375 and 1280, including near the 720 px breakpoint.
+- Holding Enter on Process for 2 seconds, bad values in storage in the browser (unit-tested only), and storage switched off in the browser.
+- No source link was clicked. `npm run dev` was not run.
+
+**Open items**
+
+- A double-click on Play again or Start could land its second click on a question on the next screen and ask it. The guard covers Hold and Process only, as D19 says.
