@@ -94,7 +94,7 @@ interface CustomerBase {
   behaviour: string
   /** An answer to each of the 5 questions in the slip type's set, and to no other. */
   answers: Partial<Record<QuestionId, string>>
-  /** The debrief line. For a scam it names the scammer's tactic (AC-6.4). */
+  /** The debrief explanation, at most two sentences. For a scam it names the scammer's tactic (AC-6.4). */
   explanation: string
 }
 

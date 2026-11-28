@@ -1,6 +1,6 @@
 # Hold the Line: design
 
-Version 6, Sat Nov 28, 2026. Built on [requirements.md](requirements.md) version 6. Version 1 covered the game flow and the data schema. Version 2 applied Jeff's review of it (`told` in every question set, the cover-story rule, a harder example customer) and added the UI and UX plan, the wireframes, and the UI decisions. Version 3 records the approval of D19 and D20 and lets a legit look-alike show its trait in an answer (D21). Version 4 changes the scoring numbers on the debrief and in the wireframes (D1), adds the list of source hosts and rule V17 (D24), adds `floored` to the debrief (D31), and says how a rule about the whole pool reports (D32). Version 5 records what the game-logic step built (PR #7), as Jeff approved it: the name `GameContent` for what `validateData` takes, the start of each message, and the checks V4 and V6 make that version 4 did not spell out. Version 6 follows the fix round on the ten customers (PR #10): `www.cftc.gov` joins `SOURCE_HOSTS`, the `verified` question is reworded in section 2.3 and in the debrief wireframes, and the RF-12 and RF-13 labels in those wireframes now match `labels.ts`. The system architecture and the technical decisions are in [architecture.md](architecture.md).
+Version 6, Sat Nov 28, 2026. Built on [requirements.md](requirements.md) version 6. Version 1 covered the game flow and the data schema. Version 2 applied Jeff's review of it (`told` in every question set, the cover-story rule, a harder example customer) and added the UI and UX plan, the wireframes, and the UI decisions. Version 3 records the approval of D19 and D20 and lets a legit look-alike show its trait in an answer (D21). Version 4 changes the scoring numbers on the debrief and in the wireframes (D1), adds the list of source hosts and rule V17 (D24), adds `floored` to the debrief (D31), and says how a rule about the whole pool reports (D32). Version 5 records what the game-logic step built (PR #7), as Jeff approved it: the name `GameContent` for what `validateData` takes, the start of each message, and the checks V4 and V6 make that version 4 did not spell out. Version 6 follows the fix round on the ten customers (PR #10): `www.cftc.gov` joins `SOURCE_HOSTS`, the `verified` question is reworded in section 2.3 and in the debrief wireframes, and the RF-1, RF-12, and RF-13 labels in those wireframes now match `labels.ts`. It also adds RF-16 to the `urgency` row of the table in section 2.3, and says an explanation is at most two sentences where it was called one line (sections 2.2 and 3.4, U13). The system architecture and the technical decisions are in [architecture.md](architecture.md).
 
 ## 1. Game flow
 
@@ -225,7 +225,7 @@ interface CustomerBase {
   behaviour: string;
   /** An answer to each of the 5 questions in the slip type's set, and to no other. */
   answers: Partial<Record<QuestionId, string>>;
-  /** The debrief line. For a scam it names the scammer's tactic (AC-6.4). */
+  /** The debrief explanation, at most two sentences. For a scam it names the scammer's tactic (AC-6.4). */
   explanation: string;
 }
 
@@ -293,7 +293,7 @@ export const QUESTION_SETS: Record<TransactionType, readonly QuestionId[]> = {
 | `purpose` | ✓ | ✓ | ✓ | RF-5, RF-7, RF-14 |
 | `recipient` | | ✓ | ✓ | RF-5, RF-13, RF-14 |
 | `origin` | ✓ | | | RF-7, RF-14 |
-| `urgency` | ✓ | | ✓ | RF-5 |
+| `urgency` | ✓ | | ✓ | RF-5, RF-16 |
 | `next` | ✓ | | ✓ | RF-12, RF-15, RF-16 |
 | `met` | | ✓ | | RF-13 |
 | `verified` | | ✓ | | RF-6, RF-7 |
@@ -558,7 +558,7 @@ The three statuses of a red flag:
 
 The label is the flag's shared text from `labels.ts`, the same on every customer (D15). A scam card looks the same whether the call was right or wrong: a player who held a scam on a hunch still sees what they missed (D4).
 
-**A legit card adds** one line, "Why it was fine", with the explanation (FR-9).
+**A legit card adds** "Why it was fine", with the explanation, which is at most two sentences (FR-9).
 
 **A legit look-alike's card also adds** two short parts (D20, D21):
 
@@ -812,7 +812,7 @@ A day with 2 scams. The player asked Walter `purpose`, `urgency`, and `told`, th
 |                                                                                                      |
 |      Red flags                                                                                       |
 |      [ shown ]          Buying many gift cards at once  (on the slip)                                |
-|      [ shown ]          On the phone during the transaction  (at the window)                         |
+|      [ shown ]          On the phone during the transaction, taking directions  (at the window)      |
 |      [ you asked ]      Suddenly unwilling to talk about the money                                   |
 |                         Question  Does it have to be done today?                                     |
 |                         Answer    "Before five, yes. I'd rather not go into why."                    |
@@ -893,7 +893,8 @@ A day with 2 scams. The player asked Walter `purpose`, `urgency`, and `told`, th
 | Buying many gift cards at once         |
 |                                        |
 | [ shown ] at the window                |
-| On the phone during the transaction    |
+| On the phone during the transaction,   |
+| taking directions                      |
 |                                        |
 | [ you asked ]                          |
 | Suddenly unwilling to talk about the   |
@@ -969,7 +970,7 @@ A day with 2 scams. The player asked Walter `purpose`, `urgency`, and `told`, th
 | U10 | One breakpoint at 720 px, system fonts, and one light theme with measured contrast | More breakpoints; a web font; a dark theme | NFR-3 and NFR-4 name two widths, and one breakpoint serves both. A web font is either a request to another origin, which NFR-1 rules out, or weight in the bundle. A dark theme doubles the contrast checks for what the plan calls polish. |
 | U11 | Emoji are decoration beside a word and hidden from screen readers | Emoji as the only label on a button or status; an SVG icon set | Emoji look different on every system and can be missing. The plan allows emoji and rules out custom art, so they are used where losing one costs nothing. |
 | U12 | On a phone the decision buttons are at the end of the page, in the normal flow | A bar fixed to the bottom of the screen | A fixed bar covers text at 375 px, which NFR-4 does not allow, and it keeps a final decision under the player's thumb while they scroll. |
-| U13 | A legit look-alike's card shows its trait with the same status and layout as a red flag, then the question and answer that explain it | The one-line explanation only; a different layout for look-alikes | The trait and a scam's flag look the same to the player during the day, so they are shown the same way afterwards, and the only difference on the card is that this one has an explanation. Putting the unasked explaining question next to the alarming answer shows the player the move they missed. |
+| U13 | A legit look-alike's card shows its trait with the same status and layout as a red flag, then the question and answer that explain it | The explanation only, which is at most two sentences; a different layout for look-alikes | The trait and a scam's flag look the same to the player during the day, so they are shown the same way afterwards, and the only difference on the card is that this one has an explanation. Putting the unasked explaining question next to the alarming answer shows the player the move they missed. |
 
 ## 6. Decisions
 
