@@ -7,9 +7,10 @@
 // every customer: focus goes to the name, and the half-second guard restarts.
 import { useState } from 'react'
 import { QUESTION_TEXT } from '../data/questions.ts'
+import { offeredQuestions, questionState, questionsLeft } from '../game/asking.ts'
 import type { CustomerView, Decision, QuestionId } from '../game/types.ts'
 import { Slip } from './Slip.tsx'
-import { acceptsQuestion, offeredQuestions, pastGuard, questionState, questionsLeft } from './customerView.ts'
+import { acceptsQuestion, pastGuard } from './customerView.ts'
 import { useHeadingFocus } from './useHeadingFocus.ts'
 
 interface Props {
@@ -33,7 +34,7 @@ export function CustomerScreen({ view, number, total, asked, onAsk, onDecide }: 
   const [shownAt] = useState(() => performance.now())
 
   function ask(id: QuestionId) {
-    if (acceptsQuestion(id, asked, shownAt, performance.now())) onAsk(id)
+    if (acceptsQuestion(id, view.answers, asked, shownAt, performance.now())) onAsk(id)
   }
 
   function decide(decision: Decision) {

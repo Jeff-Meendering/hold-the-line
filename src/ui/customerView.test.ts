@@ -1,14 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { legit, scam } from '../game/testPool.ts'
-import {
-  GUARD_MS,
-  acceptsQuestion,
-  offeredQuestions,
-  pastGuard,
-  questionState,
-  questionsLeft,
-  toCustomerView,
-} from './customerView.ts'
+import { GUARD_MS, acceptsQuestion, pastGuard, toCustomerView } from './customerView.ts'
 
 // The customer screen's props and its controls (FR-4 to FR-7, D19).
 
@@ -41,39 +33,9 @@ describe('toCustomerView (FR-7, SEC-18)', () => {
   })
 })
 
-describe('offeredQuestions (AC-3.1, design.md S1)', () => {
-  it('lists the answered questions in bank order, whatever order the answers are in', () => {
-    expect(offeredQuestions({ told: 'a', next: 'b', purpose: 'c', urgency: 'd', origin: 'e' })).toEqual([
-      'purpose',
-      'origin',
-      'urgency',
-      'next',
-      'told',
-    ])
-    expect(offeredQuestions(legit('l1', 'wire').answers)).toEqual(['purpose', 'recipient', 'met', 'verified', 'told'])
-    expect(offeredQuestions(legit('l1', 'giftCards').answers)).toEqual(['purpose', 'recipient', 'urgency', 'next', 'told'])
-  })
-})
-
-describe('question states (FR-5, AC-3.2, AC-3.3)', () => {
-  it('counts down from 3 to 0 and stays at 0', () => {
-    expect(questionsLeft([])).toBe(3)
-    expect(questionsLeft(['purpose'])).toBe(2)
-    expect(questionsLeft(['purpose', 'origin'])).toBe(1)
-    expect(questionsLeft(['purpose', 'origin', 'urgency'])).toBe(0)
-    expect(questionsLeft(['purpose', 'origin', 'urgency', 'next'])).toBe(0)
-  })
-
-  it('marks asked questions asked, and the rest locked once 3 are asked', () => {
-    expect(questionState('purpose', [])).toBe('available')
-    expect(questionState('purpose', ['purpose'])).toBe('asked')
-    expect(questionState('told', ['purpose', 'origin'])).toBe('available')
-    expect(questionState('told', ['purpose', 'origin', 'urgency'])).toBe('locked')
-    expect(questionState('origin', ['purpose', 'origin', 'urgency'])).toBe('asked')
-  })
-})
-
 describe('the half-second guard (D19, AC-4.4)', () => {
+  const cash = legit('l1', 'cash').answers
+
   it('ignores a press in the first half second and accepts one after it', () => {
     expect(GUARD_MS).toBe(500)
     expect(pastGuard(1000, 1000)).toBe(false)
@@ -84,13 +46,17 @@ describe('the half-second guard (D19, AC-4.4)', () => {
   })
 
   it('ignores a question pressed in the first half second, as the second click of a double-click on Start would be', () => {
-    expect(acceptsQuestion('purpose', [], 1000, 1080)).toBe(false)
-    expect(acceptsQuestion('purpose', [], 1000, 1499.9)).toBe(false)
-    expect(acceptsQuestion('purpose', [], 1000, 1500)).toBe(true)
+    expect(acceptsQuestion('purpose', cash, [], 1000, 1080)).toBe(false)
+    expect(acceptsQuestion('purpose', cash, [], 1000, 1499.9)).toBe(false)
+    expect(acceptsQuestion('purpose', cash, [], 1000, 1500)).toBe(true)
   })
 
   it('still ignores an asked or locked question after the half second', () => {
-    expect(acceptsQuestion('purpose', ['purpose'], 1000, 5000)).toBe(false)
-    expect(acceptsQuestion('told', ['purpose', 'origin', 'urgency'], 1000, 5000)).toBe(false)
+    expect(acceptsQuestion('purpose', cash, ['purpose'], 1000, 5000)).toBe(false)
+    expect(acceptsQuestion('told', cash, ['purpose', 'origin', 'urgency'], 1000, 5000)).toBe(false)
+  })
+
+  it('ignores a question the customer has no answer to, as the reducer does', () => {
+    expect(acceptsQuestion('met', cash, [], 1000, 5000)).toBe(false)
   })
 })

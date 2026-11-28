@@ -36,11 +36,17 @@ export function loadBestScore(storage: ScoreStorage | null = browserStorage()): 
   }
 }
 
-export function saveBestScore(score: number, storage: ScoreStorage | null = browserStorage()): void {
+/** Writes the best score and says whether it was saved. Reading can work
+ *  while writing throws, as when storage is full, so a caller cannot take
+ *  the save for granted (SEC-17). */
+export function saveBestScore(score: number, storage: ScoreStorage | null = browserStorage()): boolean {
   try {
-    storage?.setItem(BEST_SCORE_KEY, String(score))
+    if (storage === null) return false
+    storage.setItem(BEST_SCORE_KEY, String(score))
+    return true
   } catch {
     // Storage is full, blocked, or missing. The game carries on without it.
+    return false
   }
 }
 
@@ -50,4 +56,15 @@ export function saveBestScore(score: number, storage: ScoreStorage | null = brow
 export function nextBest(previous: number | null, score: number): { best: number; isNew: boolean } {
   if (previous === null || score > previous) return { best: score, isNew: true }
   return { best: previous, isNew: false }
+}
+
+/** The debrief's best-score line, from nextBest and the save. `saved` is null
+ *  before the save has been tried. A new best is shown only once it has been
+ *  saved, so a score that will not be there after a reload is never called
+ *  the best. If the save fails there is no line, as when there is no storage
+ *  (FR-17, AC-9.1). */
+export function bestScoreLine(result: { best: number; isNew: boolean } | null, saved: boolean | null): string | null {
+  if (result === null) return null
+  if (!result.isNew) return `Best score: ${result.best} / 60`
+  return saved === true ? 'New best score' : null
 }

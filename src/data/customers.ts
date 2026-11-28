@@ -160,7 +160,7 @@ export const customers: readonly Customer[] = [
       'Mid-thirties, flustered, a toddler on her hip. She says sorry to the line behind her and tells you she has never done this at a counter before.',
     answers: {
       purpose: "The month's bills, mostly. Normal things. I just can't pay for them the normal way right now.",
-      origin: "The bank's fraud team called on Saturday. Somebody got into my account, and I've been told not to use it. So I need cash out.",
+      origin: "The bank's fraud team called on Saturday. Somebody got into my account, and I've been told not to use my card. So I need cash out.",
       urgency: "If you can, please. I really can't leave without it.",
       next: 'It pays my rent and the daycare, in cash for once. The rest is groceries until the new account and card come through.',
       told: "No. Nobody's said anything like that.",

@@ -1518,3 +1518,120 @@ TODO: add my own view after reading the review. Nothing failed during the review
 **What I changed**
 
 TODO.
+
+
+---
+
+## 16. Fix round on the code review
+
+- **Date:** Sat Nov 28, 2026
+- **Phase:** Implementation, applying the code review from Testing
+- **Tool:** Claude Opus 5.5, in the repo, through T3 Code. The prompt says the decisions came from the planning-partner chat.
+- **Screenshots**, in [`/screenshots`](../screenshots):
+  - TODO: the prompt
+  - TODO: the reply
+
+**Prompt**
+
+> Gemini's code review is PR #12 (docs/reviews/04-gemini-code-review.md). The planning chat checked finding 1 by breaking seven of the rules it names, one at a time, and running npm test. All 145 tests still passed every time, so the findings are real.
+>
+> Merge PR #12 as it is. Then do a fix round on a new branch.
+>
+> Fix:
+> 1. Findings 1 and 6: add the missing tests. V11 scam side, both halves of V15, a 6-question set for V2, zero and negative cardCount and valuePerCard for V6, more results than customers in scoring and debrief, and rng() returning 1 in draw. Make the "different days" check in draw.test.ts need a real number of different days, not just more than 1. For each new test, break the rule and confirm the test fails.
+> 2. Finding 2: if saving the best score fails, don't show "New best score".
+> 3. Finding 4: rules.test.ts should fail if a list of files it checks is empty, and should check src/game for timers and clocks.
+> 4. Finding 7: valuePerCard must be a whole number, sourceUrls can't repeat, and a source URL can't have a port, username or password. With tests.
+> 5. Finding 8: move the rules for which questions are offered and whether one can be asked into src/game, and have the reducer and customerView both use them. Skip the rest of finding 8.
+> 6. Finding 3: in c05's origin answer, change "I've been told not to use it" to "I've been told not to use my card". Change nothing else in customers.ts.
+>
+> Not fixing. Put these reasons in the triage:
+> - Finding 3, question patterns: with ten customers and one or two scams per type, some fixed set of questions always works. It goes in the README as a limitation and gets watched in the playtest.
+> - Finding 3, Darius: his story is supposed to not hold together. That answer is the flag.
+> - Finding 4, index.html and SEC-11: the manual checks in security.md section 6 cover them.
+> - Finding 5: gift cards bought through a business are a known scam too, so the business account doesn't clear Frank. Lorraine was already decided in review 03.
+> - Finding 8, the rest: too small to be worth changing working code.
+>
+> Add a Triage section to the review file like the one in review 03. The decisions came from the planning chat. Update the docs these changes touch (the V rules in design.md, SEC-13 and SEC-17 in security.md, architecture.md for the moved functions) and add the AI log entry.
+>
+> Run npm test and npm run build and paste the output. Open a PR and don't merge it. Tell me anything you disagreed with and anything you didn't check.
+
+**Result**
+
+PR #12 was merged into `main` as it was, with a merge commit (`c28efcf`), after its check passed. Then ten commits on the branch `fix/code-review-04`, from `origin/main` at `c28efcf`, plus the commit that adds this entry, and a pull request into `main` that is open and not merged.
+
+- `17b61e4`: `c05` Ana's `origin` says "I've been told not to use my card". The only change in `src/data/`.
+- `49f487d`: finding 1. Tests for a set of 6 (V2), a card count and a value per card of 0 and below 0 (V6), a type with no scam customer (V11), and both halves of V15.
+- `b7cc2b2`: finding 6. At least 990 different days in 1,000 seeds, where it was more than 1. A random source that returns exactly 1. More results than customers in `scoreDay`, `sumPoints`, and `buildDebrief`.
+- `a33fbb5`: finding 2. `saveBestScore` returns whether the save worked, and a new `bestScoreLine` gives "New best score" only once it has. `DebriefScreen` holds the result of the save in state and uses `bestScoreLine`.
+- `27954f3`: finding 4. A rule with no files to check fails, `CustomerScreen.tsx` and `Slip.tsx` must each be found, and `src/game/` is checked for timers and clocks.
+- `460c0df` and `77cf21d`: finding 7. A whole-number value per card (V6). No source URL listed twice, and none with a port, username, or password (V17). `77cf21d` fixes two mistakes in `460c0df` (below).
+- `ea9b063`: finding 8. `src/game/asking.ts` holds `offeredQuestions`, `questionsLeft`, `questionState`, and `canAsk`. The reducer calls `canAsk`. `customerView.ts` keeps `toCustomerView` and the guard, and `acceptsQuestion` now calls `canAsk`, so it takes the customer's answers too. `CustomerScreen` imports the question functions from `src/game/asking.ts`. The tests for the three moved functions moved into `asking.test.ts`, unchanged, beside new tests for `canAsk`. The two `acceptsQuestion` tests gained the answers argument.
+- `4852f2e`: docs. design.md version 8 (V6, V17, the `GiftCardSlip` and `sourceUrls` comments, the best-score row in section 3.4, and the note in section 4.4). security.md version 4 (SEC-13, SEC-17). architecture.md version 7 (`asking.ts` in the folder layout and the module table, and the `reducer.ts`, `rules.test.ts`, `bestScore.ts`, and `customerView.ts` rows). test-plan.md version 5 (the new cases in sections 2 and 4, and a row for `asking.test.ts`).
+- `4b6f587`: the Triage section in [reviews/04-gemini-code-review.md](reviews/04-gemini-code-review.md).
+
+`npm test`: 11 files, 165 tests, all passed. `npm run build`: passed, with 78.78 kB of JavaScript and 1.93 kB of CSS gzipped.
+
+**How each new test was checked**
+
+Each break was applied to the code, the one test file was run, and the code was put back. A small script did the applying and the restoring, so no break could be left behind.
+
+| Break | Test that failed |
+|---|---|
+| V11's scam line deleted | V11: a transaction type with no scam customer |
+| V15 without `shownIn === 'told'` | V15: RF-6 and RF-17 behind a question other than told do not count |
+| V15 without the RF-6 and RF-17 check | V15: flags other than RF-6 and RF-17 behind told do not count |
+| V2 `!==` changed to `<` | V2: a set of 6 |
+| V6 card count `> 0` changed to `>= 0`, and dropped | V6: a gift card count or value per card of 0 or below |
+| V6 value per card `> 0` changed to `>= 0`, and dropped | The same |
+| V6 `Number.isInteger` on the value per card dropped | V6: a value per card that is not a whole number |
+| V17 repeat check deleted | V17: a source URL listed twice |
+| V17 port checked on the parsed URL only, and not at all | V17: a source URL with a port |
+| V17 username and password checked on the parsed URL only, and the password not at all | V17: a source URL with a username or password |
+| V17 authority taken from the whole text | V17: a source URL with a colon or an @ after the host is allowed |
+| `sumPoints` `!==` changed to `<` | The length tests in `scoring.test.ts` and `debrief.test.ts` |
+| The clamp in `randomIndex` removed | gives a full day when the random source returns exactly 1 |
+| A draw that gives one day for about 90% of seeds, and one that gives one of 10 days | gives at least 990 different days (and, for the second, three others) |
+| `saveBestScore` returning true when it fails | says whether the save worked |
+| `bestScoreLine` ignoring the save, and showing the line unless the save failed | The `bestScoreLine` tests |
+| `CustomerScreen.tsx` moved to `src/ui/screens/`, `Slip.tsx` renamed, `src/game/` and `src/data/` renamed | The rule that reads them. The old rules test passed with `CustomerScreen.tsx` and `src/game/` moved |
+| `setTimeout`, `setInterval`, `Date.now()`, `new Date()`, `performance.now()`, `requestAnimationFrame` added to `draw.ts` | The `src/game/` rule |
+| `canAsk` without the answer check | Tests in `reducer.test.ts`, `customerView.test.ts`, and `asking.test.ts` |
+| `questionsLeft` allowing 4 | The fourth-question test and the scripted day in `reducer.test.ts` |
+
+**What worked**
+
+This part is the record of what the AI did. TODO: add my own view.
+
+- Every new test was seen to fail against a broken rule, and every break was put back by the script, not by hand.
+- The finding 4 fix was checked against the real problem: the old rules test was run with `CustomerScreen.tsx` and `src/game/` actually moved, and passed, before the new one was seen to fail.
+- Counting the different days before choosing a threshold. Seeds 1 to 1,000 give 994, and a uniform draw over 139,680 days gives about 5 repeats, so 990 is a real number that still leaves room.
+
+**What the AI got wrong**
+
+- `460c0df` was committed after running only `validate.test.ts` and `data.test.ts`, not the whole suite and `tsc`. It had two mistakes. A comment in `validate.ts` gave `https://@host/` as an example, which the rules test rightly failed as a web address outside `customers.ts`. And `(cardCount as number) * valuePerCard` no longer type-checked, because `valuePerCard` was no longer narrowed to a number. Both showed up on the next full run, and `77cf21d` fixes them. Nothing was pushed until the whole suite and the build passed, but `460c0df` on its own fails the rules test and the type check.
+- The first V6 test was written to match the new message wording from finding 7, before that wording existed, and failed. It was changed to match the message as it then was, and changed back in `460c0df`.
+
+**Where it departed from the documents, or chose**
+
+1. When saving a new best fails, the debrief shows no best-score line at all, as when there is no storage. Showing the old best instead would say "Best score: 30 / 60" right under a 45. A new best now appears one render after the debrief does, once the save has been tried.
+2. A written-out default port, `https://consumer.ftc.gov:443/`, counts as a port, though `new URL()` drops it. The prompt said a source URL can't have a port, and this reads it on the text.
+3. The repeat check compares the URLs as written, so the same page with and without a trailing slash counts as two.
+4. `offeredQuestions`, `questionsLeft`, and `questionState` are imported by `CustomerScreen` from `src/game/asking.ts` directly, not re-exported from `customerView.ts`.
+5. test-plan.md was updated too, though the prompt did not name it, because its sections 2 and 4 describe the tests this round changed.
+6. The README limitation for finding 3 is not written. The README has only its title so far, and its sections are planned for Dec 4 and 5.
+
+**Disagreements and questions for Jeff**
+
+1. The triage reason for finding 4 says the manual checks in security.md section 6 cover `index.html` and SEC-11. Section 6 has a command that covers `index.html` for web addresses, but none for SEC-11, which is checked by review and MT-17. The reason is quoted as given, with a note under the triage table.
+2. Finding 5 also names Ana, the smallest cash withdrawal with the most sympathetic description. The prompt gives no reason for leaving her, so the triage says so.
+3. Finding 6 also names the check that a scam lands in each position at least once, which a badly biased shuffle would pass. The prompt did not name it, so it is unchanged.
+
+**Not checked**
+
+- The browser. The debrief's best-score line after a save that works, after one that fails, and its one-render delay were not seen. A failing save was not tried in a real browser.
+- Whether the moved question rules change anything on the customer screen. The code paths are the same, and no screen was looked at.
+- The c05 wording in context, and whether "my card" reads right alongside a cash withdrawal from the same account.
+- Gemini has not seen the fixes.
+
+TODO: my own view of the round.

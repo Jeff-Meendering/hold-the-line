@@ -151,10 +151,12 @@ function checkSlipType(slip: Obj, subject: string, say: Say): void {
   } else if (slip.type === 'giftCards') {
     const { cardCount, valuePerCard, amount } = slip
     const countOk = Number.isInteger(cardCount) && (cardCount as number) > 0
-    const valueOk = typeof valuePerCard === 'number' && valuePerCard > 0 && valuePerCard <= MAX_VALUE_PER_CARD
+    const valueOk = Number.isInteger(valuePerCard) && (valuePerCard as number) > 0 && (valuePerCard as number) <= MAX_VALUE_PER_CARD
     if (!countOk) say(subject, 'V6', `has ${show(cardCount)} gift cards, not a whole number above 0`)
-    if (!valueOk) say(subject, 'V6', `has ${show(valuePerCard)} per gift card, not above 0 and at most ${MAX_VALUE_PER_CARD}`)
-    if (countOk && valueOk && amount !== (cardCount as number) * valuePerCard) {
+    if (!valueOk) {
+      say(subject, 'V6', `has ${show(valuePerCard)} per gift card, not a whole number above 0 and at most ${MAX_VALUE_PER_CARD}`)
+    }
+    if (countOk && valueOk && amount !== (cardCount as number) * (valuePerCard as number)) {
       say(subject, 'V6', `has amount ${show(amount)}, not ${show(cardCount)} × ${show(valuePerCard)}`)
     }
   } else if (slip.type !== 'cash') {
@@ -192,6 +194,11 @@ function checkScam(c: Obj, subject: string, type: TransactionType | undefined, s
     say(subject, 'V7', 'has no source URL')
   } else {
     for (const url of c.sourceUrls as unknown[]) checkSourceUrl(url, subject, say)
+    const seen = new Set<unknown>()
+    for (const url of c.sourceUrls as unknown[]) {
+      if (seen.has(url)) say(subject, 'V17', `has source URL ${show(url)} twice`)
+      seen.add(url)
+    }
   }
 
   // V7: the red flags themselves.
@@ -232,7 +239,10 @@ function checkScam(c: Obj, subject: string, type: TransactionType | undefined, s
 }
 
 /** V17. The check is on the parsed hostname, never on how the text starts,
- *  so a host that only begins with an approved one fails (SEC-13). */
+ *  so a host that only begins with an approved one fails (SEC-13). The port
+ *  and the username and password are checked on the text as well as the
+ *  parsed URL, because the parser drops a written-out default port, such as
+ *  `:443`, and an empty username, which is an `@` with nothing before it. */
 function checkSourceUrl(url: unknown, subject: string, say: Say): void {
   if (typeof url !== 'string') {
     say(subject, 'V17', `has source URL ${show(url)}, which is not text`)
@@ -248,6 +258,14 @@ function checkSourceUrl(url: unknown, subject: string, say: Say): void {
   if (parsed.protocol !== 'https:') say(subject, 'V17', `has source URL ${show(url)}, which is not https`)
   if (!oneOf(SOURCE_HOSTS, parsed.hostname)) {
     say(subject, 'V17', `has source URL ${show(url)} on ${show(parsed.hostname)}, which is not an approved host`)
+  }
+  // What is between "//" and the first "/", "?", or "#", as written.
+  const authority = /^[^:/?#]+:\/\/([^/?#]*)/.exec(url)?.[1] ?? ''
+  if (parsed.username !== '' || parsed.password !== '' || authority.includes('@')) {
+    say(subject, 'V17', `has source URL ${show(url)}, which has a username or password`)
+  }
+  if (parsed.port !== '' || authority.replace(/^.*@/, '').includes(':')) {
+    say(subject, 'V17', `has source URL ${show(url)}, which has a port`)
   }
 }
 

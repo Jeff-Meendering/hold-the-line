@@ -1,6 +1,6 @@
 # Hold the Line: design
 
-Version 7, Sat Nov 28, 2026. Built on [requirements.md](requirements.md) version 6. Version 1 covered the game flow and the data schema. Version 2 applied Jeff's review of it (`told` in every question set, the cover-story rule, a harder example customer) and added the UI and UX plan, the wireframes, and the UI decisions. Version 3 records the approval of D19 and D20 and lets a legit look-alike show its trait in an answer (D21). Version 4 changes the scoring numbers on the debrief and in the wireframes (D1), adds the list of source hosts and rule V17 (D24), adds `floored` to the debrief (D31), and says how a rule about the whole pool reports (D32). Version 5 records what the game-logic step built (PR #7), as Jeff approved it: the name `GameContent` for what `validateData` takes, the start of each message, and the checks V4 and V6 make that version 4 did not spell out. Version 6 follows the fix round on the ten customers (PR #10): `www.cftc.gov` joins `SOURCE_HOSTS`, the `verified` question is reworded in section 2.3 and in the debrief wireframes, and the RF-1, RF-12, and RF-13 labels in those wireframes now match `labels.ts`. It also adds RF-16 to the `urgency` row of the table in section 2.3, and says an explanation is at most two sentences where it was called one line (sections 2.2 and 3.4, U13). Version 7 follows the UI step (PR #11): the half-second guard covers the question buttons too (section 3.3, U4, D19, N2), and section 4.4 lists where the built screens differ from the wireframes. The system architecture and the technical decisions are in [architecture.md](architecture.md).
+Version 8, Sat Nov 28, 2026. Built on [requirements.md](requirements.md) version 6. Version 1 covered the game flow and the data schema. Version 2 applied Jeff's review of it (`told` in every question set, the cover-story rule, a harder example customer) and added the UI and UX plan, the wireframes, and the UI decisions. Version 3 records the approval of D19 and D20 and lets a legit look-alike show its trait in an answer (D21). Version 4 changes the scoring numbers on the debrief and in the wireframes (D1), adds the list of source hosts and rule V17 (D24), adds `floored` to the debrief (D31), and says how a rule about the whole pool reports (D32). Version 5 records what the game-logic step built (PR #7), as Jeff approved it: the name `GameContent` for what `validateData` takes, the start of each message, and the checks V4 and V6 make that version 4 did not spell out. Version 6 follows the fix round on the ten customers (PR #10): `www.cftc.gov` joins `SOURCE_HOSTS`, the `verified` question is reworded in section 2.3 and in the debrief wireframes, and the RF-1, RF-12, and RF-13 labels in those wireframes now match `labels.ts`. It also adds RF-16 to the `urgency` row of the table in section 2.3, and says an explanation is at most two sentences where it was called one line (sections 2.2 and 3.4, U13). Version 7 follows the UI step (PR #11): the half-second guard covers the question buttons too (section 3.3, U4, D19, N2), and section 4.4 lists where the built screens differ from the wireframes. Version 8 follows the fix round on the Gemini code review ([reviews/04-gemini-code-review.md](reviews/04-gemini-code-review.md)): V6 needs a whole-number value per card, V17 rules out a source URL listed twice or with a port, username, or password, and the debrief says "New best score" only once the score has been saved (sections 3.4 and 4.4). The system architecture and the technical decisions are in [architecture.md](architecture.md).
 
 ## 1. Game flow
 
@@ -204,7 +204,7 @@ export interface WireSlip extends SlipBase {
 export interface GiftCardSlip extends SlipBase {
   type: 'giftCards';
   cardCount: number;
-  /** At most 500 (FR-13). amount must equal cardCount × valuePerCard. */
+  /** A whole number, at most 500 (FR-13). amount must equal cardCount × valuePerCard. */
   valuePerCard: number;
 }
 export type Slip = CashSlip | WireSlip | GiftCardSlip;
@@ -236,7 +236,8 @@ export interface ScamCustomer extends CustomerBase {
    *  behind 1 or 2 questions (FR-14, FR-19). */
   redFlags: RedFlag[];
   /** At least 1 source for the scenario, checked in the fact-check.
-   *  Each is https and on a host in SOURCE_HOSTS (V17). */
+   *  Each is https, on a host in SOURCE_HOSTS, with no port, username, or
+   *  password, and none is listed twice (V17). */
   sourceUrls: string[];
 }
 
@@ -426,11 +427,11 @@ This is the specification for `validateData` in `src/game/validate.ts`. It takes
 | **Each customer** | | |
 | V4 | The id is present and not used twice. The name, behaviour, account note, and explanation are not empty, and text that is only spaces counts as empty. The truth is `scam` or `legit`. There is a slip, and its amount is a whole number above 0 | FR-12 |
 | V5 | The answered questions are exactly the set for the slip's type, and no answer is empty | FR-12, FR-18, AC-8.1, AC-8.3 |
-| V6 | The slip's type is `cash`, `wire`, or `giftCards`. A wire has a recipient and a destination. Gift cards have a whole number of cards above 0, a value per card above 0 and at most 500, and an amount equal to the two multiplied | FR-3, FR-13 |
+| V6 | The slip's type is `cash`, `wire`, or `giftCards`. A wire has a recipient and a destination. Gift cards have a whole number of cards above 0, a value per card that is a whole number above 0 and at most 500, and an amount equal to the two multiplied | FR-3, FR-13 |
 | V7 | A scam customer has a known scam type, at least 1 source URL starting with `https://`, and at least 3 red flags with known ids, none repeated | FR-12, AC-8.1 |
 | V8 | Each of a scam customer's flags shows on the slip, in the behaviour, or behind a question in the customer's set. At least 1 is on the slip or in the behaviour, and at least 1 is behind a question | FR-12, FR-14 |
 | V14 | A scam customer's flags are behind at most 2 different questions | FR-19, AC-8.4 |
-| V17 | Each of a scam customer's source URLs parses as a URL, has the protocol `https:`, and has a hostname that is exactly one of `SOURCE_HOSTS`. The check is on the parsed hostname, not on how the text starts | FR-12, AC-8.6 |
+| V17 | Each of a scam customer's source URLs parses as a URL, has the protocol `https:`, and has a hostname that is exactly one of `SOURCE_HOSTS`. The check is on the parsed hostname, not on how the text starts. No URL has a port, a username, or a password, and none is listed twice for the same customer. The port and the username and password are checked on the text as well, because the parser drops a written-out `:443` and an empty username | FR-12, AC-8.6 |
 | V9 | A legit customer's `lookAlike`, if present, names a known flag. Its `shownIn` is the slip, the behaviour, or a question in the customer's set. Its `explainedBy` is a question in the customer's set and is not the question in `shownIn` | FR-14 |
 | **Pool** | | |
 | V10 | At least 3 scam and 5 legit customers | FR-11, section 6 rule 7 |
@@ -521,7 +522,7 @@ The debrief has a score block and then one card per customer, in the order playe
 |---|---|---|
 | Score | "*N* / 60", the largest text on the screen | FR-8, AC-6.1 |
 | Counts | "*a* of *b* scams stopped. *c* of *d* legitimate customers served." | FR-8 |
-| Best score | "Best score: *N* / 60", or "New best score" when this day beat it or was the first one finished (D33) | FR-17, AC-9.1 |
+| Best score | "Best score: *N* / 60", or "New best score" when this day beat it or was the first one finished (D33). "New best score" shows only once the score has been saved. If the save fails, there is no best-score line | FR-17, AC-9.1 |
 | Points key | "Right call +10. Legitimate customer held −5. Scam processed −20." When `floored` is true, it adds "A day cannot score below 0." | Section 5, D2, D31 |
 | Play again | In the score block and again after the last card | FR-10 |
 
@@ -964,7 +965,7 @@ The UI step (PR #11) differs from the wireframes above in these ways. Jeff accep
 - At 375 px, a flag shown in plain view reads "label (on the slip)" after its label, not beside the status chip. The points key is one paragraph that wraps, not three lines.
 - Source links are numbered across the customer's list, so six links read (1) to (6). They wrap onto a second line at 1280 px and stack one per line at 375 px.
 - The counts line says "1 scam" when a day has one scam.
-- "New best score" takes the place of the best-score line, without the number. With no storage there is no best-score line at all.
+- "New best score" takes the place of the best-score line, without the number. With no storage, or when saving a new best fails, there is no best-score line at all.
 - The short slip on a scam card reads "Cash withdrawal of $14,000." for cash and "Wire of $22,500 to Graham Tolliver, Aberdeen, United Kingdom." for a wire. The wireframe shows only gift cards.
 - The debrief's one `<h1>` is "End of day", in the header bar.
 

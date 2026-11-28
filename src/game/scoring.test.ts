@@ -91,5 +91,7 @@ describe('scoreDay (requirements section 5, AC-6.1)', () => {
   it('throws when the results do not match the day one for one', () => {
     const day = dayWithScamsAt([0])
     expect(() => scoreDay(day, results(['hold', 'process']))).toThrow()
+    expect(() => scoreDay(day, results([...calls(day), 'hold']))).toThrow()
+    expect(() => sumPoints(day, results([...calls(day), 'hold']))).toThrow()
   })
 })

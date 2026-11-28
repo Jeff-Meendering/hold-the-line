@@ -80,6 +80,11 @@ describe('validateData (design.md section 2.6, FR-15)', () => {
       expectSome(messages, 'cash', 'V2', /4 questions/)
     })
 
+    it('V2: a set of 6 (AC-8.3)', () => {
+      const messages = broken((d) => (d.questionSets.cash = ['purpose', 'origin', 'urgency', 'next', 'told', 'met']))
+      expectSome(messages, 'cash', 'V2', /6 questions, not 5/)
+    })
+
     it('V2: a set with a repeat (AC-8.3)', () => {
       const messages = broken((d) => (d.questionSets.wire = ['purpose', 'recipient', 'met', 'met', 'told']))
       expectSome(messages, 'wire', 'V2', /met twice/)
@@ -159,6 +164,34 @@ describe('validateData (design.md section 2.6, FR-15)', () => {
         /2\.5/,
       )
       expectOnly(broken((_, c) => (c('s-gift').slip.amount = 1400)), 's-gift', 'V6', /1400/)
+    })
+
+    it('V6: a gift card count or value per card of 0 or below', () => {
+      for (const cardCount of [0, -3]) {
+        expectOnly(
+          broken((_, c) => Object.assign(c('l-gift').slip, { cardCount })),
+          'l-gift',
+          'V6',
+          new RegExp(`has ${cardCount} gift cards, not a whole number above 0`),
+        )
+      }
+      for (const valuePerCard of [0, -500]) {
+        expectOnly(
+          broken((_, c) => Object.assign(c('l-gift').slip, { valuePerCard })),
+          'l-gift',
+          'V6',
+          new RegExp(`has ${valuePerCard} per gift card, not a whole number above 0`),
+        )
+      }
+    })
+
+    it('V6: a value per card that is not a whole number', () => {
+      expectOnly(
+        broken((_, c) => Object.assign(c('l-gift').slip, { cardCount: 2, valuePerCard: 125.5, amount: 251 })),
+        'l-gift',
+        'V6',
+        /125\.5 per gift card, not a whole number/,
+      )
     })
 
     it('V6: a slip type that is not cash, wire, or gift cards', () => {
@@ -246,6 +279,43 @@ describe('validateData (design.md section 2.6, FR-15)', () => {
       expectOnly(broken((_, c) => c('s-wire').sourceUrls.push(url)), 's-wire', 'V17', /"consumer\.ftc\.gov\.example\.com"/)
     })
 
+    it('V17: a source URL listed twice', () => {
+      expectOnly(
+        broken((_, c) => c('s-gift').sourceUrls.push(FTC_GIFT_CARDS)),
+        's-gift',
+        'V17',
+        new RegExp(`"${escape(FTC_GIFT_CARDS)}" twice`),
+      )
+    })
+
+    it('V17: a source URL with a port (SEC-13)', () => {
+      const urls = [
+        'https://consumer.ftc.gov:8443/articles',
+        'https://consumer.ftc.gov:443/articles',
+        'https://consumer.ftc.gov:/articles',
+      ]
+      for (const url of urls) {
+        expectOnly(broken((_, c) => (c('s-gift').sourceUrls = [url])), 's-gift', 'V17', /which has a port/)
+      }
+    })
+
+    it('V17: a source URL with a username or password (SEC-13)', () => {
+      const urls = [
+        'https://user:pass@consumer.ftc.gov/articles',
+        'https://user@consumer.ftc.gov/articles',
+        'https://:pass@consumer.ftc.gov/articles',
+        'https://@consumer.ftc.gov/articles',
+      ]
+      for (const url of urls) {
+        expectOnly(broken((_, c) => (c('s-gift').sourceUrls = [url])), 's-gift', 'V17', /which has a username or password/)
+      }
+    })
+
+    it('V17: a source URL with a colon or an @ after the host is allowed', () => {
+      const url = 'https://consumer.ftc.gov/articles/a:b?who=me@example#x:y'
+      expect(broken((_, c) => (c('s-gift').sourceUrls = [url]))).toEqual([])
+    })
+
     it('V17: a source URL that is not a URL, or not text', () => {
       expectOnly(broken((_, c) => (c('s-cash').sourceUrls = ['consumer.ftc.gov/articles'])), 's-cash', 'V17', /not a URL/)
       expectOnly(broken((_, c) => (c('s-cash').sourceUrls = [42])), 's-cash', 'V17', /not text/)
@@ -288,6 +358,14 @@ describe('validateData (design.md section 2.6, FR-15)', () => {
       expectOnly(messages, 'pool', 'V11', /no legit customer with a giftCards slip/)
     })
 
+    it('V11: a transaction type with no scam customer', () => {
+      const messages = broken((d) => {
+        const i = d.customers.findIndex((c) => c.id === 's-gift')
+        d.customers[i] = scam('s-gift', 'cash', { scamType: 'techSupport', sourceUrls: [FTC_GIFT_CARDS] })
+      })
+      expectOnly(messages, 'pool', 'V11', /no scam customer with a giftCards slip/)
+    })
+
     it('V12: two scam customers with the same scam type, naming both', () => {
       expectOnly(broken((_, c) => (c('s-gift').scamType = 'romance')), 'pool', 'V12', /romance: s-wire, s-gift/)
     })
@@ -306,6 +384,23 @@ describe('validateData (design.md section 2.6, FR-15)', () => {
 
     it('V15: one scam customer admitting on told is allowed', () => {
       expect(broken((_, c) => (c('s-cash').redFlags[2] = { id: 'RF-6', shownIn: 'told' }))).toEqual([])
+    })
+
+    it('V15: RF-6 and RF-17 behind a question other than told do not count', () => {
+      const messages = broken((_, c) => {
+        c('s-cash').redFlags[2] = { id: 'RF-6', shownIn: 'urgency' }
+        c('s-wire').redFlags[2] = { id: 'RF-6', shownIn: 'verified' }
+        c('s-gift').redFlags[2] = { id: 'RF-17', shownIn: 'next' }
+      })
+      expect(messages).toEqual([])
+    })
+
+    it('V15: flags other than RF-6 and RF-17 behind told do not count', () => {
+      const messages = broken((_, c) => {
+        c('s-cash').redFlags[2] = { id: 'RF-3', shownIn: 'told' }
+        c('s-wire').redFlags[2] = { id: 'RF-4', shownIn: 'told' }
+      })
+      expect(messages).toEqual([])
     })
 
     it('V16: only one look-alike in an answer (AC-8.5)', () => {
