@@ -50,6 +50,7 @@ export const SOURCE_HOSTS = [
   'www.fbi.gov',
   'www.ic3.gov',
   'www.consumerfinance.gov',
+  'www.cftc.gov',
 ] as const
 
 // ---- Customers (design.md section 2.2) ----

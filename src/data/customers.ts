@@ -70,6 +70,7 @@ export const customers: readonly Customer[] = [
     ],
     sourceUrls: [
       'https://consumer.ftc.gov/articles/how-avoid-government-impersonation-scam',
+      'https://consumer.ftc.gov/consumer-alerts/2024/09/did-you-get-call-or-email-saying-you-missed-jury-duty-need-pay-its-scam',
       'https://consumer.ftc.gov/articles/avoiding-and-reporting-gift-card-scams',
       'https://consumer.ftc.gov/consumer-alerts/2024/03/sure-ways-spot-scammer',
     ],
@@ -142,6 +143,8 @@ export const customers: readonly Customer[] = [
       'https://www.ftc.gov/news-events/data-visualizations/data-spotlight/2024/09/bitcoin-atms-payment-portal-scammers',
       'https://consumer.ftc.gov/consumer-alerts/2024/03/did-someone-send-you-bitcoin-atm-its-scam',
       'https://consumer.ftc.gov/consumer-alerts/2024/03/will-your-bank-or-investment-fund-stop-transfer-scammer-probably-not',
+      'https://consumer.ftc.gov/consumer-alerts/2024/03/sure-ways-spot-scammer',
+      'https://www.cftc.gov/LearnAndProtect/AdvisoriesAndArticles/ATM.html',
     ],
   },
   {
