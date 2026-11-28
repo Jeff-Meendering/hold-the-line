@@ -1424,3 +1424,38 @@ This part is the record of what the AI did. TODO: add my own view.
 **Open items**
 
 - A double-click on Play again or Start could land its second click on a question on the next screen and ask it. The guard covers Hold and Process only, as D19 says.
+
+**What the planning chat found**
+
+This check came from the planning chat, not from the AI that wrote the code. It read the code and played the branch in headless Chromium with real mouse and key events.
+
+- A real double-click on Process, 80 ms apart, decided one customer, with the second click landing on the new customer's button.
+- Holding Enter for 1.2 s decided one customer.
+- No sideways scroll at 11 widths from 320 to 1280 px.
+- Bad stored scores were ignored.
+- All text contrast was 5.7:1 or better.
+- It found a bug: at 375×667, a real double-click on Start the day asked a question on the first customer ("Questions left: 2"). The bottom Play again did the same. At 768 px and wider the second click landed on empty page. This is the open item above, which the AI had noted but not fixed or tried at 375.
+- It did not check Firefox, Safari, a real phone, touch, or a screen reader.
+
+**What I changed**
+
+> The planning chat read the code and played the branch in headless Chromium with real mouse and key events. One bug, some doc cleanup, then merge.
+>
+> Bug: at 375×667 a real double-click on Start the day asks a question on the first customer (Questions left: 2). The bottom Play again does the same. At 768 and wider the second click lands on empty page. Fix it by making the question buttons use the same half-second guard as Hold and Process. Add a test. Update D19 and everywhere else the docs describe the guard (FR-6, U4, architecture.md), and add the double-click on Start to the manual test that covers D19.
+>
+> Docs:
+> - architecture.md: add format.ts, customerView.ts and useHeadingFocus.ts to the folder layout, and say the guard compares two timestamps. The docs and the comment in CustomerScreen still call it a timer.
+> - design.md: add a short note under the wireframes listing the differences from your report. All of them are accepted.
+> - AI log entry 14: add the planning chat's check and say it came from the planning chat. A real double-click on Process 80 ms apart decided one customer with the second click on the new button. Holding Enter for 1.2 s decided one. No sideways scroll at 11 widths from 320 to 1280. Bad stored scores were ignored. All text contrast was 5.7:1 or better. It found the Start double-click bug. It did not check Firefox, Safari, a real phone, touch, or a screen reader.
+>
+> Run npm test and npm run build, push, wait for the check, then merge PR #11 the same way as the others. Tell me the deploy result.
+
+TODO: my own view of the round.
+
+**What the AI did with the follow-up**
+
+- `b0894fa`: the question buttons use the same half-second guard as Hold and Process. `acceptsDecision` became `pastGuard`, and `acceptsQuestion` says a question press counts only if the question is available and the guard has passed. Two new tests. With the guard taken out of `acceptsQuestion`, the test for a press 80 ms after the customer appears failed, and the break was undone. The comments in `CustomerScreen.tsx` and `App.tsx` no longer call it a timer.
+- It checked the fix in the built site at 375×667: a real double-click on Start the day, with the second click landing on "Does it have to be done today?", left "Questions left: 3" and no answer showing.
+- `7cfb741`: requirements.md version 8 (FR-6, and AC-4.4, which now also says a double-click on Start or Play again asks no question). design.md version 7 (the Available row in section 3.3, U4, D19, N2, and a new section 4.4 listing the differences from the wireframes). architecture.md version 6 (the three helper modules in the folder layout and the module table, the guard as two timestamps, and the D17 line, which no longer counts the guard as an effect). test-plan.md version 4 (a double-click on Start in MT-5).
+- Two things the follow-up did not name in so many words. AC-4.4 changed, because it describes what the guard does. The status lines at the top of architecture.md and test-plan.md said nothing beyond the scaffold was built, and now say what is.
+- The merge and the deploy come after this commit, so their result is not in this entry.
