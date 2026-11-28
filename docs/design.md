@@ -1,6 +1,6 @@
 # Hold the Line: design
 
-Version 5, Fri Nov 27, 2026. Built on [requirements.md](requirements.md) version 6. Version 1 covered the game flow and the data schema. Version 2 applied Jeff's review of it (`told` in every question set, the cover-story rule, a harder example customer) and added the UI and UX plan, the wireframes, and the UI decisions. Version 3 records the approval of D19 and D20 and lets a legit look-alike show its trait in an answer (D21). Version 4 changes the scoring numbers on the debrief and in the wireframes (D1), adds the list of source hosts and rule V17 (D24), adds `floored` to the debrief (D31), and says how a rule about the whole pool reports (D32). Version 5 records what the game-logic step built (PR #7), as Jeff approved it: the name `GameContent` for what `validateData` takes, the start of each message, and the checks V4 and V6 make that version 4 did not spell out. The system architecture and the technical decisions are in [architecture.md](architecture.md).
+Version 6, Sat Nov 28, 2026. Built on [requirements.md](requirements.md) version 6. Version 1 covered the game flow and the data schema. Version 2 applied Jeff's review of it (`told` in every question set, the cover-story rule, a harder example customer) and added the UI and UX plan, the wireframes, and the UI decisions. Version 3 records the approval of D19 and D20 and lets a legit look-alike show its trait in an answer (D21). Version 4 changes the scoring numbers on the debrief and in the wireframes (D1), adds the list of source hosts and rule V17 (D24), adds `floored` to the debrief (D31), and says how a rule about the whole pool reports (D32). Version 5 records what the game-logic step built (PR #7), as Jeff approved it: the name `GameContent` for what `validateData` takes, the start of each message, and the checks V4 and V6 make that version 4 did not spell out. Version 6 follows the fix round on the ten customers (PR #10): `www.cftc.gov` joins `SOURCE_HOSTS`, the `verified` question is reworded in section 2.3 and in the debrief wireframes, and the RF-12 and RF-13 labels in those wireframes now match `labels.ts`. The system architecture and the technical decisions are in [architecture.md](architecture.md).
 
 ## 1. Game flow
 
@@ -177,6 +177,7 @@ export const SOURCE_HOSTS = [
   'www.fbi.gov',
   'www.ic3.gov',
   'www.consumerfinance.gov',
+  'www.cftc.gov',
 ] as const;
 ```
 
@@ -275,7 +276,7 @@ export const QUESTION_TEXT: Record<QuestionId, string> = {
   urgency: 'Does it have to be done today?',
   next: 'What happens to it once you leave here?',
   met: 'Have you met them in person?',
-  verified: 'Have you double-checked this yourself, by calling a number you already had?',
+  verified: 'Have you double-checked this yourself, by calling a number you already had or found on your own?',
   told: 'Has anyone told you what to say here, or asked you to keep this quiet?',
 };
 
@@ -815,7 +816,7 @@ A day with 2 scams. The player asked Walter `purpose`, `urgency`, and `told`, th
 |      [ you asked ]      Suddenly unwilling to talk about the money                                   |
 |                         Question  Does it have to be done today?                                     |
 |                         Answer    "Before five, yes. I'd rather not go into why."                    |
-|      [ you didn't ask ] The card numbers will be read out to someone                                 |
+|      [ you didn't ask ] Gift cards as payment, or their numbers passed on                            |
 |                         Question  What happens to it once you leave here?                            |
 |                         Answer    "I'll scratch off the backs in the car and read the numbers out    |
 |                                   over the phone."                                                   |
@@ -829,12 +830,12 @@ A day with 2 scams. The player asked Walter `purpose`, `urgency`, and `told`, th
 |      <explanation>                                                                                   |
 |                                                                                                      |
 |      What could look like a red flag                                                                 |
-|      [ you asked ]      The money is for someone they have only met online                           |
+|      [ you asked ]      The money is for someone met only online                                     |
 |                         Question  Have you met them in person?                                       |
 |                         Answer    "No, never. It has all been by email."                             |
 |      What explains it                                                                                |
 |      [ you didn't ask ] Question  Have you double-checked this yourself, by calling a number you     |
-|                                   already had?                                                       |
+|                                   already had or found on your own?                                  |
 |                         Answer    "Yes. I called the title company on the number from my closing     |
 |                                   papers, and they read the account number back to me."              |
 +------------------------------------------------------------------------------------------------------+
@@ -903,8 +904,8 @@ A day with 2 scams. The player asked Walter `purpose`, `urgency`, and `told`, th
 |   rather not go into why."             |
 |                                        |
 | [ you didn't ask ]                     |
-| The card numbers will be read out to   |
-| someone                                |
+| Gift cards as payment, or their        |
+| numbers passed on                      |
 |   Question: What happens to it once    |
 |   you leave here?                      |
 |   Answer: "I'll scratch off the backs  |
@@ -928,8 +929,8 @@ A day with 2 scams. The player asked Walter `purpose`, `urgency`, and `told`, th
 |                                        |
 | What could look like a red flag        |
 | [ you asked ]                          |
-| The money is for someone they have     |
-| only met online                        |
+| The money is for someone met only      |
+| online                                 |
 |   Question: Have you met them in       |
 |   person?                              |
 |   Answer: "No, never. It has all been  |
@@ -939,7 +940,8 @@ A day with 2 scams. The player asked Walter `purpose`, `urgency`, and `told`, th
 | [ you didn't ask ]                     |
 |   Question: Have you double-checked    |
 |   this yourself, by calling a number   |
-|   you already had?                     |
+|   you already had or found on your     |
+|   own?                                 |
 |   Answer: "Yes. I called the title     |
 |   company on the number from my        |
 |   closing papers, and they read the    |
