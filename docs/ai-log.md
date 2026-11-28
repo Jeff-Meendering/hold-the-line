@@ -1459,3 +1459,62 @@ TODO: my own view of the round.
 - `7cfb741`: requirements.md version 8 (FR-6, and AC-4.4, which now also says a double-click on Start or Play again asks no question). design.md version 7 (the Available row in section 3.3, U4, D19, N2, and a new section 4.4 listing the differences from the wireframes). architecture.md version 6 (the three helper modules in the folder layout and the module table, the guard as two timestamps, and the D17 line, which no longer counts the guard as an effect). test-plan.md version 4 (a double-click on Start in MT-5).
 - Two things the follow-up did not name in so many words. AC-4.4 changed, because it describes what the guard does. The status lines at the top of architecture.md and test-plan.md said nothing beyond the scaffold was built, and now say what is.
 - The merge and the deploy come after this commit, so their result is not in this entry.
+
+
+---
+
+## 15. Gemini code review
+
+- **Date:** Sat Nov 28, 2026
+- **Phase:** Testing (independent code review)
+- **Tool:** Gemini 4 Neon, in the repo, through T3 Code
+- **Screenshots**, in [`/screenshots`](../screenshots):
+  - TODO: the prompt
+  - TODO: the reply
+
+**Prompt**
+
+> This is my final project for an AI-assisted software engineering class. The assignment is in docs/assignment.md. You're the independent reviewer: a different model wrote the code.
+>
+> Pull main. Read CLAUDE.md, docs/requirements.md, docs/design.md, docs/architecture.md and docs/security.md, then review everything in src/.
+>
+> Look for:
+> - bugs, and places where the code doesn't do what a requirement or acceptance criterion says
+> - anything on the customer screen that could give away scam or legit
+> - security.md items that the code doesn't actually meet
+> - tests that would still pass if the code was wrong
+> - code that's more complicated than it needs to be
+>
+> Also re-read src/data/customers.ts. It was rewritten after your last review (docs/reviews/03-gemini-content-review.md), so check whether your findings are really fixed and whether the rewrite made anything new.
+>
+> Don't change any code. Write your findings to docs/reviews/04-gemini-code-review.md, worst first, each with the file and line and why it matters. Say what you didn't look at. Add the AI log entry, put it on a branch, open a PR and don't merge it.
+
+**Result**
+
+Two commits on the branch `review/gemini-code-review` (branched from `origin/main` at `38404bd`), and an open pull request into `main`, not merged. No code files were changed.
+
+- `93e094e`: [reviews/04-gemini-code-review.md](reviews/04-gemini-code-review.md) — 8 findings ordered worst first (3 medium, 5 low; no high-severity or security-blocking defects), a 12-item re-check table against [reviews/03-gemini-content-review.md](reviews/03-gemini-content-review.md), a SEC-1 to SEC-21 check summary, and a list of what was not looked at.
+- This commit: adds AI log entry 15.
+
+Checks run on `main` (`38404bd`):
+
+- All six checks from `docs/security.md` section 6, including live `git ls-remote` verification of all four pinned action SHAs in `.github/workflows/deploy.yml`.
+- `npm test`: 10 files, 145 tests, all passed.
+- `npm run build`: passed (`dist/assets/index-yi1QJ7-f.js` 78.72 kB gzipped + `dist/assets/index-VDycIZ0y.css` 1.93 kB gzipped = 80.65 kB gzipped, and verified the injected CSP `<meta>` tag in `dist/index.html`).
+
+**What worked**
+
+This part is the record of what the AI did. TODO: add my own view after reading the review.
+
+- Read every file in `src/`, plus `index.html`, `package.json`, `tsconfig.json`, `vite.config.ts`, `public/favicon.svg`, `.github/workflows/deploy.yml`, and the specification documents, without changing any code.
+- Found concrete test gaps where production code could be broken without failing `npm test` (notably `validate.test.ts` missing tests for V11's scam side, both halves of V15, oversized V2 sets, and non-positive V6 gift-card values; `scoring.test.ts` only testing `results.length < day.length`; and vacuous-pass risk in `rules.test.ts` if target files move).
+- Found a real storage edge case in `bestScore.ts` / `DebriefScreen.tsx` where a silent `setItem` failure after a successful `getItem` still shows `"New best score"`.
+- Re-checked all 12 findings from Review 03 against the rewritten `src/data/customers.ts` and `src/data/questions.ts`, spotting two minor new frictions (`c02`'s `"in the next hour"` vs `"tonight"`, and `c05` withdrawing cash from an account she says she was told not to use with no freeze noted on the slip) alongside the remaining pool-wide question shortcuts.
+
+**What the AI got wrong**
+
+TODO: add my own view after reading the review. Nothing failed during the review run itself; items not checked (browser rendering/interaction, external source URLs, `npm audit`, GitHub repo settings, and screenshots) are listed at the end of [reviews/04-gemini-code-review.md](reviews/04-gemini-code-review.md).
+
+**What I changed**
+
+TODO.
