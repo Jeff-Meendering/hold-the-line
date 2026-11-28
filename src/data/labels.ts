@@ -44,3 +44,11 @@ export const TRANSACTION_LABELS: Record<TransactionType, string> = {
   wire: 'Wire',
   giftCards: 'Gift cards',
 }
+
+/** The title printed at the top of the slip on the customer screen
+ *  (design.md section 3.3). */
+export const SLIP_TITLES: Record<TransactionType, string> = {
+  cash: 'CASH WITHDRAWAL',
+  wire: 'WIRE TRANSFER',
+  giftCards: 'GIFT CARD PURCHASE',
+}
