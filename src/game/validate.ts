@@ -156,7 +156,7 @@ function checkSlipType(slip: Obj, subject: string, say: Say): void {
     if (!valueOk) {
       say(subject, 'V6', `has ${show(valuePerCard)} per gift card, not a whole number above 0 and at most ${MAX_VALUE_PER_CARD}`)
     }
-    if (countOk && valueOk && amount !== (cardCount as number) * valuePerCard) {
+    if (countOk && valueOk && amount !== (cardCount as number) * (valuePerCard as number)) {
       say(subject, 'V6', `has amount ${show(amount)}, not ${show(cardCount)} × ${show(valuePerCard)}`)
     }
   } else if (slip.type !== 'cash') {
@@ -242,7 +242,7 @@ function checkScam(c: Obj, subject: string, type: TransactionType | undefined, s
  *  so a host that only begins with an approved one fails (SEC-13). The port
  *  and the username and password are checked on the text as well as the
  *  parsed URL, because the parser drops a written-out default port, such as
- *  `:443`, and an empty username, such as `https://@host/`. */
+ *  `:443`, and an empty username, which is an `@` with nothing before it. */
 function checkSourceUrl(url: unknown, subject: string, say: Say): void {
   if (typeof url !== 'string') {
     say(subject, 'V17', `has source URL ${show(url)}, which is not text`)
