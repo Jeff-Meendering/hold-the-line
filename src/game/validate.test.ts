@@ -180,9 +180,18 @@ describe('validateData (design.md section 2.6, FR-15)', () => {
           broken((_, c) => Object.assign(c('l-gift').slip, { valuePerCard })),
           'l-gift',
           'V6',
-          new RegExp(`has ${valuePerCard} per gift card, not `),
+          new RegExp(`has ${valuePerCard} per gift card, not a whole number above 0`),
         )
       }
+    })
+
+    it('V6: a value per card that is not a whole number', () => {
+      expectOnly(
+        broken((_, c) => Object.assign(c('l-gift').slip, { cardCount: 2, valuePerCard: 125.5, amount: 251 })),
+        'l-gift',
+        'V6',
+        /125\.5 per gift card, not a whole number/,
+      )
     })
 
     it('V6: a slip type that is not cash, wire, or gift cards', () => {
@@ -268,6 +277,43 @@ describe('validateData (design.md section 2.6, FR-15)', () => {
     it('V17: a source URL that only starts with an allowed host (AC-8.6, SEC-13)', () => {
       const url = 'https://consumer.ftc.gov.example.com/'
       expectOnly(broken((_, c) => c('s-wire').sourceUrls.push(url)), 's-wire', 'V17', /"consumer\.ftc\.gov\.example\.com"/)
+    })
+
+    it('V17: a source URL listed twice', () => {
+      expectOnly(
+        broken((_, c) => c('s-gift').sourceUrls.push(FTC_GIFT_CARDS)),
+        's-gift',
+        'V17',
+        new RegExp(`"${escape(FTC_GIFT_CARDS)}" twice`),
+      )
+    })
+
+    it('V17: a source URL with a port (SEC-13)', () => {
+      const urls = [
+        'https://consumer.ftc.gov:8443/articles',
+        'https://consumer.ftc.gov:443/articles',
+        'https://consumer.ftc.gov:/articles',
+      ]
+      for (const url of urls) {
+        expectOnly(broken((_, c) => (c('s-gift').sourceUrls = [url])), 's-gift', 'V17', /which has a port/)
+      }
+    })
+
+    it('V17: a source URL with a username or password (SEC-13)', () => {
+      const urls = [
+        'https://user:pass@consumer.ftc.gov/articles',
+        'https://user@consumer.ftc.gov/articles',
+        'https://:pass@consumer.ftc.gov/articles',
+        'https://@consumer.ftc.gov/articles',
+      ]
+      for (const url of urls) {
+        expectOnly(broken((_, c) => (c('s-gift').sourceUrls = [url])), 's-gift', 'V17', /which has a username or password/)
+      }
+    })
+
+    it('V17: a source URL with a colon or an @ after the host is allowed', () => {
+      const url = 'https://consumer.ftc.gov/articles/a:b?who=me@example#x:y'
+      expect(broken((_, c) => (c('s-gift').sourceUrls = [url]))).toEqual([])
     })
 
     it('V17: a source URL that is not a URL, or not text', () => {
