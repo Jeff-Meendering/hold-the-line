@@ -1139,3 +1139,156 @@ This part is the record of what the AI did. TODO: add my own view after reading 
 **What I changed**
 
 TODO.
+
+---
+
+## 13. Fix round on the ten customers
+
+- **Date:** Sat Nov 28, 2026
+- **Phase:** Implementation (customer content), applying the two reviews from Testing
+- **Tool:** Claude Fable 5.2, in the repo, through T3 Code. The prompt says the triage of Gemini's findings came from the planning-partner chat.
+- **Screenshots**, in [`/screenshots`](../screenshots):
+  - TODO: the prompt in the Fable thread
+  - TODO: the planning chat's triage
+  - TODO: the Gemini content review
+  - TODO: the ChatGPT fact-check
+
+**Prompt**
+
+> Fix round for PR #10, same branch. Pull first. If you already did some of this from an earlier message, skip those parts. Don't merge.
+>
+> Gemini's review is in docs/reviews/03-gemini-content-review.md. Do these from its list:
+> - 1 and 3: Stephen (c04). Tie the fraud call in `origin` to the kitchen story, and make `next` keep the cover while a detail about the machine slips out.
+> - 3: Lorraine (c01). Move the driver detail out of `next` and into `urgency`, and make `next` fit the furnace story. That way always asking purpose, origin and next no longer catches every cash scam.
+> - 2: Darius (c02). Make the phone call ambiguous, replace the "no rush... yes" answer, and make `next` fit the wedding story with the photos of the numbers as the slip.
+> - 6: Carol (c03). `recipient` sticks to the friend and business partner story. The online-only part comes out in `met`. Keep two flagged answers.
+> - 5: Ana (c05). Bigger amount, and `origin` should sound like RF-7 until `next` explains it.
+> - 8: Frank (c08). The phone line shouldn't explain itself, and drop the company fleece.
+> - 9 and 10: Curtis to $11,500, Denise to 3 × $500, only one cash scam uses the "cheaper for cash" line, and Darius's $2,000 is from him and his brothers.
+> - 4 (partly), 11, 12: Joel's `purpose` says how he heard, so it points to `verified`. Keep the hospital as the recipient. Add Gemini's cue to Denise's `told`. Reword the `verified` question so it fits a hospital.
+>
+> Skip 7. Lorraine is the easy one on purpose, and Margaret and Joel are legit customers who also look alarming before any question.
+>
+> The ChatGPT fact-check and the planning chat's source check are in /home/jeff/Desktop/hold-the-line-screenshots/chatgpt-scam-fact-check.md. Copy that file to docs/reviews/02-chatgpt-scam-fact-check.md and do what its last section says: two more sources for Stephen (add www.cftc.gov to the approved hosts and wherever the docs list them), one more for Darius, and keep "told not to trust the branch".
+>
+> Also: update the two labels in the design.md wireframe, change AC-6.4 to "at most two sentences", and fix the two places in plan.md that still say Opus writes the customers.
+>
+> Add a triage section to the end of Gemini's review file saying what was accepted, changed or skipped and why, and say the triage came from the planning chat. Add an AI log entry. Run npm test and npm run build and paste the output. Show me the old and new text for every answer you changed.
+
+**Result**
+
+Eight commits on the branch `content/customers`, plus the commit that adds this entry. They are pushed to PR #10, which is open and not merged. Nothing in the prompt had been done before, so nothing was skipped.
+
+- `a83f1f3`: the customer text, amounts, and flag places in `src/data/customers.ts`.
+- `f765397`: the `verified` question in `src/data/questions.ts`.
+- `12ee3f1`: `www.cftc.gov` in `SOURCE_HOSTS` (`src/game/types.ts`) and in D24 of [security.md](security.md), now version 3. One more source for `c02` and two for `c04`.
+- `de505d4`: [design.md](design.md), now version 6: the host in section 2.1, the `verified` wording in section 2.3 and in both debrief wireframes, and the RF-12 and RF-13 labels in both wireframes.
+- `be929b0`: AC-6.4 in [requirements.md](requirements.md), now version 7.
+- `2d219c2`: [plan.md](plan.md), now version 9. The first coordination rule says "Opus's code and Fable's content", and the Nov 30 row says "draft all 10 customers with Fable".
+- `35b543c`: [reviews/02-chatgpt-scam-fact-check.md](reviews/02-chatgpt-scam-fact-check.md), copied from the file the prompt names. `cmp` reports the two files are the same.
+- `2bbfc2b`: the triage section at the end of [reviews/03-gemini-content-review.md](reviews/03-gemini-content-review.md).
+
+`npm test`: 7 files, 115 tests, all passed. `npm run build`: passed. The bundle is still `index-WYhNHesa.js`, 68.65 kB gzipped, because nothing in the app imports the customers yet.
+
+**Old and new text**
+
+| Customer | Field | Old | New |
+|---|---|---|---|
+| `c01` Lorraine | `purpose` | "A new furnace. Mine quit, and the man who's putting it in gives a better price for cash." | "A new furnace. Mine quit, and the man who's putting it in wants to be paid in cash." |
+| `c01` Lorraine | `urgency` | "Yes, today. It's cold in that house, and he's holding the afternoon for me." | "Yes, before three. That's when the driver comes to the door for it, and I'm to have it ready in an envelope." |
+| `c01` Lorraine | `next` | "I take it straight home. A driver is coming to the door for it at three, and I'm to have it in an envelope." | "I take it straight home. He's fitting the furnace this afternoon, and I pay him once the house is warm again." |
+| `c01` Lorraine | flags | RF-16 behind `next` | RF-16 behind `urgency` |
+| `c02` Darius | behaviour | Mid-twenties, in a delivery uniform. His phone is at his ear when he reaches the counter. He says "okay, I'm up" into it and lowers it without ending the call. | Mid-twenties, in a delivery uniform, one earbud in. His phone is in his hand with a call still running. "Okay, one second," he says, to it or to you. |
+| `c02` Darius | `purpose` | "A wedding present. My cousin gets married Saturday, and they asked for gift cards instead of stuff." | "A wedding present from me and my brothers. Our cousin gets married Saturday, and they asked for gift cards instead of stuff." |
+| `c02` Darius | `urgency` | "No, there's no rush... Sorry. Yes. Yes, it has to be today." | "Yes, in the next hour. I know the wedding's not till Saturday. It just has to be now." |
+| `c02` Darius | `next` | "Tonight I send pictures of the backs, with the numbers showing. After that I just hold on to the cards." | "I send Andre pictures of the backs tonight, with the numbers showing. The cards themselves go in the envelope on Saturday." |
+| `c03` Carol | `recipient` | "Graham. He's an engineer on a North Sea rig. We met on a dating site last spring and we've talked every day since." | "Graham Tolliver. He's a friend and my business partner. How we met is a long story, and not one for a bank counter." |
+| `c03` Carol | `met` | "We talk every evening. I'd say I know him better than people I've sat beside for years." | "Not yet. His work keeps him offshore, so since we met online it's all been messages and phone calls. Every evening, mind you." |
+| `c03` Carol | flags | RF-13 behind `recipient`, RF-3 behind `met` | RF-3 behind `recipient`, RF-13 behind `met` |
+| `c04` Stephen | `origin` | "I had a call about some odd activity on my accounts. It made me think I shouldn't leave it all sitting in here." | "We've wanted a new kitchen for years. A call about odd activity on my accounts made up my mind. Better spent than sitting in here." |
+| `c04` Stephen | `next` | "It gets paid in this afternoon. There's a machine at a gas station on Miller Road. I scan a code and feed the bills in." | "It goes to the contractor this afternoon. He texted me a code to scan, and I feed the bills into a machine on Miller Road." |
+| `c05` Ana | slip | $900. "Payroll deposits, card payments, a monthly daycare transfer. Rarely withdraws cash." | $2,600. "Payroll deposits, rent, card payments, a monthly daycare transfer. Rarely withdraws cash." |
+| `c05` Ana | `purpose` | "Groceries, gas, the sitter on Friday. Normal things. I just can't pay for them the normal way this week." | "The month's bills, mostly. Normal things. I just can't pay for them the normal way right now." |
+| `c05` Ana | `origin` | "The bank's fraud team called me on Saturday. Somebody got into my account, and they've had to shut my card off." | "The bank's fraud team called on Saturday. Somebody got into my account, and I've been told not to use it. So I need cash out." |
+| `c05` Ana | `next` | "It goes in my purse and gets spent at the grocery store. It only has to last until my new card shows up." | "It pays my rent and the daycare, in cash for once. The rest is groceries until the new account and card come through." |
+| `c05` Ana | explanation | "Ana's card details were stolen and her bank's real fraud team cancelled the card. She needed a week of spending money until the new one arrived, and nobody had asked her to move money anywhere." | "Someone got into Ana's account, and her bank's real fraud team froze her card and online banking while it set up a new one. She needed cash for rent, daycare, and groceries until then, and nobody had asked her to move money anywhere." |
+| `c06` Curtis | slip | $7,500 | $11,500 |
+| `c07` Denise | slip | 3 × $400 = $1,200 | 3 × $500 = $1,500 |
+| `c07` Denise | `told` | "Asked to keep it quiet? Yes, strictly. And I'd be grateful if you would too." | "Asked to keep it quiet? Yes, strictly. If word gets back to her before Friday, the whole floor will have my head." |
+| `c08` Frank | behaviour | Late fifties, in a company fleece, phone clamped to his ear. "Twelve, you said? Not thirteen?" he asks it, then nods at you to go ahead. | Late fifties, reading glasses pushed up on his head, phone clamped to his ear. "I'm at the counter now, stay on," he tells it, then nods at you to go ahead. |
+| `c09` Joel | `purpose` | "My mother's in the hospital and they won't operate until the deposit is paid. It has to get there today." | "My mother's in the hospital back home. A message came in the night with the bank details. They won't operate until it's paid." |
+| Question bank | `verified` | "Have you double-checked this yourself, by calling a number you already had?" | "Have you double-checked this yourself, by calling a number you already had or found on your own?" |
+
+Not changed: `c10` Margaret, every explanation but Ana's, every name, and every answer not in the table. Stephen's explanation still says "He was told not to trust the branch".
+
+**Where the flags are now**
+
+| Customer | Up front | Behind questions | Look-alike |
+|---|---|---|---|
+| `c01` Lorraine, cash $8,500, scam | Slip RF-8, behaviour RF-2 | `urgency` RF-16, `told` RF-6 | |
+| `c02` Darius, 4 × $500, scam | Slip RF-11, behaviour RF-1 | `urgency` RF-3, `next` RF-12 | |
+| `c03` Carol, wire $22,500, scam | Slip RF-9 | `recipient` RF-3, `met` RF-13 | |
+| `c04` Stephen, cash $14,000, scam | Slip RF-8 and RF-10 | `origin` RF-7, `next` RF-15 | |
+| `c05` Ana, cash $2,600, legit | | | RF-7 in `origin`, explained by `next` |
+| `c06` Curtis, cash $11,500, legit | | | RF-16 in `next`, explained by `purpose` |
+| `c07` Denise, 3 × $500, legit | | | RF-6 in `told`, explained by `recipient` |
+| `c08` Frank, 12 × $250, legit | | | RF-1 in the behaviour, explained by `recipient` |
+| `c09` Joel, wire $6,400, legit | | | RF-5 in `purpose`, explained by `verified` |
+| `c10` Margaret, wire $30,000, legit | | | RF-9 on the slip, explained by `recipient` |
+
+A player who asks `purpose`, `origin`, and `next` of every cash customer now hears only the furnace story from Lorraine, and has to decide on her slip and her manner.
+
+**Sources, and how each was opened**
+
+All three were opened on Nov 28 with the fetch tool, which runs in a subagent and returns short quotes. The AI gave it the quotes from the fact-check file and asked whether each is on the page word for word. It did not see the full text of any page. `curl` got a 403 from `www.cftc.gov`.
+
+| Customer | Source | What the fetch tool reported |
+|---|---|---|
+| `c02` | FTC, "Did you get a call or email saying you missed jury duty and need to pay? It's a scam", Sept 13, 2024, at the address in the fact-check file | Loaded with no redirect. The three quotes in the fact-check file are on the page. It also has "scammers also might give you a fake sheriff's badge number and case number". Staying on the phone is not in the article, only in a reader's comment. That detail is still supported by F1, which `c02` already cites |
+| `c04` | FTC, "Sure ways to spot a scammer" (F8), March 7, 2024 | Loaded with no redirect. "“Don't trust anyone. They're in on it.” That's a scam." and "Scammers want to cut you off from anyone who might slow you down." are on the page. This is the support for "told not to trust the branch" |
+| `c04` | CFTC, "Pause Before You Pay: Unusual Money Transfer Instructions May Signal Fraud", at the address in the fact-check file | Loaded with no redirect. The sentence about withdrawing cash and a QR code "supplied by the scammer" is on the page. "Claims to be from your bank, investment firm, a government agency, or tech support" is the start of a longer bullet, not a whole sentence. The page shows no date |
+
+The Iowa Attorney General quotes are cited nowhere. They appear only in the copy of the fact-check file, where the source check marks them as not found.
+
+**Seeing the host rule fail**
+
+With `'www.cftc.gov'` taken out of `SOURCE_HOSTS`, `data.test.ts` failed with `c04-cash-bank: V17 has source URL "https://www.cftc.gov/LearnAndProtect/AdvisoriesAndArticles/ATM.html" on "www.cftc.gov", which is not an approved host`. The line was restored with `git checkout` and the tree was clean.
+
+**What worked**
+
+This part is the record of what the AI did. TODO: add my own view after reading the new answers.
+
+- It opened the three source pages before citing them, and reported where a quote in the fact-check file is only part of a bullet.
+- It made the wireframe edits with a script that pads every changed line to the width of its box and stops if a line comes out the wrong length.
+- It kept the triage table to what the prompt says, and left a TODO where the prompt gives a decision without a reason.
+
+**What the AI got wrong**
+
+- It tried `curl` on the CFTC page first and got a 403, then used the fetch tool.
+- Its first version of Carol's `recipient` answer described Graham as "a friend, and my business partner as well now. An engineer, and very careful with money". It had planned to flag that as a question left unanswered, then saw that "a friend" is an answer of a kind, so the flag would have been unfair. It rewrote the answer before it reached the file.
+- It wrote Ana's `origin` at 132 characters and then cut it to 125. The longest answer is now Stephen's `origin`, at 130, against 119 before this step.
+- The quote checks were done by the fetch tool's subagent, not by the AI that wrote this entry.
+
+**Where it had to choose, or departed from the documents**
+
+1. **RF-16 is now behind `urgency`.** The table in design.md section 2.3 lists RF-5 for `urgency` and puts RF-16 under `next`. The prompt asked for the move, and `validateData` does not check that table. design.md was not edited on this point.
+2. **Carol's second flag.** The prompt says to keep two flagged answers and does not say which flag goes behind `recipient`. The AI kept the same two questions flagged and swapped the ids: she now declines to say how they met (RF-3), and `met` says online only (RF-13). If `recipient` was meant to be clean cover, the second flag has to go behind `purpose`, `verified`, or `told` instead.
+3. **Which cash scam keeps the discount.** Stephen keeps "ten percent off for cash". Lorraine's furnace man "wants to be paid in cash", which is close to what Curtis says about his seller.
+4. **Ana changed in more places than the prompt names.** $2,600 does not fit "groceries, gas, the sitter", so `purpose`, `next`, the explanation, and the account note (which gained "rent") changed with the amount and `origin`.
+5. **The `verified` wording is the AI's, not Gemini's.** It keeps "by calling", which all three wire customers' answers use. Because the wording changed, section 2.3 and the debrief wireframes in design.md were changed to match, which the prompt did not ask for in so many words.
+6. **AC-6.4 now disagrees with its neighbours.** FR-9 still says "a one-line explanation" and "one line on why the transaction was fine", design.md section 3.4 says a legit card "adds one line", and `types.ts` calls the explanation "the debrief line". The prompt named AC-6.4 only, so only it changed. This is a question for me.
+7. **Version lines.** design.md, requirements.md, security.md, and plan.md each went up one version with a sentence saying why. The "Built on … version N" lines in the other documents were not touched.
+8. **The wireframe's RF-1 label** still reads "On the phone during the transaction", without "taking directions". The prompt said two labels, and RF-12 and RF-13 were the two that entry 12 reported as different.
+9. **Stephen now has 6 source links.** The wireframe shows a "Read more" line with 3.
+10. **Entry 12's table of the pool is out of date.** It is the record of that step and was not edited. The table above replaces it.
+
+**Not checked**
+
+- Nothing has been seen in a browser. Whether three open answers of up to 130 characters, or six source links, fit at 1280×720 is MT-15.
+- The rewritten text has not been back to Gemini, and the three new sources have not been through MT-25.
+- Of the 14 addresses in the fact-check file, the AI opened the 3 it cites. The other 11 were read by the planning chat, according to that file.
+- Whether a real fraud team would tell a customer "not to use" an account, as Ana now says, was not checked against a source. She is a legit customer, so she has no source URL.
+
+**What I changed**
+
+TODO.
