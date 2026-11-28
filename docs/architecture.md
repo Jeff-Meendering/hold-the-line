@@ -1,6 +1,6 @@
 # Hold the Line: architecture
 
-Version 6, Sat Nov 28, 2026. Built on [requirements.md](requirements.md) version 6. Version 2 recorded the approval of D16 and D17 and added what the UI design needs: a shared `Slip` component and a single `buildDebrief` call. Version 3 follows the approval of D19 and D20: the decision guard in `CustomerScreen` and the source links in `DebriefScreen`. This document covers the system architecture, the folder layout, what each module is responsible for, and the technical decisions. Version 4 applies four decisions from the security and test-plan step: tests on pull requests (D23), the Content-Security-Policy added at build time (D25), the rules test (D28), and messages for rules about the whole pool (D32). Version 5 records what the game-logic step built (PR #7), as Jeff approved it: the test helper `testPool.ts` in the folder layout, the name `GameContent`, the start of each message from `validateData`, and the cases in which `drawDay`, `scoreDay`, and `buildDebrief` throw. Version 6 records what the UI step built (PR #11): three helper modules in `src/ui/`, and the half-second guard, which covers the question buttons too and compares two timestamps rather than running a timer. The game flow and the data schema are in [design.md](design.md). Security is in [security.md](security.md), and the test strategy is in [test-plan.md](test-plan.md).
+Version 7, Sat Nov 28, 2026. Built on [requirements.md](requirements.md) version 6. Version 2 recorded the approval of D16 and D17 and added what the UI design needs: a shared `Slip` component and a single `buildDebrief` call. Version 3 follows the approval of D19 and D20: the decision guard in `CustomerScreen` and the source links in `DebriefScreen`. This document covers the system architecture, the folder layout, what each module is responsible for, and the technical decisions. Version 4 applies four decisions from the security and test-plan step: tests on pull requests (D23), the Content-Security-Policy added at build time (D25), the rules test (D28), and messages for rules about the whole pool (D32). Version 5 records what the game-logic step built (PR #7), as Jeff approved it: the test helper `testPool.ts` in the folder layout, the name `GameContent`, the start of each message from `validateData`, and the cases in which `drawDay`, `scoreDay`, and `buildDebrief` throw. Version 6 records what the UI step built (PR #11): three helper modules in `src/ui/`, and the half-second guard, which covers the question buttons too and compares two timestamps rather than running a timer. Version 7 follows the fix round on the Gemini code review: which questions a customer offers and whether one can be asked move from `src/ui/customerView.ts` to a new `src/game/asking.ts`, which the reducer and `customerView.ts` both use, and the rules test also checks `src/game/` for timers and clocks. The game flow and the data schema are in [design.md](design.md). Security is in [security.md](security.md), and the test strategy is in [test-plan.md](test-plan.md).
 
 `src/game/` and `src/data/` are implemented (PR #7, PR #10), and so are `App.tsx` and `src/ui/` (PR #11). This is what the code will be checked against, and it is brought in line with what was built on Dec 5.
 
@@ -107,6 +107,7 @@ hold-the-line/
     │   ├── types.ts
     │   ├── rng.ts
     │   ├── draw.ts           + draw.test.ts
+    │   ├── asking.ts         + asking.test.ts
     │   ├── reducer.ts        + reducer.test.ts
     │   ├── scoring.ts        + scoring.test.ts
     │   ├── debrief.ts        + debrief.test.ts
@@ -124,7 +125,7 @@ hold-the-line/
         ├── Slip.tsx          used by both screens above
         ├── bestScore.ts      should: FR-17
         ├── format.ts         text built from more than one value
-        ├── customerView.ts   what CustomerScreen sees, its question states, the guard
+        ├── customerView.ts   what CustomerScreen sees, and the guard
         └── useHeadingFocus.ts  focus to a screen's heading when it appears
 ```
 
@@ -141,7 +142,8 @@ The types named here are defined in [design.md](design.md).
 | `types.ts` | The schema: customers, slips, red flags, game state, actions, and the lists of valid ids and source hosts | Types and `as const` id lists | FR-11, FR-12 |
 | `rng.ts` | A seeded random source for tests, about 10 lines | `mulberry32(seed): () => number` | AC-5.3 |
 | `draw.ts` | The day draw, rules 1 to 7 in requirements section 6. Takes its random source as a parameter. Throws on a pool smaller than 3 scam and 5 legit customers, instead of giving a short day | `drawDay(pool, rng): Customer[]` | AC-5.1 to 5.3, NFR-8 |
-| `reducer.ts` | Every state change: start a day, ask a question, decide. Enforces the limit of 3 questions and no repeats. Ignores an action that is not allowed | `gameReducer(state, action): GameState` | FR-2, FR-4 to FR-6, FR-10 |
+| `asking.ts` | Which questions a customer offers, in bank order, and whether one can be asked: the customer has an answer to it, it has not been asked, and fewer than 3 have been. The question states the customer screen shows. The reducer and `customerView.ts` both use these, so the screen offers exactly what the reducer allows | `offeredQuestions(answers)`, `questionsLeft(asked)`, `questionState(id, asked)`, `canAsk(answers, asked, id)` | FR-4, FR-5, AC-3.1 to AC-3.3 |
+| `reducer.ts` | Every state change: start a day, ask a question, decide. Enforces the limit of 3 questions and no repeats through `canAsk` in `asking.ts`. Ignores an action that is not allowed | `gameReducer(state, action): GameState` | FR-2, FR-4 to FR-6, FR-10 |
 | `scoring.ts` | The scoring table and the floor at 0. `sumPoints` is the total before the floor, which `buildDebrief` uses for `floored`. `scoreDay` and `sumPoints` throw if the day and the results differ in length | `pointsFor(truth, decision): number`, `scoreDay(day, results): number`, `sumPoints(day, results): number` | Requirements section 5, AC-6.1 |
 | `debrief.ts` | Builds everything the debrief shows: the score, whether it was raised to 0, the counts, and for each customer the call, the truth, right or wrong, the points, and each flag's status of *shown*, *you asked*, or *you didn't ask* | `buildDebrief(day, results): Debrief`. Throws, through `sumPoints`, if the day and the results differ in length | FR-8, FR-9, AC-6.2, AC-6.3 |
 | `validate.ts` | Checks content against the rules in design.md section 2.6 and returns one message per problem found, each starting with the customer id or question id, with the transaction type for a rule about a question set, or with `pool` for a rule about the whole pool. It never throws on bad content | `validateData(content: GameContent): string[]`, where `GameContent` is `{ questionText, questionSets, customers }` | FR-15, AC-8.1, AC-8.3 |
@@ -162,15 +164,15 @@ The types named here are defined in [design.md](design.md).
 | Module | Responsibility | Covers |
 |---|---|---|
 | `main.tsx` | Mounts `App` and loads `styles.css` | |
-| `rules.test.ts` | Reads every source file that is not a test, as text, and fails if one breaks a layer rule or uses a banned API. The rules are in test-plan.md section 4 | NFR-8, NFR-9, SEC-4, SEC-10, SEC-16, SEC-18 |
+| `rules.test.ts` | Reads every source file that is not a test, as text, and fails if one breaks a layer rule or uses a banned API. A rule that finds no files to check fails too. The rules are in test-plan.md section 4 | NFR-8, NFR-9, SEC-4, SEC-10, SEC-16, SEC-18 |
 | `App.tsx` | Holds the game state with `useReducer(gameReducer)`. On Start and Play again it calls `drawDay(customers, Math.random)` and dispatches the result. Renders the screen that matches `state.phase` | FR-2, FR-10 |
 | `StartScreen.tsx` | Title, how-to-play text, Start button, best score | FR-1, FR-17 |
 | `CustomerScreen.tsx` | Slip, behaviour text, question list, answers, Process and Hold. Receives a `CustomerView`, which has no truth, flags, or explanation. Holds the half-second guard (D19): the question buttons, Hold, and Process ignore presses for half a second after a customer appears. It compares two timestamps, the time of the screen's first render and the time of the press, so there is no timer to start or clear | FR-3 to FR-7 |
 | `DebriefScreen.tsx` | Calls `buildDebrief` and renders the result, including the source links on scam cards and the look-alike part of legit cards (D20). Play again button | FR-8 to FR-10 |
 | `Slip.tsx` | Renders a slip for any of the three transaction types, in full on the customer screen and in short form on a debrief card | FR-3, FR-8 |
-| `bestScore.ts` | Reads and writes one number in `localStorage`, inside `try`/`catch`, so the game works without storage | FR-17, NFR-2 |
+| `bestScore.ts` | Reads and writes one number in `localStorage`, inside `try`/`catch`, so the game works without storage. `saveBestScore` says whether the save worked, and `bestScoreLine` shows "New best score" only when it did | FR-17, NFR-2, SEC-17 |
 | `format.ts` | The text the screens build from more than one value: money, points, the transaction line, the short slip, the outcome sentences, the counts, the points key, and the source link text taken from the URL's hostname | FR-8, FR-9, SEC-14 |
-| `customerView.ts` | `toCustomerView`, which copies the four fields `CustomerScreen` may see; the questions in bank order and their three states; and the guard, `pastGuard` and `acceptsQuestion` | FR-4 to FR-7, D19 |
+| `customerView.ts` | `toCustomerView`, which copies the four fields `CustomerScreen` may see, and the guard: `pastGuard`, and `acceptsQuestion`, which takes a question press only if `canAsk` in `src/game/asking.ts` allows it and the guard has passed | FR-4 to FR-7, D19 |
 | `useHeadingFocus.ts` | Moves focus to a screen's heading and scrolls to the top when the screen or the next customer appears | NFR-5, U9 |
 
 ## 5. Dependencies
