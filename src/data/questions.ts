@@ -10,7 +10,7 @@ export const QUESTION_TEXT: Record<QuestionId, string> = {
   urgency: 'Does it have to be done today?',
   next: 'What happens to it once you leave here?',
   met: 'Have you met them in person?',
-  verified: 'Have you double-checked this yourself, by calling a number you already had?',
+  verified: 'Have you double-checked this yourself, by calling a number you already had or found on your own?',
   told: 'Has anyone told you what to say here, or asked you to keep this quiet?',
 }
 

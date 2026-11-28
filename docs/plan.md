@@ -1,6 +1,6 @@
 # Hold the Line: project plan
 
-Version 7, Fri Nov 27, 2026. Version 1 was a chat draft written before the assignment text was available, version 2 added the AI workflow, version 3 applied the review fixes, version 4 records the gift-card decision, version 5 brings the scope line on questions in line with the shared question bank in the requirements, version 6 takes component tests out of the cut order and adds the branch and pull request rule to section 6, and version 7 gives the planning-partner chat the job of capturing the prompt screenshots; see [ai-log.md](ai-log.md) for what changed and why. The assignment is in [assignment.md](assignment.md).
+Version 9, Sat Nov 28, 2026. Version 1 was a chat draft written before the assignment text was available, version 2 added the AI workflow, version 3 applied the review fixes, version 4 records the gift-card decision, version 5 brings the scope line on questions in line with the shared question bank in the requirements, version 6 takes component tests out of the cut order and adds the branch and pull request rule to section 6, version 7 gives the planning-partner chat the job of capturing the prompt screenshots, version 8 moves the writing of the ten customers from Opus to Fable in the roles table, and version 9 makes the same change in the two places version 8 missed, the first coordination rule and the Nov 30 row of the schedule; see [ai-log.md](ai-log.md) for what changed and why. The assignment is in [assignment.md](assignment.md).
 
 ## 1. Purpose
 
@@ -76,9 +76,9 @@ It is also the final project for a course on AI-assisted software engineering. M
 
 | Tool | Role | Does not do |
 |---|---|---|
-| Claude Fable, in the repo | Writes the planning, requirements, and design documents, including `architecture.md`, `security.md`, the test strategy, and the first draft of `CLAUDE.md` | Implementation |
+| Claude Fable, in the repo | Writes the planning, requirements, and design documents, including `architecture.md`, `security.md`, the test strategy, and the first draft of `CLAUDE.md`. Also writes the content in `src/data/`: the ten customers and the red flag labels, because that is a writing and judgment task | Code, other than the data test that checks that content |
 | Claude Fable, separate chat | Planning partner: drafts the prompts with Jeff and reviews what all the other tools produce. It reads the repo. It also captures the prompt screenshots through T3 Code's built-in browser and saves them into `screenshots/` | Writing anything else to the repo |
-| Claude Opus, in the repo | Implementation: code, tests, customer data files, and the CI workflow, guided by `CLAUDE.md` | Reviewing its own work as the final check |
+| Claude Opus, in the repo | Implementation: code, tests, and the CI workflow, guided by `CLAUDE.md` | Writing the customers. Reviewing its own work as the final check |
 | Gemini 4 Neon | Independent reviewer of the customer content and of the code, so Claude is not the only thing checking Claude's work | Writing code or content |
 | ChatGPT, in the browser | Fact-checks against real sources: first whether gift cards make sense at a teller window (done Nov 27, see [reviews/01-gift-card-check.md](reviews/01-gift-card-check.md)), then the scam scenarios against FTC and AARP sources (Nov 30) | Writing content |
 | Jeff | Engineer of record: drafts the prompts with the planning partner, edits and approves every prompt before it is sent, makes every decision, triages every review finding, and approves every commit | — |
@@ -86,7 +86,7 @@ It is also the final project for a course on AI-assisted software engineering. M
 Exact model versions are recorded in the AI log the first time each tool is used.
 
 **Rules for coordinating them**
-- No tool has the last word on its own output. The planning-partner chat reviews what every other tool produces; Opus's code and content also go to Gemini; factual claims go to ChatGPT, and its sources are checked in turn; every finding comes back to Jeff.
+- No tool has the last word on its own output. The planning-partner chat reviews what every other tool produces; Opus's code and Fable's content also go to Gemini; factual claims go to ChatGPT, and its sources are checked in turn; every finding comes back to Jeff.
 - Review findings are triaged one by one as accept, reject, or defer, with the reason recorded in the AI log. A rejected finding is as useful to the record as an accepted one.
 - For the fact-check, every cited source is opened and read before it is trusted. The source URL is stored with the customer it supports.
 - Reviewers get the artefact and the requirements, not the author's reasoning, so the review is not steered toward agreeing.
@@ -145,7 +145,7 @@ Each day's hours include the screenshots and AI log entries for that day's steps
 | Fri Nov 27 | 2 | Planning 1.5, Requirements 0.5 | Plan draft and revision; save the assignment; start the AI log; **ChatGPT fact-check** on whether gift cards make sense at a teller window, done a day ahead of its Nov 28 slot; start the personas | `plan.md`, `assignment.md`, `ai-log.md`, `reviews/01-gift-card-check.md`, screenshots 01 |
 | Sat Nov 28 | 3 | Requirements 1.5, Design 1.5 | Functional and non-functional requirements, personas, user stories, acceptance criteria, scoring and day-draw rules; then the customer data schema, the game-flow state diagram, and `architecture.md` | `requirements.md`, `architecture.md`, schema, screenshots 02 |
 | Sun Nov 29 | 3 | Design 1.5, Testing 0.5, Implementation 1 | Wireframes, UI plan, and design decisions; `security.md`; `CLAUDE.md`; the test strategy; then scaffold the app with the workflow that tests, builds, and deploys | `design.md`, `security.md`, `CLAUDE.md`, `test-plan.md`, screenshots 03, **M1: live URL through CI** |
-| Mon Nov 30 | 2.5 | Implementation 2, Testing 0.5 | Types and the data validation test from the schema; draft all 10 customers with Opus; **ChatGPT fact-check** of the scam scenarios, with sources recorded | Customer data files, `reviews/` fact-check |
+| Mon Nov 30 | 2.5 | Implementation 2, Testing 0.5 | Types and the data validation test from the schema; draft all 10 customers with Fable; **ChatGPT fact-check** of the scam scenarios, with sources recorded | Customer data files, `reviews/` fact-check |
 | Tue Dec 1 | 2.5 | Testing 0.5, Implementation 2 | **Gemini content review**; fix the content from both reviews; then the game-state reducer, scoring, and day draw as pure functions with unit tests | `reviews/` content review, **M2: content locked**, tested core logic |
 | Wed Dec 2 | 2 | Implementation 2 | Customer screen: slip, questions, process and hold; the day loop | One day playable without a debrief |
 | Thu Dec 3 | 1.5 | Implementation 1.5 | Debrief screen; start and how-to-play screen; basic styling | **M3: playable end to end, feature freeze**, screenshots 04 |
