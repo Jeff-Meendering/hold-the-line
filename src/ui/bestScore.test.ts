@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { BEST_SCORE_KEY, loadBestScore, nextBest, parseBestScore, saveBestScore } from './bestScore.ts'
+import { BEST_SCORE_KEY, bestScoreLine, loadBestScore, nextBest, parseBestScore, saveBestScore } from './bestScore.ts'
 import type { ScoreStorage } from './bestScore.ts'
 
 // The best score (FR-17, SEC-16, SEC-17, D33). Vitest runs in Node, which has
@@ -65,6 +65,21 @@ describe('loadBestScore and saveBestScore', () => {
     expect(loadBestScore()).toEqual({ available: false })
     expect(() => saveBestScore(30)).not.toThrow()
   })
+
+  it('says whether the save worked, including when reading works and writing throws (SEC-17)', () => {
+    const readOnly: ScoreStorage = {
+      getItem: () => '30',
+      setItem: () => {
+        throw new Error('quota exceeded')
+      },
+    }
+    expect(loadBestScore(readOnly)).toEqual({ available: true, best: 30 })
+    expect(saveBestScore(45, readOnly)).toBe(false)
+    expect(saveBestScore(45, throwing)).toBe(false)
+    expect(saveBestScore(45, null)).toBe(false)
+    expect(saveBestScore(45)).toBe(false)
+    expect(saveBestScore(45, memoryStorage())).toBe(true)
+  })
 })
 
 describe('nextBest (D33, AC-9.1)', () => {
@@ -80,5 +95,21 @@ describe('nextBest (D33, AC-9.1)', () => {
 
   it('does not count a tie as a new best', () => {
     expect(nextBest(45, 45)).toEqual({ best: 45, isNew: false })
+  })
+})
+
+describe('bestScoreLine (FR-17, AC-9.1, SEC-17)', () => {
+  it('says "New best score" only once the new best is saved', () => {
+    expect(bestScoreLine({ best: 45, isNew: true }, true)).toBe('New best score')
+    expect(bestScoreLine({ best: 45, isNew: true }, null)).toBeNull()
+  })
+
+  it('shows no line when saving the new best fails', () => {
+    expect(bestScoreLine({ best: 45, isNew: true }, false)).toBeNull()
+  })
+
+  it('shows the stored best when this day did not beat it, and nothing without storage', () => {
+    expect(bestScoreLine({ best: 45, isNew: false }, null)).toBe('Best score: 45 / 60')
+    expect(bestScoreLine(null, null)).toBeNull()
   })
 })

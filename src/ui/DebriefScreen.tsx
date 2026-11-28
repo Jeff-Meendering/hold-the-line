@@ -9,7 +9,7 @@ import { buildDebrief } from '../game/debrief.ts'
 import type { DebriefRow, FlagStatus } from '../game/debrief.ts'
 import type { Customer, CustomerResult, RedFlag } from '../game/types.ts'
 import { Slip } from './Slip.tsx'
-import { loadBestScore, nextBest, saveBestScore } from './bestScore.ts'
+import { bestScoreLine, loadBestScore, nextBest, saveBestScore } from './bestScore.ts'
 import {
   STATUS_TEXT,
   TRANSACTION_EMOJI,
@@ -75,20 +75,21 @@ export function DebriefScreen({ day, results, onPlayAgain }: Props) {
 
 /** The best-score line, and the save (FR-17, D33). The stored best is read
  *  once, when the debrief appears, so the comparison is with the best from
- *  before this day. Saving the same number twice is harmless, so React's
- *  development double run of effects does no damage. Without storage there
- *  is no line. */
+ *  before this day. A new best is saved after the first render, and its line
+ *  appears only once the save has worked. Saving the same number twice is
+ *  harmless, so React's development double run of effects does no damage.
+ *  Without storage, or if the save fails, there is no line. */
 function useBestScore(score: number): string | null {
   const [stored] = useState(loadBestScore)
+  const [saved, setSaved] = useState<boolean | null>(null)
   const result = stored.available ? nextBest(stored.best, score) : null
   const save = result?.isNew ? result.best : null
 
   useEffect(() => {
-    if (save !== null) saveBestScore(save)
+    if (save !== null) setSaved(saveBestScore(save))
   }, [save])
 
-  if (result === null) return null
-  return result.isNew ? 'New best score' : `Best score: ${result.best} / 60`
+  return bestScoreLine(result, saved)
 }
 
 function Card({ row, number }: { row: DebriefRow; number: number }) {
