@@ -18,10 +18,10 @@ export const customers: readonly Customer[] = [
     behaviour:
       'Late seventies, coat still buttoned. Her hand shakes as she slides the slip across, and she checks the wall clock twice while you read it.',
     answers: {
-      purpose: "A new furnace. Mine quit, and the man who's putting it in gives a better price for cash.",
+      purpose: "A new furnace. Mine quit, and the man who's putting it in wants to be paid in cash.",
       origin: 'It quit on Monday night. A friend from church gave me the name of a man who could come quickly.',
-      urgency: "Yes, today. It's cold in that house, and he's holding the afternoon for me.",
-      next: "I take it straight home. A driver is coming to the door for it at three, and I'm to have it in an envelope.",
+      urgency: "Yes, before three. That's when the driver comes to the door for it, and I'm to have it ready in an envelope.",
+      next: "I take it straight home. He's fitting the furnace this afternoon, and I pay him once the house is warm again.",
       told: "Nobody's told me what to say. I was asked to keep it to myself for now, and I gave my word.",
     },
     explanation:
@@ -29,7 +29,7 @@ export const customers: readonly Customer[] = [
     redFlags: [
       { id: 'RF-8', shownIn: 'slip' },
       { id: 'RF-2', shownIn: 'behaviour' },
-      { id: 'RF-16', shownIn: 'next' },
+      { id: 'RF-16', shownIn: 'urgency' },
       { id: 'RF-6', shownIn: 'told' },
     ],
     sourceUrls: [
@@ -51,12 +51,13 @@ export const customers: readonly Customer[] = [
       accountNote: 'Payroll deposits, rent, card spending. No gift cards before.',
     },
     behaviour:
-      'Mid-twenties, in a delivery uniform. His phone is at his ear when he reaches the counter. He says "okay, I\'m up" into it and lowers it without ending the call.',
+      'Mid-twenties, in a delivery uniform, one earbud in. His phone is in his hand with a call still running. "Okay, one second," he says, to it or to you.',
     answers: {
-      purpose: 'A wedding present. My cousin gets married Saturday, and they asked for gift cards instead of stuff.',
+      purpose:
+        'A wedding present from me and my brothers. Our cousin gets married Saturday, and they asked for gift cards instead of stuff.',
       recipient: 'My cousin Andre and his fiancée. We grew up two doors apart.',
-      urgency: "No, there's no rush... Sorry. Yes. Yes, it has to be today.",
-      next: 'Tonight I send pictures of the backs, with the numbers showing. After that I just hold on to the cards.',
+      urgency: "Yes, in the next hour. I know the wedding's not till Saturday. It just has to be now.",
+      next: 'I send Andre pictures of the backs tonight, with the numbers showing. The cards themselves go in the envelope on Saturday.',
       told: 'No. Nobody.',
     },
     explanation:
@@ -90,8 +91,8 @@ export const customers: readonly Customer[] = [
     answers: {
       purpose: "I'm buying a share in a friend's engineering business. It's all been drawn up properly.",
       recipient:
-        "Graham. He's an engineer on a North Sea rig. We met on a dating site last spring and we've talked every day since.",
-      met: "We talk every evening. I'd say I know him better than people I've sat beside for years.",
+        "Graham Tolliver. He's a friend and my business partner. How we met is a long story, and not one for a bank counter.",
+      met: "Not yet. His work keeps him offshore, so since we met online it's all been messages and phone calls. Every evening, mind you.",
       verified: "Yes. I called Graham on the number I've always had for him, and we went through it line by line.",
       told: "No, nobody. It's my money and my decision.",
     },
@@ -99,8 +100,8 @@ export const customers: readonly Customer[] = [
       "A scammer with a fake dating profile won Carol's trust over months, always had a reason not to meet, then asked her to wire money for a business deal. He told her to call him a friend and business partner.",
     redFlags: [
       { id: 'RF-9', shownIn: 'slip' },
-      { id: 'RF-13', shownIn: 'recipient' },
-      { id: 'RF-3', shownIn: 'met' },
+      { id: 'RF-3', shownIn: 'recipient' },
+      { id: 'RF-13', shownIn: 'met' },
     ],
     sourceUrls: [
       'https://consumer.ftc.gov/articles/what-know-about-romance-scams',
@@ -122,9 +123,10 @@ export const customers: readonly Customer[] = [
       'Mid-fifties, pressed shirt, unhurried. He greets you by the name on your badge and has his ID out before you ask.',
     answers: {
       purpose: "We're redoing the kitchen. The contractor takes ten percent off for cash.",
-      origin: "I had a call about some odd activity on my accounts. It made me think I shouldn't leave it all sitting in here.",
+      origin:
+        "We've wanted a new kitchen for years. A call about odd activity on my accounts made up my mind. Better spent than sitting in here.",
       urgency: 'Today would be best. He orders the cabinets tomorrow.',
-      next: "It gets paid in this afternoon. There's a machine at a gas station on Miller Road. I scan a code and feed the bills in.",
+      next: 'It goes to the contractor this afternoon. He texted me a code to scan, and I feed the bills into a machine on Miller Road.',
       told: 'No, nothing like that.',
     },
     explanation:
@@ -148,20 +150,20 @@ export const customers: readonly Customer[] = [
     truth: 'legit',
     slip: {
       type: 'cash',
-      amount: 900,
-      accountNote: 'Payroll deposits, card payments, a monthly daycare transfer. Rarely withdraws cash.',
+      amount: 2600,
+      accountNote: 'Payroll deposits, rent, card payments, a monthly daycare transfer. Rarely withdraws cash.',
     },
     behaviour:
       'Mid-thirties, flustered, a toddler on her hip. She says sorry to the line behind her and tells you she has never done this at a counter before.',
     answers: {
-      purpose: "Groceries, gas, the sitter on Friday. Normal things. I just can't pay for them the normal way this week.",
-      origin: "The bank's fraud team called me on Saturday. Somebody got into my account, and they've had to shut my card off.",
+      purpose: "The month's bills, mostly. Normal things. I just can't pay for them the normal way right now.",
+      origin: "The bank's fraud team called on Saturday. Somebody got into my account, and I've been told not to use it. So I need cash out.",
       urgency: "If you can, please. I really can't leave without it.",
-      next: 'It goes in my purse and gets spent at the grocery store. It only has to last until my new card shows up.',
+      next: 'It pays my rent and the daycare, in cash for once. The rest is groceries until the new account and card come through.',
       told: "No. Nobody's said anything like that.",
     },
     explanation:
-      "Ana's card details were stolen and her bank's real fraud team cancelled the card. She needed a week of spending money until the new one arrived, and nobody had asked her to move money anywhere.",
+      "Someone got into Ana's account, and her bank's real fraud team froze her card and online banking while it set up a new one. She needed cash for rent, daycare, and groceries until then, and nobody had asked her to move money anywhere.",
     lookAlike: { flag: 'RF-7', shownIn: 'origin', explainedBy: 'next' },
   },
   {
@@ -170,7 +172,7 @@ export const customers: readonly Customer[] = [
     truth: 'legit',
     slip: {
       type: 'cash',
-      amount: 7500,
+      amount: 11500,
       accountNote: 'Payroll deposits, mortgage, card spending. CD closed today, 5 months early.',
     },
     behaviour:
@@ -192,9 +194,9 @@ export const customers: readonly Customer[] = [
     truth: 'legit',
     slip: {
       type: 'giftCards',
-      amount: 1200,
+      amount: 1500,
       cardCount: 3,
-      valuePerCard: 400,
+      valuePerCard: 500,
       accountNote: 'Payroll deposits, card spending. Several small incoming transfers this week.',
     },
     behaviour:
@@ -204,7 +206,7 @@ export const customers: readonly Customer[] = [
       recipient: 'Marjorie in payroll. She retires Friday after thirty-one years, and she banks at this branch, so not a word.',
       urgency: 'By Friday, so today would be best.',
       next: 'They go in an envelope, and the envelope stays hidden in my desk until Friday.',
-      told: "Asked to keep it quiet? Yes, strictly. And I'd be grateful if you would too.",
+      told: 'Asked to keep it quiet? Yes, strictly. If word gets back to her before Friday, the whole floor will have my head.',
     },
     explanation:
       'Denise was buying a surprise retirement gift with money her co-workers had collected. She kept it quiet because the co-worker who is retiring banks at this branch.',
@@ -222,7 +224,7 @@ export const customers: readonly Customer[] = [
       accountNote: 'Business account: payroll, fuel, suppliers. No gift cards before.',
     },
     behaviour:
-      'Late fifties, in a company fleece, phone clamped to his ear. "Twelve, you said? Not thirteen?" he asks it, then nods at you to go ahead.',
+      'Late fifties, reading glasses pushed up on his head, phone clamped to his ear. "I\'m at the counter now, stay on," he tells it, then nods at you to go ahead.',
     answers: {
       purpose: "Year-end thank-you for my crew. It's been a good season, and they'd rather have this than a dinner.",
       recipient:
@@ -249,7 +251,7 @@ export const customers: readonly Customer[] = [
     behaviour:
       'Mid-forties, unshaven, eyes red. He has the details on a creased printout and asks, before anything else, how fast a wire gets there.',
     answers: {
-      purpose: "My mother's in the hospital and they won't operate until the deposit is paid. It has to get there today.",
+      purpose: "My mother's in the hospital back home. A message came in the night with the bank details. They won't operate until it's paid.",
       recipient: "The hospital's billing office. My sister's there with her and sent me a picture of the invoice.",
       met: "Nobody at the hospital, no. My sister's been at the bedside since Tuesday, and we talk every few hours.",
       verified: "Yes. I looked up the hospital's main number myself, called it, and billing read the account back to me.",
