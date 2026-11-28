@@ -384,6 +384,12 @@ a:focus-visible {
   margin-top: 4px;
 }
 
+/* Lines stay under about 75 characters (design.md section 3.1). */
+.card-part p,
+.card-part dd {
+  max-width: 75ch;
+}
+
 .card-part h3 {
   margin: 16px 0 4px;
   font-size: 1rem;
@@ -459,6 +465,8 @@ a:focus-visible {
 }
 
 .sources {
+  flex: 1 1 0;
+  min-width: 0;
   display: flex;
   flex-wrap: wrap;
   gap: 4px 20px;
@@ -578,6 +586,10 @@ a:focus-visible {
   .read-more,
   .sources {
     flex-direction: column;
+  }
+
+  .sources {
+    flex: none;
   }
 
   .score-again,
