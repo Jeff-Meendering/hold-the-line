@@ -1358,7 +1358,7 @@ On the same branch. The lists above are left as they were written, and this part
 
 **Result**
 
-Nine code commits on the branch `ui/screens`, plus the commit that adds this entry, and a pull request into `main` that is open and not merged. Nothing in `src/game/` changed. In `src/data/`, only the slip titles were added, as answered above.
+Eight code commits on the branch `ui/screens`, plus the commit that adds this entry, and a pull request into `main` that is open and not merged. Nothing in `src/game/` changed. In `src/data/`, only the slip titles were added, as answered above.
 
 - `ca0ee74`: `SLIP_TITLES` in `src/data/labels.ts`, and one more row in the label check in `data.test.ts`.
 - `7e14a34`: `src/ui/bestScore.ts`: one key, `hold-the-line:best-score`; a stored value is used only if it is a whole number from 0 to 60, written plainly; every storage call is inside `try`/`catch`; `nextBest` makes the first finished day the best and does not count a tie as new. With `bestScore.test.ts`.
