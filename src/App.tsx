@@ -27,7 +27,7 @@ export function App() {
     case 'customer':
       return (
         // A new key for each customer mounts the screen afresh: focus moves
-        // to the new name and the decision guard starts again (U9, D19).
+        // to the new name and the half-second guard starts again (U9, D19).
         <CustomerScreen
           key={state.index}
           view={toCustomerView(state.day[state.index])}

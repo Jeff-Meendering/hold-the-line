@@ -4,12 +4,12 @@
 // when a decision is made except the customer (AC-4.2).
 //
 // App gives each customer its own key, so this screen mounts afresh for
-// every customer: focus goes to the name, and the decision guard restarts.
+// every customer: focus goes to the name, and the half-second guard restarts.
 import { useState } from 'react'
 import { QUESTION_TEXT } from '../data/questions.ts'
 import type { CustomerView, Decision, QuestionId } from '../game/types.ts'
 import { Slip } from './Slip.tsx'
-import { acceptsDecision, offeredQuestions, questionState, questionsLeft } from './customerView.ts'
+import { acceptsQuestion, offeredQuestions, pastGuard, questionState, questionsLeft } from './customerView.ts'
 import { useHeadingFocus } from './useHeadingFocus.ts'
 
 interface Props {
@@ -24,14 +24,20 @@ interface Props {
 
 export function CustomerScreen({ view, number, total, asked, onAsk, onDecide }: Props) {
   const heading = useHeadingFocus()
-  // The one timer in the app (D19): Hold and Process ignore presses for the
-  // first half second after this customer appears, so a double-click on the
-  // last customer's button cannot decide this one too. It is read from the
-  // first render, before any later click can arrive.
+  // The guard (D19): the question buttons, Hold, and Process ignore presses
+  // for the first half second after this customer appears, so the second
+  // click of a double-click on the last screen cannot ask a question or
+  // decide this customer. It compares two timestamps: the time of the first
+  // render, taken before any later click can arrive, and the time of the
+  // press.
   const [shownAt] = useState(() => performance.now())
 
+  function ask(id: QuestionId) {
+    if (acceptsQuestion(id, asked, shownAt, performance.now())) onAsk(id)
+  }
+
   function decide(decision: Decision) {
-    if (acceptsDecision(shownAt, performance.now())) onDecide(decision)
+    if (pastGuard(shownAt, performance.now())) onDecide(decision)
   }
 
   return (
@@ -66,9 +72,7 @@ export function CustomerScreen({ view, number, total, asked, onAsk, onDecide }: 
                     type="button"
                     className="question"
                     aria-disabled={state === 'available' ? undefined : true}
-                    onClick={() => {
-                      if (state === 'available') onAsk(id)
-                    }}
+                    onClick={() => ask(id)}
                   >
                     <span>{QUESTION_TEXT[id]}</span>
                     {state === 'asked' && <span className="asked-mark">asked</span>}

@@ -28,11 +28,19 @@ export function questionState(id: QuestionId, asked: readonly QuestionId[]): Que
   return questionsLeft(asked) === 0 ? 'locked' : 'available'
 }
 
-/** How long Hold and Process ignore presses after a customer appears (D19). */
-export const DECISION_GUARD_MS = 500
+/** How long the question buttons, Hold, and Process ignore presses after a
+ *  customer appears (D19). */
+export const GUARD_MS = 500
 
-/** True once the guard has passed. Both times are in milliseconds from the
- *  same clock. */
-export function acceptsDecision(shownAt: number, now: number): boolean {
-  return now - shownAt >= DECISION_GUARD_MS
+/** True once the guard has passed: the time the customer appeared and the
+ *  time of the press, in milliseconds from the same clock. */
+export function pastGuard(shownAt: number, now: number): boolean {
+  return now - shownAt >= GUARD_MS
+}
+
+/** A question press counts only if the question is available and the guard
+ *  has passed, so the second click of a double-click on Start, Play again,
+ *  or a decision cannot ask a question on the customer that appears (D19). */
+export function acceptsQuestion(id: QuestionId, asked: readonly QuestionId[], shownAt: number, now: number): boolean {
+  return questionState(id, asked) === 'available' && pastGuard(shownAt, now)
 }

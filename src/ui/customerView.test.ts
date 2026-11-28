@@ -1,9 +1,10 @@
 import { describe, expect, it } from 'vitest'
 import { legit, scam } from '../game/testPool.ts'
 import {
-  DECISION_GUARD_MS,
-  acceptsDecision,
+  GUARD_MS,
+  acceptsQuestion,
   offeredQuestions,
+  pastGuard,
   questionState,
   questionsLeft,
   toCustomerView,
@@ -72,13 +73,24 @@ describe('question states (FR-5, AC-3.2, AC-3.3)', () => {
   })
 })
 
-describe('the decision guard (D19, AC-4.4)', () => {
+describe('the half-second guard (D19, AC-4.4)', () => {
   it('ignores a press in the first half second and accepts one after it', () => {
-    expect(DECISION_GUARD_MS).toBe(500)
-    expect(acceptsDecision(1000, 1000)).toBe(false)
-    expect(acceptsDecision(1000, 1150)).toBe(false)
-    expect(acceptsDecision(1000, 1499.9)).toBe(false)
-    expect(acceptsDecision(1000, 1500)).toBe(true)
-    expect(acceptsDecision(1000, 4000)).toBe(true)
+    expect(GUARD_MS).toBe(500)
+    expect(pastGuard(1000, 1000)).toBe(false)
+    expect(pastGuard(1000, 1150)).toBe(false)
+    expect(pastGuard(1000, 1499.9)).toBe(false)
+    expect(pastGuard(1000, 1500)).toBe(true)
+    expect(pastGuard(1000, 4000)).toBe(true)
+  })
+
+  it('ignores a question pressed in the first half second, as the second click of a double-click on Start would be', () => {
+    expect(acceptsQuestion('purpose', [], 1000, 1080)).toBe(false)
+    expect(acceptsQuestion('purpose', [], 1000, 1499.9)).toBe(false)
+    expect(acceptsQuestion('purpose', [], 1000, 1500)).toBe(true)
+  })
+
+  it('still ignores an asked or locked question after the half second', () => {
+    expect(acceptsQuestion('purpose', ['purpose'], 1000, 5000)).toBe(false)
+    expect(acceptsQuestion('told', ['purpose', 'origin', 'urgency'], 1000, 5000)).toBe(false)
   })
 })
