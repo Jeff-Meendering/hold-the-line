@@ -49,8 +49,20 @@ describe('drawDay (requirements section 6, AC-5.1 to AC-5.3)', () => {
     }
   })
 
-  it('does not give the same day for all 1,000 seeds (rule 6)', () => {
-    expect(new Set(days.map((day) => ids(day).join(','))).size).toBeGreaterThan(1)
+  // This pool has 4 × 6 + 6 × 15 + 4 × 20 = 194 sets of customers, each in
+  // 720 orders: 139,680 days. Drawn uniformly, 1,000 days repeat about 5
+  // times, so a draw that keeps giving the same few days fails here.
+  it('gives at least 990 different days for 1,000 seeds (rule 6)', () => {
+    expect(new Set(days.map((day) => ids(day).join(','))).size).toBeGreaterThanOrEqual(990)
+  })
+
+  it('gives a full day when the random source returns exactly 1', () => {
+    const day = drawDay(pool, () => 1)
+    const poolIds = new Set(ids(pool))
+    expect(day).toHaveLength(6)
+    for (const customer of day) expect(poolIds.has(customer?.id)).toBe(true)
+    expect(new Set(ids(day)).size).toBe(6)
+    expect(scamCount(day)).toBe(3)
   })
 
   it('works on the smallest valid pool of 3 and 5, and a 3-scam day uses all three scams (rule 7)', () => {

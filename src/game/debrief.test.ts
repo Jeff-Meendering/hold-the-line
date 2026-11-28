@@ -63,6 +63,7 @@ describe('buildDebrief (design.md section 1.4, FR-8, FR-9)', () => {
 
     it('throws when the results do not match the day one for one', () => {
       expect(() => buildDebrief(day, results.slice(0, 5))).toThrow()
+      expect(() => buildDebrief(day, [...results, result('hold')])).toThrow()
     })
   })
 
