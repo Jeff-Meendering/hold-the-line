@@ -56,8 +56,21 @@ function resolve(fromPath: string, specifier: string): string {
 }
 
 // Each rule collects "file: problem" lines, so a failure names every file.
+// A rule with no files to check fails, so a moved folder or a renamed file
+// cannot make it pass by checking nothing.
 function check(targets: SourceFile[], problems: (f: SourceFile) => string[]): string[] {
+  expect(targets, 'this rule has no files to check').not.toEqual([])
   return targets.flatMap((f) => problems(f).map((p) => `${f.path}: ${p}`))
+}
+
+// The named files, each of which must exist.
+function named(paths: string[]): SourceFile[] {
+  const found = paths.map((path) => files.find((f) => f.path === path))
+  expect(
+    paths.filter((_, i) => found[i] === undefined),
+    'these files are not where the rules test looks for them',
+  ).toEqual([])
+  return found.filter((f) => f !== undefined)
 }
 
 function mentions(text: string, patterns: Record<string, RegExp>): string[] {
@@ -76,7 +89,7 @@ describe('rules test (D28)', () => {
     expect(files.find((f) => f.path === 'main.tsx')?.text).toContain('createRoot')
   })
 
-  it('src/game imports no React, DOM, UI, data, or App code, and uses no randomness or storage (architecture rule 1, NFR-8)', () => {
+  it('src/game imports no React, DOM, UI, data, or App code, and uses no randomness, timer, clock, or storage (architecture rule 1, NFR-8)', () => {
     const bannedImport = (r: string) =>
       /^react(-dom)?(\/|$)/.test(r) || /^(ui|data)\//.test(r) || r === 'App' || r === 'main'
     const problems = check(inFolder('game'), (f) => [
@@ -88,6 +101,12 @@ describe('rules test (D28)', () => {
         localStorage: /\blocalStorage\b/,
         document: /\bdocument\b/,
         window: /\bwindow\b/,
+        setTimeout: /\bsetTimeout\b/,
+        setInterval: /\bsetInterval\b/,
+        setImmediate: /\bsetImmediate\b/,
+        requestAnimationFrame: /\brequestAnimationFrame\b/,
+        Date: /\bDate\b/,
+        performance: /\bperformance\b/,
       }),
     ])
     expect(problems).toEqual([])
@@ -146,7 +165,7 @@ describe('rules test (D28)', () => {
   it('CustomerScreen and Slip mention none of the hidden fields (FR-7, SEC-18)', () => {
     const hidden = ['truth', 'redFlags', 'scamType', 'lookAlike', 'explanation', 'sourceUrls']
     const problems = check(
-      files.filter((f) => f.path === 'ui/CustomerScreen.tsx' || f.path === 'ui/Slip.tsx'),
+      named(['ui/CustomerScreen.tsx', 'ui/Slip.tsx']),
       (f) => hidden.filter((word) => f.text.includes(word)).map((word) => `mentions ${word}`),
     )
     expect(problems).toEqual([])
