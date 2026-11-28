@@ -1238,6 +1238,8 @@ Not changed: `c10` Margaret, every explanation but Ana's, every name, and every 
 
 A player who asks `purpose`, `origin`, and `next` of every cash customer now hears only the furnace story from Lorraine, and has to decide on her slip and her manner.
 
+A perfect question pattern still exists for cash: `purpose`, `urgency`, and `next`. It reaches a flagged answer from both cash scams (Lorraine's `urgency`, Stephen's `next`) and the explaining answer from both legit cash customers (Ana's `next`, Curtis's `purpose`). It is left for the Dec 4 playtest.
+
 **Sources, and how each was opened**
 
 All three were opened on Nov 28 with the fetch tool, which runs in a subagent and returns short quotes. The AI gave it the quotes from the fact-check file and asked whether each is on the page word for word. It did not see the full text of any page. `curl` got a 403 from `www.cftc.gov`.
@@ -1291,4 +1293,33 @@ This part is the record of what the AI did. TODO: add my own view after reading 
 
 **What I changed**
 
-TODO.
+I answered the four questions the AI asked and sent this follow-up:
+
+> Answers to your four questions, then merge.
+>
+> 1. Carol: keep it as you have it, RF-3 behind `recipient` and RF-13 behind `met`.
+> 2. Yes, make the others match. Anywhere the explanation is called one line (FR-9, D4, design.md 3.4, U13), say at most two sentences.
+> 3. Yes, add RF-16 to the `urgency` row of the table in design.md 2.3.
+> 4. Reasons for the triage table, both from the planning chat:
+>    - Finding 4: a hospital abroad that Joel has never dealt with is still a stranger getting paid, and the pool should have one wire to an institution. The alarming part is now the message with the bank details.
+>    - Finding 9: with four cash customers some theme will repeat, and a tradesman who wants cash is the cover a scammer would pick. The real tells were the word-for-word "cheaper for cash" line and the amounts, and both are fixed.
+>
+> Also fix the RF-1 label in the wireframe so it matches labels.ts, and update the PR title and description to cover the fix round. Add a line to AI log entry 13 that a perfect question pattern still exists for cash (purpose, urgency, next) and that it's left for the playtest.
+>
+> Run npm test and npm run build, push, wait for the check to pass, then merge PR #10 the same way as the others. Tell me the deploy result.
+
+TODO: my own view of the round.
+
+**What the AI did with the follow-up**
+
+On the same branch. The lists above are left as they were written, and this part says what became of them.
+
+- Carol is unchanged (item 2 of the choices above).
+- The explanation is "at most two sentences" in FR-9 (both places) and D4 of requirements.md, and in section 3.4 and U13 of design.md. It also changed the comment on `explanation` in design.md section 2.2 and in `src/game/types.ts`, which read "The debrief line". The follow-up does not name that comment, but it says "anywhere". This closes item 6. requirements.md stays at version 7 and design.md at version 6, with their version sentences extended.
+- RF-16 is in the `urgency` row of the table in design.md section 2.3. This closes item 1.
+- The two reasons are in the triage table of [reviews/03-gemini-content-review.md](reviews/03-gemini-content-review.md), marked as the planning chat's. That table has no TODO left.
+- The RF-1 label in both debrief wireframes now reads "On the phone during the transaction, taking directions". In the 375 px wireframe it takes two lines. This closes item 8.
+- The line about the cash pattern is under "Where the flags are now". The AI checked it against the data before writing it: the three questions reach a flagged answer on both cash scams and the explaining answer on both legit cash customers.
+- The PR title and description now cover both rounds.
+- `npm test`: 7 files, 115 tests, all passed. `npm run build`: passed, with the same bundle.
+- The merge and the deploy come after this commit, so their result is not in this entry.
